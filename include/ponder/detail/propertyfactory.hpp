@@ -233,10 +233,15 @@ struct AccessTraits<PT,
  * User objects.
  *  - I.e. Registered classes.
  *  - Enums also use registration so must differentiate.
+ *  - Pointer to basic types, such as std::string, integers and floats
+ *    also use registration. They must differentiate also.
  */
 template <typename PT>
 struct AccessTraits<PT,
     typename std::enable_if<hasStaticTypeDecl<typename PT::ExposedTraits::DereferencedType>()
+                        && !std::is_same<typename PT::ExposedTraits::DereferencedType, std::string>::value
+                        && !std::is_integral<typename PT::ExposedTraits::DereferencedType>::value
+                        && !std::is_floating_point<typename PT::ExposedTraits::DereferencedType>::value
                         && !std::is_enum<typename PT::ExposedTraits::DereferencedType>::value>::type>
 {
     static constexpr PropertyAccessKind kind = PropertyAccessKind::User;

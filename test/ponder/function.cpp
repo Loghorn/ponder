@@ -81,7 +81,8 @@ namespace FunctionTest
         , p3("3")
         , p4(MyType(4))
         , p5(MyType(5))
-        , m_pType(new MyType(6))
+        , p6(MyType(6))
+        , m_pType(new MyType(7))
         , innerPtr(&inner)
         , innerSmartPtr(new Inner)
         {
@@ -101,6 +102,9 @@ namespace FunctionTest
         
         MyType p5;
         const MyType& returnsConstRef() const {return p5;}
+
+        MyType p6;
+        const MyType& returnsConstRefNoexcept() const noexcept {return p6;}
 
         MyType* m_pType{};
         MyType* returnsPointer() const {return m_pType;}
@@ -232,6 +236,7 @@ namespace FunctionTest
             // ***** member functions *****
             .function("returnsRef", &MyClass::returnsRef) // non-const
             .function("returnsConstRef", &MyClass::returnsConstRef) // const
+            .function("returnsConstRefNoexcept", &MyClass::returnsConstRefNoexcept) // const noexcept
             .function("returnsPointer", &MyClass::returnsPointer, ponder::policy::ReturnInternalRef())
             .function("member3", &MyClass::member3) // inherited
             .function("member4", &MyClass::member4) // ponder::Value as return and parameter types
@@ -315,6 +320,7 @@ struct FunctionTestFixture
     ,   fn_nonMember3(metaclass.function("nonMember3"))
     ,   fn_returnsRef(metaclass.function("returnsRef"))
     ,   fn_returnsConstRef(metaclass.function("returnsConstRef"))
+    ,   fn_returnsConstRefNoexcept(metaclass.function("returnsConstRefNoexcept"))
     ,   fn_returnsPointer(metaclass.function("returnsPointer"))
     ,   fn_member3(metaclass.function("member3"))
     ,   fn_member4(metaclass.function("member4"))
@@ -345,6 +351,7 @@ struct FunctionTestFixture
     const ponder::Function &fn_nonMember3;
     const ponder::Function &fn_returnsRef;
     const ponder::Function &fn_returnsConstRef;
+    const ponder::Function &fn_returnsConstRefNoexcept;
     const ponder::Function &fn_returnsPointer;
     const ponder::Function &fn_member3;
     const ponder::Function &fn_member4;
@@ -385,6 +392,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered function properties can be int
 
         IS_TRUE(fn_returnsRef.kind() == ponder::FunctionKind::MemberFunction);
         IS_TRUE(fn_returnsConstRef.kind() == ponder::FunctionKind::MemberFunction);
+        IS_TRUE(fn_returnsConstRefNoexcept.kind() == ponder::FunctionKind::MemberFunction);
         IS_TRUE(fn_returnsPointer.kind() == ponder::FunctionKind::MemberFunction);
         IS_TRUE(fn_member3.kind() == ponder::FunctionKind::MemberFunction);
         IS_TRUE(fn_member4.kind() == ponder::FunctionKind::MemberFunction);
@@ -418,6 +426,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered function properties can be int
         REQUIRE(fn_nonMember3.returnType() ==  ponder::ValueKind::String);
         REQUIRE(fn_returnsRef.returnType() ==  ponder::ValueKind::User);
         REQUIRE(fn_returnsConstRef.returnType() ==  ponder::ValueKind::User);
+        REQUIRE(fn_returnsConstRefNoexcept.returnType() ==  ponder::ValueKind::User);
         REQUIRE(fn_returnsPointer.returnType() == ponder::ValueKind::User);
         REQUIRE(fn_member3.returnType() ==  ponder::ValueKind::None);
         REQUIRE(fn_member4.returnType() ==  ponder::ValueKind::User);
@@ -448,6 +457,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered function properties can be int
         REQUIRE(fn_nonMember3.paramCount() ==  1);
         REQUIRE(fn_returnsRef.paramCount() ==  0);
         REQUIRE(fn_returnsConstRef.paramCount() ==  0);
+        REQUIRE(fn_returnsConstRefNoexcept.paramCount() ==  0);
         REQUIRE(fn_returnsPointer.paramCount() == 0);
         REQUIRE(fn_member3.paramCount() ==  0);
         REQUIRE(fn_member4.paramCount() ==  1);
@@ -481,6 +491,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered function properties can be int
         REQUIRE(fn_nonMember3.paramType(0) == ponder::ValueKind::User);
         REQUIRE_THROWS_AS(fn_returnsRef.paramType(0), ponder::OutOfRange);
         REQUIRE_THROWS_AS(fn_returnsConstRef.paramType(0), ponder::OutOfRange);
+        REQUIRE_THROWS_AS(fn_returnsConstRefNoexcept.paramType(0), ponder::OutOfRange);
         REQUIRE_THROWS_AS(fn_member3.paramType(0), ponder::OutOfRange);
         REQUIRE(fn_member4.paramType(0) ==  ponder::ValueKind::User);
         REQUIRE_THROWS_AS(fn_memberParams1.paramType(0), ponder::OutOfRange);
@@ -631,6 +642,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered functions can be called with t
 
         IS_TRUE(ObjectCaller(fn_returnsRef).call(&object, ponder::Args()).to<MyType>() == MyType(4));
         IS_TRUE(ObjectCaller(fn_returnsConstRef).call(&object, ponder::Args()).to<MyType>() == MyType(5));
+        IS_TRUE(ObjectCaller(fn_returnsConstRefNoexcept).call(&object, ponder::Args()).to<MyType>() == MyType(6));
         IS_TRUE(ObjectCaller(fn_member3).call(&object, ponder::Args()) == Value::nothing);
         IS_TRUE(ObjectCaller(fn_member4).call(&object, ponder::Args("hi")) == Value("hi"));
 
@@ -683,6 +695,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered functions can be called with t
 
         IS_TRUE(call(fn_returnsRef, &object, ponder::Args()).to<MyType>() == MyType(4));
         IS_TRUE(call(fn_returnsConstRef, &object, ponder::Args()).to<MyType>() == MyType(5));
+        IS_TRUE(call(fn_returnsConstRefNoexcept, &object, ponder::Args()).to<MyType>() == MyType(6));
         IS_TRUE(call(fn_member3, &object, ponder::Args()) == Value::nothing);
         IS_TRUE(call(fn_member4, &object, ponder::Args("hi")) == Value("hi"));
         IS_TRUE(call(fn_memberParams1, &object, ponder::Args()) == Value::nothing);
@@ -729,6 +742,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered functions can be called with t
 
         IS_TRUE(call(fn_returnsRef, &object).to<MyType>() == MyType(4));
         IS_TRUE(call(fn_returnsConstRef, &object).to<MyType>() == MyType(5));
+        IS_TRUE(call(fn_returnsConstRefNoexcept, &object).to<MyType>() == MyType(6));
         IS_TRUE(call(fn_member3, &object) == Value::nothing);
         IS_TRUE(call(fn_member4, &object, "hi") == Value("hi"));
         IS_TRUE(call(fn_memberParams1, &object) == Value::nothing);
@@ -772,6 +786,8 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered functions can be called with t
         REQUIRE_THROWS_AS(ObjectCaller(fn_returnsRef).call(ponder::UserObject(), ponder::Args()),
                           ponder::NullObject);
         REQUIRE_THROWS_AS(ObjectCaller(fn_returnsConstRef).call(ponder::UserObject(), ponder::Args()),
+                          ponder::NullObject);
+        REQUIRE_THROWS_AS(ObjectCaller(fn_returnsConstRefNoexcept).call(ponder::UserObject(), ponder::Args()),
                           ponder::NullObject);
         REQUIRE_THROWS_AS(ObjectCaller(fn_member3).call(ponder::UserObject(), ponder::Args()),
                           ponder::NullObject);

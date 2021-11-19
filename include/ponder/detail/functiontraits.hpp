@@ -66,6 +66,26 @@ struct FunctionDetails<R(A...)>
     typedef std::tuple<A...> FunctionCallTypes;
 };
 
+template <typename R, typename... A>
+struct FunctionDetails<R(*)(A...) noexcept>
+{
+    typedef std::tuple<A...> ParamTypes;
+    typedef R ReturnType;
+    typedef ReturnType(*FuncType)(A...);
+    typedef ReturnType(DispatchType)(A...);
+    typedef std::tuple<A...> FunctionCallTypes;
+};
+
+template <typename R, typename... A>
+struct FunctionDetails<R(A...) noexcept>
+{
+    typedef std::tuple<A...> ParamTypes;
+    typedef R ReturnType;
+    typedef ReturnType(*FuncType)(A...);
+    typedef ReturnType(DispatchType)(A...);
+    typedef std::tuple<A...> FunctionCallTypes;
+};
+
 
 // Class method
 template <typename T>
@@ -87,6 +107,32 @@ struct MethodDetails<R(C::*)(A...)>
 // Const method.
 template <typename C, typename R, typename... A>
 struct MethodDetails<R(C::*)(A...) const>
+{
+    typedef const C ClassType;
+    typedef std::tuple<A...> ParamTypes;
+    typedef R ReturnType;
+    typedef ReturnType(DispatchType)(const ClassType&, A...);
+    typedef ReturnType(ClassType::*FuncType)(A...) const;
+    typedef std::tuple<const ClassType&, A...> FunctionCallTypes;
+    static constexpr bool isConst = true;
+};
+
+// Non-const noexcept method.
+template <typename C, typename R, typename... A>
+struct MethodDetails<R(C::*)(A...) noexcept>
+{
+    typedef C ClassType;
+    typedef std::tuple<A...> ParamTypes;
+    typedef R ReturnType;
+    typedef ReturnType(ClassType::*FuncType)(A...);
+    typedef ReturnType(DispatchType)(ClassType&, A...);
+    typedef std::tuple<ClassType&, A...> FunctionCallTypes;
+    static constexpr bool isConst = false;
+};
+
+// Const noexcept method.
+template <typename C, typename R, typename... A>
+struct MethodDetails<R(C::*)(A...) const noexcept>
 {
     typedef const C ClassType;
     typedef std::tuple<A...> ParamTypes;

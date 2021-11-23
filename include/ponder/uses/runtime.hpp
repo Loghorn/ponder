@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -46,7 +46,7 @@
 
 namespace ponder {
 namespace runtime {
-    
+
 static inline void destroy(const UserObject &uo);
 
 namespace detail {
@@ -59,7 +59,7 @@ struct ArgsBuilder
         return Args(std::forward<A>(args)...);
     }
 };
-    
+
 template <>
 struct ArgsBuilder<Args> {
     static Args makeArgs(const Args& args) { return args; }
@@ -71,7 +71,7 @@ struct ArgsBuilder<void> {
     static Args makeArgs(const Args& args) { return Args::empty; }
 };
 
-    
+
 struct UserObjectDeleter {
     void operator () (UserObject *uo) { destroy(*uo); }
 };
@@ -94,7 +94,7 @@ struct UserObjectDeleter {
 class ObjectFactory
 {
 public:
-    
+
     /**
      * \brief Constructor
      *
@@ -102,14 +102,14 @@ public:
      * \return a Class reference
      */
     ObjectFactory(const Class &cls) : m_class(cls) {}
-    
+
     /**
      * \brief Get the class begin used
      *
      * \return a Class reference
      */
     const Class& getClass() const { return m_class; }
-    
+
     /**
      * \brief Construct a new instance of the C++ class bound to the metaclass
      *
@@ -118,7 +118,7 @@ public:
      * the new instance being dynamically allocated using new.
      * The new instance is wrapped into a UserObject.
      *
-     * \note It must be destroyed with the appropriate destruction function: 
+     * \note It must be destroyed with the appropriate destruction function:
      * Class::destroy for new and Class::destruct for placement new.
      *
      * \param args Arguments to pass to the constructor (empty by default)
@@ -126,7 +126,7 @@ public:
      * \return New instance wrapped into a UserObject, or UserObject::nothing if it failed
      * \sa create()
      */
-    UserObject construct(const Args& args = Args::empty, void* ptr = nullptr) const;
+    inline UserObject construct(const Args& args = Args::empty, void* ptr = nullptr) const;
 
     /**
      * \brief Create a new instance of the class bound to the metaclass
@@ -140,7 +140,7 @@ public:
      * \sa construct()
      */
     template <typename ...A>
-    UserObject create(A... args) const;    
+    UserObject create(A... args) const;
 
     /**
      * \brief Destroy an instance of the C++ class bound to the metaclass
@@ -152,8 +152,8 @@ public:
      *
      * \see construct
      */
-    void destroy(const UserObject& object) const;
-      
+    inline void destroy(const UserObject& object) const;
+
     /**
      * \brief Destruct an object created using placement new
      *
@@ -164,40 +164,40 @@ public:
      *
      * \see construct
      */
-    void destruct(const UserObject& object) const;
-    
+    inline void destruct(const UserObject& object) const;
+
 private:
-    
-    const Class &m_class;    
+
+    const Class &m_class;
 };
 
 
 /**
  * \brief This object is used to invoke a object member function, or method
  *
- * There are helpers for this class, see ponder::runtime::call() and 
+ * There are helpers for this class, see ponder::runtime::call() and
  * ponder::runtime::callStatic().
  *
  */
 class ObjectCaller
 {
 public:
-    
+
     /**
      * \brief Constructor
      *
      * \param fn The Function to be called
      * \return a Function reference
      */
-    ObjectCaller(const Function &fn);
-    
+    inline ObjectCaller(const Function &fn);
+
     /**
      * \brief Get the function begin used
      *
      * \return a Function reference
      */
     const Function& function() const { return m_func; }
-    
+
     /**
      * \brief Call the function
      *
@@ -218,38 +218,38 @@ public:
      */
     template <typename... A>
     Value call(const UserObject &obj, A&&... args);
-    
+
 private:
-    
+
     const Function &m_func;
     runtime::detail::FunctionCaller *m_caller;
 };
-    
+
 /**
  * \brief This object is used to invoke a function
  *
- * There are helpers for this class, see ponder::runtime::call() and 
+ * There are helpers for this class, see ponder::runtime::call() and
  * ponder::runtime::callStatic().
  *
  */
 class FunctionCaller
 {
 public:
-    
+
     /**
      * \brief Constructor
      *
      * \param f The function to call
      */
-    FunctionCaller(const Function &f);
-    
+    inline FunctionCaller(const Function &f);
+
     /**
      * \brief Get the function begin used
      *
      * \return a Function reference
      */
     const Function& function() const { return m_func; }
-    
+
     /**
      * \brief Call the static function
      *
@@ -267,16 +267,16 @@ public:
      */
     template <typename... A>
     Value call(A... args);
-    
+
 private:
-    
+
     const Function &m_func;
     runtime::detail::FunctionCaller *m_caller;
 };
 
 //--------------------------------------------------------------------------------------
 // Helpers
-    
+
 /**
  * \brief Create instance of metaclass as a UserObject
  *
@@ -384,7 +384,7 @@ inline Value ObjectCaller::call(const UserObject &obj, A&&... vargs)
         PONDER_ERROR(NullObject(&obj.getClass()));
 
     Args args(detail::ArgsBuilder<A...>::makeArgs(std::forward<A>(vargs)...));
-    
+
     // Check the number of arguments
     if (args.count() < m_func.paramCount())
         PONDER_ERROR(NotEnoughArguments(m_func.name(), args.count(), m_func.paramCount()));
@@ -393,12 +393,12 @@ inline Value ObjectCaller::call(const UserObject &obj, A&&... vargs)
 
     return m_caller->execute(args);
 }
-    
+
 template <typename... A>
 inline Value FunctionCaller::call(A... vargs)
 {
     Args args(detail::ArgsBuilder<A...>::makeArgs(vargs...));
-    
+
     // Check the number of arguments
     if (args.count() < m_func.paramCount())
         PONDER_ERROR(NotEnoughArguments(m_func.name(), args.count(), m_func.paramCount()));
@@ -411,12 +411,9 @@ inline Value FunctionCaller::call(A... vargs)
 
 //--------------------------------------------------------------------------------------
 
-// define once in client program to instance this
-#ifdef PONDER_USES_RUNTIME_IMPL
-
 namespace ponder {
 namespace runtime {
-    
+
 UserObject ObjectFactory::construct(const Args& args, void* ptr) const
 {
     // Search an arguments match among the list of available constructors
@@ -429,21 +426,21 @@ UserObject ObjectFactory::construct(const Args& args, void* ptr) const
             return constructor.create(ptr, args);
         }
     }
-    
+
     return UserObject::nothing;  // no match found
 }
-    
+
 void ObjectFactory::destroy(const UserObject& object) const
 {
     m_class.destruct(object, false);
-    
+
     const_cast<UserObject&>(object) = UserObject::nothing;
 }
 
 void ObjectFactory::destruct(const UserObject& object) const
 {
     m_class.destruct(object, true);
-    
+
     const_cast<UserObject&>(object) = UserObject::nothing;
 }
 
@@ -460,10 +457,8 @@ FunctionCaller::FunctionCaller(const Function &f)
                  *reinterpret_cast<const uses::Uses::PerFunctionUserData*>(m_func.getUsesData())))
 {
 }
-    
+
 } // runtime
 } // ponder
-
-#endif // PONDER_USES_RUNTIME_IMPL
 
 #endif // PONDER_USES_RUNTIME_HPP

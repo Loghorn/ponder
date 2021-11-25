@@ -37,7 +37,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 /*
  * - ReferenceType: the reference type closest to T which allows to have direct access
  *   to the object (T& for raw types and references, T* for pointer types)
@@ -60,12 +60,12 @@ template <typename T, typename E = void>
 struct TypeTraits
 {
     static constexpr ReferenceKind kind = ReferenceKind::Instance;
-    typedef T Type;
-    typedef T& ReferenceType;
-    typedef T* PointerType;
-    typedef T DereferencedType;
+    using Type = T;
+    using ReferenceType = T&;
+    using PointerType = T*;
+    using DereferencedType = T;
     static_assert(!std::is_void<T>::value, "Incorrect type details");
-    typedef typename DataType<T>::Type DataType;
+    using DataType = typename DataType<T>::Type;
     static constexpr bool isWritable = !std::is_const<DereferencedType>::value;
     static constexpr bool isRef = false;
 
@@ -79,11 +79,11 @@ template <>
 struct TypeTraits<void>
 {
     static constexpr ReferenceKind kind = ReferenceKind::None;
-    typedef void T;
-    typedef T* ReferenceType;
-    typedef T* PointerType;
-    typedef T DereferencedType;
-    typedef typename DataType<T>::Type DataType;
+    using T = void;
+    using ReferenceType = T*;
+    using PointerType = T*;
+    using DereferencedType = T;
+    using DataType = typename DataType<T>::Type;
     static constexpr bool isWritable = false;
     static constexpr bool isRef = false;
 
@@ -96,11 +96,11 @@ template <typename T>
 struct TypeTraits<T*>
 {
     static constexpr ReferenceKind kind = ReferenceKind::Pointer;
-    typedef T* Type;
-    typedef T* ReferenceType;
-    typedef T* PointerType;
-    typedef T DereferencedType;
-    typedef typename DataType<T>::Type DataType;
+    using Type = T*;
+    using ReferenceType = T*;
+    using PointerType = T*;
+    using DereferencedType = T;
+    using DataType = typename DataType<T>::Type;
     static constexpr bool isWritable = !std::is_const<DereferencedType>::value;
     static constexpr bool isRef = true;
 
@@ -114,11 +114,11 @@ template <typename T>
 struct TypeTraits<T&>
 {
     static constexpr ReferenceKind kind = ReferenceKind::Reference;
-    typedef T& Type;
-    typedef T& ReferenceType;
-    typedef T* PointerType;
-    typedef T DereferencedType;
-    typedef typename DataType<T>::Type DataType;
+    using Type = T&;
+    using ReferenceType = T&;
+    using PointerType = T*;
+    using DereferencedType = T;
+    using DataType = typename DataType<T>::Type;
     static constexpr bool isWritable = !std::is_const<DereferencedType>::value;
     static constexpr bool isRef = true;
 
@@ -131,12 +131,12 @@ struct TypeTraits<T&>
 template <class P, typename T>
 struct SmartPointerReferenceTraits
 {
-    typedef P Type;
     static constexpr ReferenceKind kind = ReferenceKind::SmartPointer;
-    typedef T& ReferenceType;
-    typedef P PointerType;
-    typedef T DereferencedType;
-    typedef typename DataType<T>::Type DataType;
+    using Type = P;
+    using ReferenceType = T&;
+    using PointerType = P;
+    using DereferencedType = T;
+    using DataType = typename DataType<T>::Type;
     static constexpr bool isWritable = !std::is_const<DereferencedType>::value;
     static constexpr bool isRef = true;
 
@@ -149,17 +149,17 @@ template <typename T>
 struct TypeTraits<std::shared_ptr<T>>
     : public SmartPointerReferenceTraits<std::shared_ptr<T>,T> {};
 
-    
+
 // Built-in arrays []
 template <typename T, size_t N>
 struct TypeTraits<T[N], typename std::enable_if<std::is_array<T>::value>::type>
 {
     static constexpr ReferenceKind kind = ReferenceKind::BuiltinArray;
-    typedef T Type[N];
-    typedef typename DataType<T>::Type DataType;
-    typedef T(&ReferenceType)[N];
-    typedef T* PointerType;
-    typedef T DereferencedType[N];
+    using Type = T[N];
+    using DataType = typename DataType<T>::Type;
+    using ReferenceType = T(&)[N];
+    using PointerType = T*;
+    using DereferencedType = T[N];
     static constexpr size_t Size = N;
     static constexpr bool isWritable = !std::is_const<T>::value;
     static constexpr bool isRef = false;
@@ -169,10 +169,10 @@ struct TypeTraits<T[N], typename std::enable_if<std::is_array<T>::value>::type>
 //template <typename C, typename T, size_t S>
 //struct MemberTraits<std::array<T,S>(C::*)>
 //{
-//    typedef std::array<T,S>(C::*Type);
-//    typedef C ClassType;
-//    typedef std::array<T,S> ExposedType;
-//    typedef typename DataType<T>::Type DataType;
+//    using Type = std::array<T,S>(C::*);
+//    using ClassType = C;
+//    using ExposedType = std::array<T,S>;
+//    using DataType = typename DataType<T>::Type;
 //    //static constexpr bool isWritable = !std::is_const<DataType>::value;
 //
 //    class Access
@@ -188,10 +188,10 @@ struct TypeTraits<T[N], typename std::enable_if<std::is_array<T>::value>::type>
 //template <typename C, typename T>
 //struct MemberTraits<std::vector<T>(C::*)>
 //{
-//    typedef std::vector<T>(C::*Type);
-//    typedef C ClassType;
-//    typedef std::vector<T> ExposedType;
-//    typedef typename DataType<T>::Type DataType;
+//    using Type = std::vector<T>(C::*);
+//    using ClassType = C;
+//    using ExposedType = std::vector<T>;
+//    using DataType = typename DataType<T>::Type;
 //
 //    class Access
 //    {
@@ -206,10 +206,10 @@ struct TypeTraits<T[N], typename std::enable_if<std::is_array<T>::value>::type>
 //template <typename C, typename T>
 //struct MemberTraits<std::list<T>(C::*)>
 //{
-//    typedef std::list<T>(C::*Type);
-//    typedef C ClassType;
-//    typedef std::list<T> ExposedType;
-//    typedef typename DataType<T>::Type DataType;
+//    using Type = std::list<T>(C::*);
+//    using ClassType = C;
+//    using ExposedType = std::list<T>;
+//    using DataType = typename DataType<T>::Type;
 //
 //    class Access
 //    {
@@ -220,7 +220,7 @@ struct TypeTraits<T[N], typename std::enable_if<std::is_array<T>::value>::type>
 //        Type data;
 //    };
 //};
-    
+
 } // namespace detail
 } // namespace ponder
 

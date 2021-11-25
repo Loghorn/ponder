@@ -49,7 +49,7 @@ struct FunctionParamInfo
 template <int SZ>
 struct FunctionMapParamsToValueKind
 {
-    typedef std::array<FunctionParamInfo, SZ> ReturnType;
+    using ReturnType = std::array<FunctionParamInfo, SZ>;
     
     template <typename T>
     static FunctionParamInfo apply() { return { &typeid(T), mapType<T>() }; }
@@ -107,8 +107,8 @@ struct ReturnPolicy<R, policy::ReturnInternalRef>
 template <typename T, typename F, typename... P>
 class FunctionImpl : public Function
 {
-    typedef T FuncTraits;
-    typedef std::tuple<P...> FuncPolicies;
+    using FuncTraits = T;
+    using FuncPolicies = std::tuple<P...>;
     
     static constexpr size_t c_nParams =
         std::tuple_size<typename FuncTraits::Details::ParamTypes>::value;
@@ -140,7 +140,7 @@ private:
     template <int M>
     void processUses(IdRef name, F function)
     {
-        typedef typename std::tuple_element<M, uses::Uses::Users>::type Processor;
+        using Processor = typename std::tuple_element<M, uses::Uses::Users>::type;
         
         std::get<M>(m_userData) =
             Processor::template perFunction<F, T, FuncPolicies>(name, function);
@@ -162,7 +162,7 @@ private:
 template <typename F, typename... P>
 static inline Function* newFunction(IdRef name, F function, P... policies)
 {
-    typedef detail::FunctionTraits<F> FuncTraits;
+    using FuncTraits = detail::FunctionTraits<F>;
     
     static_assert(FuncTraits::kind != FunctionKind::None, "Type is not a function");
     

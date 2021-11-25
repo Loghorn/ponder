@@ -296,7 +296,7 @@ static inline UserObject create(const Class &cls, A... args)
     return ObjectFactory(cls).create(args...);
 }
 
-typedef std::unique_ptr<UserObject> UniquePtr;
+using UniquePtr = std::unique_ptr<UserObject>;
 
 inline UniquePtr makeUniquePtr(UserObject *obj)
 {

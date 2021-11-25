@@ -89,25 +89,25 @@ template <typename Policies_t, typename R> struct ChooseCallReturner;
 template <typename... Ps, typename R>
 struct ChooseCallReturner<std::tuple<policy::ReturnCopy, Ps...>, R>
 {
-    typedef CallReturnCopy<R> type;
+    using type = CallReturnCopy<R>;
 };
 
 template <typename... Ps, typename R>
 struct ChooseCallReturner<std::tuple<policy::ReturnInternalRef, Ps...>, R>
 {
-    typedef CallReturnInternalRef<R> type;
+    using type = CallReturnInternalRef<R>;
 };
 
 template <typename R>
 struct ChooseCallReturner<std::tuple<>, R> // default
 {
-    typedef CallReturnCopy<R> type;
+    using type = CallReturnCopy<R>;
 };
 
 template <typename P, typename... Ps, typename R>
 struct ChooseCallReturner<std::tuple<P, Ps...>, R> // recurse
 {
-    typedef typename ChooseCallReturner<std::tuple<Ps...>, R>::type type;
+    using type = typename ChooseCallReturner<std::tuple<Ps...>, R>::type;
 };
 
 //-----------------------------------------------------------------------------
@@ -121,7 +121,7 @@ struct ChooseCallReturner<std::tuple<P, Ps...>, R> // recurse
 template <int TFrom, typename TTo>
 struct ConvertArg
 {
-    typedef typename std::remove_reference<TTo>::type ReturnType;
+    using ReturnType = typename std::remove_reference<TTo>::type;
     static ReturnType
     convert(const Args& args, size_t index)
     {
@@ -138,7 +138,7 @@ struct ConvertArg
 template <typename TTo>
 struct ConvertArg<(int)ValueKind::User, TTo&>
 {
-    typedef TTo& ReturnType;
+    using ReturnType = TTo&;
     static ReturnType
     convert(const Args& args, size_t index)
     {
@@ -153,7 +153,7 @@ struct ConvertArg<(int)ValueKind::User, TTo&>
 template <typename TTo>
 struct ConvertArg<(int)ValueKind::User, const TTo&>
 {
-    typedef const TTo& ReturnType;
+    using ReturnType = const TTo&;
     static ReturnType
     convert(const Args& args, size_t index)
     {
@@ -170,9 +170,9 @@ struct ConvertArg<(int)ValueKind::User, const TTo&>
 template <typename A>
 struct ConvertArgs
 {
-    typedef typename ponder::detail::DataType<A>::Type Raw;
+    using Raw = typename ponder::detail::DataType<A>::Type;
     static constexpr ValueKind kind = ponder_ext::ValueMapper<Raw>::kind;
-    typedef ConvertArg<(int)kind, A> Convertor;
+    using Convertor = ConvertArg<(int)kind, A>;
     
     static typename Convertor::ReturnType convert(const Args& args, size_t index)
     {
@@ -188,7 +188,7 @@ public:
     template<typename F, typename... A, size_t... Is>
     static Value call(F func, const Args& args, PONDER__SEQNS::index_sequence<Is...>)
     {
-        typedef typename ChooseCallReturner<FPolicies, R>::type CallReturner;
+        using CallReturner = typename ChooseCallReturner<FPolicies, R>::type;
         return CallReturner::value(func(ConvertArgs<A>::convert(args, Is)...));
     }
 };
@@ -214,12 +214,12 @@ template <typename R, typename A> struct FunctionWrapper;
 
 template <typename R, typename... A> struct FunctionWrapper<R, std::tuple<A...>>
 {
-    typedef typename std::function<R(A...)> Type;
+    using Type = typename std::function<R(A...)>;
     
     template <typename F, typename FTraits, typename FPolicies>
     static Value call(F func, const Args& args)
     {
-        typedef PONDER__SEQNS::make_index_sequence<sizeof...(A)> ArgEnumerator;
+        using ArgEnumerator = PONDER__SEQNS::make_index_sequence<sizeof...(A)>;
         return CallHelper<R, FTraits, FPolicies>::template
             call<F, A...>(func, args, ArgEnumerator());
     }
@@ -258,8 +258,8 @@ public:
     
 private:
 
-    typedef typename FTraits::Details::FunctionCallTypes CallTypes;
-    typedef FunctionWrapper<typename FTraits::ExposedType, CallTypes> DispatchType;
+    using CallTypes = typename FTraits::Details::FunctionCallTypes;
+    using DispatchType = FunctionWrapper<typename FTraits::ExposedType, CallTypes>;
     
     typename DispatchType::Type m_function; // Object containing the actual function to call
     

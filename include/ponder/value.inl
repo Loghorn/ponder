@@ -34,7 +34,7 @@ namespace detail {
 
 // Is T a user type.
 template <typename T> struct IsUserType {
-    typedef typename detail::DataType<T>::Type DataType;
+    using DataType = typename detail::DataType<T>::Type;
     static constexpr bool value = std::is_class<DataType>::value
         && !std::is_same<DataType, Value>::value
         && !std::is_same<DataType, UserObject>::value

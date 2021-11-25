@@ -42,12 +42,12 @@
 #include <map>
 
 namespace ponder {
-    
+
 template <typename T> class ClassBuilder;
 class Constructor;
 class Args;
 class ClassVisitor;
-  
+
 /**
  * \brief ponder::Class represents a metaclass composed of properties and functions
  *
@@ -81,29 +81,29 @@ class ClassVisitor;
  * \sa ClassBuilder, Function, Property, Enum
  */
 class PONDER_API Class : public Type
-{    
+{
     PONDER__NON_COPYABLE(Class);
-    
+
     // Structure holding informations about a base metaclass
     struct BaseInfo
     {
         const Class* base;
         int offset;
     };
-    
+
     // These are shared_ptr as the objects can be inherited. When this happens the
     // pointers are copied.
-    typedef std::shared_ptr<Constructor> ConstructorPtr;
-    typedef std::shared_ptr<Property> PropertyPtr;
-    typedef std::shared_ptr<Function> FunctionPtr;
-    
-    typedef std::vector<BaseInfo> BaseList;
-    typedef std::vector<ConstructorPtr> ConstructorList;
-    typedef detail::Dictionary<Id, IdRef, PropertyPtr> PropertyTable;
-    typedef detail::Dictionary<Id, IdRef, FunctionPtr> FunctionTable;
-    typedef void (*Destructor)(const UserObject&, bool);
-    typedef UserObject (*UserObjectCreator)(void*);
-    
+    using ConstructorPtr = std::shared_ptr<Constructor>;
+    using PropertyPtr = std::shared_ptr<Property>;
+    using FunctionPtr = std::shared_ptr<Function>;
+
+    using BaseList = std::vector<BaseInfo>;
+    using ConstructorList = std::vector<ConstructorPtr>;
+    using PropertyTable = detail::Dictionary<Id, IdRef, PropertyPtr>;
+    using FunctionTable = detail::Dictionary<Id, IdRef, FunctionPtr>;
+    using Destructor = void(*)(const UserObject&, bool);
+    using UserObjectCreator = UserObject(*)(void*);
+
     size_t m_sizeof;                // Size of the class in bytes.
     TypeId m_id;                    // Unique type id of the metaclass.
     Id m_name;                      // Name of the metaclass
@@ -139,7 +139,7 @@ public: // declaration
      * Use this to undeclare a metaclass that you no longer require. E.g. from a dynamically
      * loaded library that is being unloaded.
      *
-     * \note Do *not* use automatic metaclass declaration (PONDER_AUTO_TYPE) for the class 
+     * \note Do *not* use automatic metaclass declaration (PONDER_AUTO_TYPE) for the class
      *       or it will keep being recreated by Ponder.
      *
      * \see Class::declare, Enum::undeclare
@@ -149,8 +149,8 @@ public: // declaration
 
 public: // reflection
 
-    typedef View<const Function&, FunctionTable::const_iterator> FunctionView;
-    typedef View<const Property&, PropertyTable::const_iterator> PropertyView;
+    using FunctionView = View<const Function&, FunctionTable::const_iterator>;
+    using PropertyView = View<const Property&, PropertyTable::const_iterator>;
 
     /**
      * \brief Return the name of the metaclass
@@ -165,7 +165,7 @@ public: // reflection
      * \return Number of base metaclasses
      */
     size_t baseCount() const;
-    
+
     /**
      * \brief Return a base metaclass from its index
      *
@@ -182,7 +182,7 @@ public: // reflection
      * \return Number of constructors
      */
     size_t constructorCount() const;
-    
+
     /**
      * \brief Access constructors by index
      *
@@ -191,7 +191,7 @@ public: // reflection
      * \return Constructor
      */
     const Constructor* constructor(size_t index) const;
-    
+
     /**
      * \brief Destroy a UserObject instance
      *
@@ -199,7 +199,7 @@ public: // reflection
      * \param destruct True for destruct (placement new), else destroy (new)
      */
     void destruct(const UserObject &uobj, bool destruct) const;
-    
+
     /**
      * \brief Return the total number of functions of this metaclass
      *
@@ -299,7 +299,7 @@ public: // reflection
      * \throw PropertyNotFound \a name is not a property of the metaclass
      */
     const Property& property(IdRef name) const;
-    
+
     /**
      * \brief Get a property iterator
      *
@@ -311,7 +311,7 @@ public: // reflection
      * \endcode
      */
     PropertyView properties() const;
-    
+
     /**
      * \brief Look up a property by name and return success
      *
@@ -326,7 +326,7 @@ public: // reflection
      * \endcode
      */
     bool tryProperty(const IdRef name, const Property*& propRet) const;
-    
+
     /**
      * \brief Return the memory size of a class instance
      *
@@ -362,7 +362,7 @@ public: // reflection
      *
      * The target metaclass may be a base or a derived of this, both cases are properly handled.
      *
-     * \note Because virtual inheritance implementation is compiler specific this method is 
+     * \note Because virtual inheritance implementation is compiler specific this method is
      *       unreliable where virtual inheritance is used.
      *
      * \param pointer Pointer to convert
@@ -404,7 +404,7 @@ private:
      * - offset between this and base, or -1 if both classes are unrelated
      */
     int baseOffset(const Class& base) const;
-    
+
 };
 
 } // namespace ponder

@@ -51,7 +51,7 @@ static inline UserObject userObjectCreator(void* ptr)
 template <typename T>
 inline ClassBuilder<T> Class::declare(IdRef name)
 {
-    typedef detail::StaticTypeDecl<T> typeDecl;
+    using typeDecl = detail::StaticTypeDecl<T>;
     Class& newClass =
         detail::ClassManager::instance()
             .addClass(typeDecl::id(false), name.empty() ? typeDecl::name(false) : name);

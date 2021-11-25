@@ -36,11 +36,11 @@
 #include <map>
 
 namespace ponder {
-    
+
 class Class;
 
 namespace detail {
-    
+
 /**
  * \brief Manages creation, storage, retrieval and destruction of metaclasses
  *
@@ -52,12 +52,12 @@ namespace detail {
 class PONDER_API ClassManager : public ObserverNotifier
 {
     // No need for shared pointers in here, we're the one and only instance holder
-    typedef std::map<TypeId, Class*> ClassTable;
-    typedef std::map<Id, Class*> NameTable;
+    using ClassTable = std::map<TypeId, Class*>;
+    using NameTable = std::map<Id, Class*>;
 
 public:
 
-    typedef View<const Class&, ClassTable::const_iterator> ClassView;
+    using ClassView = View<const Class&, ClassTable::const_iterator>;
 
     /**
      * \brief Get the unique instance of the class
@@ -98,7 +98,7 @@ public:
      * \return Number of metaclasses that have been registered
      */
     size_t count() const;
-    
+
     /**
      * \brief Get a metaclass from a C++ type
      *

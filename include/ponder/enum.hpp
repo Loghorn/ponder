@@ -78,7 +78,7 @@ class PONDER_API Enum : public Type
 {
     PONDER__NON_COPYABLE(Enum);
 public:
-    typedef long EnumValue;  //!< Type used to hold the enum value.
+    using EnumValue = long;  //!< Type used to hold the enum value.
 
     /**
      * \brief Structure defining the <name, value> pairs stored in metaenums
@@ -275,8 +275,8 @@ private:
      * \param name Name of the metaenum
      */
     Enum(IdRef name);
-    
-    typedef detail::Dictionary<Id, IdRef, EnumValue> EnumTable;
+
+    using EnumTable = detail::Dictionary<Id, IdRef, EnumValue>;
     
     Id m_name;              // Name of the metaenum
     EnumTable m_enums;      // Table of enums

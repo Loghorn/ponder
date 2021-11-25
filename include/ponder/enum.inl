@@ -32,7 +32,7 @@ namespace ponder {
 template <typename T>
 EnumBuilder Enum::declare(IdRef name)
 {
-    typedef detail::StaticTypeDecl<T> typeDecl;
+    using typeDecl = detail::StaticTypeDecl<T>;
     Enum& newEnum =
         detail::EnumManager::instance()
             .addClass(typeDecl::id(false), name.empty() ? typeDecl::name(false) : name);

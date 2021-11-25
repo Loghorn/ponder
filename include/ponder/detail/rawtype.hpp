@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 /**
  * \brief Utility class which tells at compile-time if a type T is a smart pointer to a type U
  *
@@ -58,7 +58,7 @@ struct IsSmartPointer<std::shared_ptr<T>, U>
 {
     static constexpr bool value = true;
 };
-        
+
 /**
  * \class DataType
  *
@@ -82,7 +82,7 @@ struct IsSmartPointer<std::shared_ptr<T>, U>
  template <typename T, typename E = void>
 struct DataType
 {
-    typedef T Type;
+    using Type = T;
 };
 
 // const
@@ -94,7 +94,7 @@ struct DataType<T&> : public DataType<T> {};
 
 template <typename T>
 struct DataType<T*> : public DataType<T> {};
-    
+
 template <typename T, size_t N>
 struct DataType<T[N]> : public DataType<T> {};
 
@@ -102,12 +102,12 @@ struct DataType<T[N]> : public DataType<T> {};
 template <template <typename> class T, typename U>
 struct DataType<T<U>, typename std::enable_if<IsSmartPointer<T<U>, U>::value >::type>
 {
-    typedef typename DataType<U>::Type Type;
+    using Type = typename DataType<U>::Type;
 };
 
 } // namespace detail
 
-    
+
 template<class T>
 T* get_pointer(T *p)
 {

@@ -65,7 +65,7 @@ template <typename P, typename U = void> struct LuaValueReader {};
 template <typename P>
 struct LuaValueReader<P, typename std::enable_if<std::is_integral<P>::value>::type>
 {
-    typedef P ParamType;
+    using ParamType = P;
     static inline ParamType convert(lua_State* L, size_t index)
     {
         return static_cast<ParamType>(luaL_checkinteger(L, (int)index));
@@ -75,7 +75,7 @@ struct LuaValueReader<P, typename std::enable_if<std::is_integral<P>::value>::ty
 template <typename P>
 struct LuaValueReader<P, typename std::enable_if<std::is_floating_point<P>::value>::type>
 {
-    typedef P ParamType;
+    using ParamType = P;
     static inline ParamType convert(lua_State* L, size_t index)
     {
         return static_cast<ParamType>(luaL_checknumber(L, (int)index));
@@ -85,7 +85,7 @@ struct LuaValueReader<P, typename std::enable_if<std::is_floating_point<P>::valu
 template <typename P>
 struct LuaValueReader<P, typename std::enable_if<std::is_enum<P>::value>::type>
 {
-    typedef P ParamType;
+    using ParamType = P;
     static inline ParamType convert(lua_State* L, size_t index)
     {
         const lua_Integer i = luaL_checkinteger(L, (int)index);
@@ -98,7 +98,7 @@ struct LuaValueReader<P,
     typename std::enable_if<std::is_same<std::string,
                             typename detail::DataType<P>::Type>::value>::type>
 {
-    typedef std::string ParamType;
+    using ParamType = std::string;
     static inline ParamType convert(lua_State* L, size_t index)
     {
         return ParamType(luaL_checkstring(L, (int)index));
@@ -108,7 +108,7 @@ struct LuaValueReader<P,
 template <>
 struct LuaValueReader<ponder::detail::string_view>
 {
-    typedef ponder::detail::string_view ParamType;
+    using ParamType = ponder::detail::string_view;
     static inline ParamType convert(lua_State* L, size_t index)
     {
         return ParamType(luaL_checkstring(L, (int)index));
@@ -118,8 +118,8 @@ struct LuaValueReader<ponder::detail::string_view>
 template <typename P>
 struct LuaValueReader<P&, typename std::enable_if<detail::IsUserType<P>::value>::type>
 {
-    typedef P& ParamType;
-    typedef typename detail::DataType<ParamType>::Type DataType;
+    using ParamType = P&;
+    using DataType = typename detail::DataType<ParamType>::Type;
     
     static inline ParamType convert(lua_State* L, size_t index)
     {
@@ -136,8 +136,8 @@ struct LuaValueReader<P&, typename std::enable_if<detail::IsUserType<P>::value>:
 template <typename P>
 struct LuaValueReader<P*, typename std::enable_if<ponder::detail::IsUserType<P>::value>::type>
 {
-    typedef P* ParamType;
-    typedef typename ponder::detail::DataType<ParamType>::Type DataType;
+    using ParamType = P*;
+    using DataType = typename ponder::detail::DataType<ParamType>::Type;
     
     static inline ParamType convert(lua_State* L, size_t index)
     {
@@ -155,7 +155,7 @@ struct LuaValueReader<P*, typename std::enable_if<ponder::detail::IsUserType<P>:
 template <>
 struct LuaValueReader<LuaTable>
 {
-    typedef LuaTable ParamType;
+    using ParamType = LuaTable;
     static inline ParamType convert(lua_State* L, size_t index)
     {
         luaL_checktype(L, (int)index, LUA_TTABLE);
@@ -247,7 +247,7 @@ struct LuaValueWriter<const std::tuple<R...>>
     
     static inline int push(lua_State *L, std::tuple<R...> const& value)
     {
-        typedef PONDER__SEQNS::make_index_sequence<sizeof...(R)> Enumerator;
+        using Enumerator = PONDER__SEQNS::make_index_sequence<sizeof...(R)>;
         pushElements(L, value, Enumerator());
         return sizeof...(R);
     }
@@ -332,31 +332,31 @@ template <typename Policies_t, typename R> struct ChooseCallReturner;
 template <typename... Ps, typename R>
 struct ChooseCallReturner<std::tuple<policy::ReturnCopy, Ps...>, R>
 {
-    typedef CallReturnCopy<R> type;
+    using type = CallReturnCopy<R>;
 };
 
 template <typename... Ps, typename R>
 struct ChooseCallReturner<std::tuple<policy::ReturnInternalRef, Ps...>, R>
 {
-    typedef CallReturnInternalRef<R> type;
+    using type = CallReturnInternalRef<R>;
 };
 
 template <typename... Ps, typename R>
 struct ChooseCallReturner<std::tuple<policy::ReturnMultiple, Ps...>, R>
 {
-    typedef CallReturnMultiple<R> type;
+    using type = CallReturnMultiple<R>;
 };
 
 template <typename R>
 struct ChooseCallReturner<std::tuple<>, R> // default
 {
-    typedef CallReturnCopy<R> type;
+    using type = CallReturnCopy<R>;
 };
 
 template <typename P, typename... Ps, typename R>
 struct ChooseCallReturner<std::tuple<P, Ps...>, R> // recurse
 {
-    typedef typename ChooseCallReturner<std::tuple<Ps...>, R>::type type;
+    using type = typename ChooseCallReturner<std::tuple<Ps...>, R>::type;
 };
 
 //-----------------------------------------------------------------------------
@@ -365,7 +365,7 @@ struct ChooseCallReturner<std::tuple<P, Ps...>, R> // recurse
 template <typename P>
 struct ConvertArgs
 {
-    typedef LuaValueReader<P> Convertor;
+    using Convertor = LuaValueReader<P>;
     
     static typename Convertor::ParamType convert(lua_State* L, size_t index)
     {
@@ -381,7 +381,7 @@ public:
     template<typename F, typename... A, size_t... Is>
     static int call(F func, lua_State* L, PONDER__SEQNS::index_sequence<Is...>)
     {
-        typedef typename ChooseCallReturner<FPolicies, R>::type CallReturner;
+        using CallReturner =  typename ChooseCallReturner<FPolicies, R>::type;
         return CallReturner::value(L, func(ConvertArgs<A>::convert(L, Is)...));
     }
 };
@@ -407,12 +407,12 @@ template <typename R, typename P> struct FunctionWrapper;
 
 template <typename R, typename... P> struct FunctionWrapper<R, std::tuple<P...>>
 {
-    typedef typename std::function<R(P...)> Type;
+    using Type = typename std::function<R(P...)>;
     
     template <typename F, typename FTraits, typename FPolicies>
     static int call(F func, lua_State* L)
     {
-        typedef PONDER__SEQNS::make_index_sequence<sizeof...(P)> ArgEnumerator;
+        using ArgEnumerator = PONDER__SEQNS::make_index_sequence<sizeof...(P)>;
         
         return CallHelper<R, FTraits, FPolicies>::template call<F, P...>(func, L, ArgEnumerator());
     }
@@ -459,10 +459,10 @@ public:
     
 private:
     
-    typedef FunctionCallerImpl<F, FTraits, FPolicies> ThisType;
+    using ThisType = FunctionCallerImpl<F, FTraits, FPolicies>;
     
-    typedef typename FTraits::Details::FunctionCallTypes CallTypes;
-    typedef FunctionWrapper<typename FTraits::ExposedType, CallTypes> DispatchType;
+    using CallTypes = typename FTraits::Details::FunctionCallTypes;
+    using DispatchType = FunctionWrapper<typename FTraits::ExposedType, CallTypes>;
     
     typename DispatchType::Type m_function; // Object containing the actual function to call
     

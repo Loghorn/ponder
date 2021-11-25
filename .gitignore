@@ -28,3 +28,4 @@ bd_*/
 doc/egs
 doc/api/pages/_*
 *.doxy
+/.vs

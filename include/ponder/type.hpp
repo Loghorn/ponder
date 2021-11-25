@@ -50,7 +50,7 @@ namespace ponder {
 class Value;
 
 // Note: This may have issues with DLLs?
-typedef std::type_index TypeId; // Used to uniquely identify a type.
+using TypeId = std::type_index; // Used to uniquely identify a type.
 
 /**
  * \brief Special empty type associated to \c noType
@@ -234,9 +234,9 @@ private:
         T operator*() { return m_value; }
     };
 public:
-    typedef T value_type;
-    typedef std::ptrdiff_t difference_type;
-    typedef std::input_iterator_tag iterator_category;
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category = std::input_iterator_tag;
 
     explicit ViewIterator(IT value) : m_iter(value) {}
     value_type operator*() const { return *m_iter->second; }
@@ -259,7 +259,7 @@ template <typename T, typename IT>
 class View
 {
 public:
-    typedef ViewIterator<T, IT> Iterator;
+    using Iterator = ViewIterator<T, IT>;
 
     View(IT b, IT e) : m_begin(b), m_end(e) {}
 

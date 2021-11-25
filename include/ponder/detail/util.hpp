@@ -44,13 +44,13 @@ namespace detail {
 template<bool C, typename T, typename F>
 struct if_c
 {
-    typedef T type;
+    using type = T;
 };
 
 template<typename T, typename F>
 struct if_c<false,T,F>
 {
-    typedef F type;
+    using type = F;
 };
 
 //------------------------------------------------------------------------------
@@ -169,15 +169,15 @@ template<> struct make_index_sequence<1> : index_sequence<0> { };
 // source: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3656.htm
     
 template<class T> struct _Unique_if {
-    typedef std::unique_ptr<T> _Single_object;
+    using _Single_object = std::unique_ptr<T>;
 };
 
 template<class T> struct _Unique_if<T[]> {
-    typedef std::unique_ptr<T[]> _Unknown_bound;
+    using _Unknown_bound = std::unique_ptr<T[]>;
 };
 
 template<class T, size_t N> struct _Unique_if<T[N]> {
-    typedef void _Known_bound;
+    using _Known_bound = void;
 };
 
 template<class T, class... Args>
@@ -189,7 +189,7 @@ make_unique(Args&&... args) {
 template<class T>
 typename _Unique_if<T>::_Unknown_bound
 make_unique(size_t n) {
-    typedef typename std::remove_extent<T>::type U;
+    using U = typename std::remove_extent<T>::type;
     return std::unique_ptr<T>(new U[n]());
 }
 

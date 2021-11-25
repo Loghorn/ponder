@@ -105,7 +105,7 @@ namespace TraitsTest
     };
 
     class Dummy {};
-    
+
     void declare()
     {
         ponder::Class::declare<Class>();
@@ -153,7 +153,7 @@ TEST_CASE("C++11 features and syntax")
         STATIC_ASSERT(std::is_void< typename std::invoke_result_t<decltype(func)> >::value);
         STATIC_ASSERT(std::is_void< typename std::invoke_result_t<decltype(&func)> >::value);
 
-        typedef void (foo_t)();
+        using foo_t = void();
         STATIC_ASSERT(std::is_void< typename std::invoke_result_t<foo_t> >::value);
         STATIC_ASSERT(!std::is_pointer<foo_t>::value);
     }
@@ -171,7 +171,7 @@ TEST_CASE("C++11 features and syntax")
     {
         static_assert(std::is_const<const int>::value, "std::is_array failed");
         static_assert(std::is_const<std::remove_reference<const int&>::type>::value, "std::is_array failed");
-        
+
         static_assert(std::is_enum<Enum>::value, "");
     }
 }
@@ -287,7 +287,7 @@ TEST_CASE("Ponder supports different function types")
         auto l1 = [] () {};
         auto l2 = [=] (int&) { return "hello"; };
         auto l3 = [] (float a, float b) -> float { return a*b; };
-        
+
         std::function<void()> f1(l1);
 
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, decltype(l1)>::kind == PropertyKind::Function));
@@ -296,9 +296,9 @@ TEST_CASE("Ponder supports different function types")
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, decltype(l2)>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<decltype(l2)>::kind == FunctionKind::Lambda);
 
-        typedef decltype(l3) L3Type;
+        using L3Type = decltype(l3);
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, L3Type>::kind == PropertyKind::Function));
-        typedef FunctionTraits<L3Type> L3Traits;
+        using L3Traits = FunctionTraits<L3Type>;
         STATIC_ASSERT(L3Traits::kind == FunctionKind::Lambda);
     }
 }
@@ -311,7 +311,7 @@ TEST_CASE("Functions have access types")
         using ponder::PropertyKind;
         using ponder::FunctionKind;
 
-        typedef decltype(&FuncReturn::i) fn;
+        using fn = decltype(&FuncReturn::i);
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, fn>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<fn>::kind == FunctionKind::MemberFunction);
 
@@ -426,12 +426,12 @@ TEST_CASE("Referenced objects have traits")
     {
         using ponder::detail::TypeTraits;
         using ponder::ReferenceKind;
-        
+
         // is writable
         STATIC_ASSERT(TypeTraits<int>::isWritable);
         STATIC_ASSERT(TypeTraits<int*>::isWritable);
         STATIC_ASSERT(TypeTraits<char**>::isWritable);
-        
+
         // is not writable
         STATIC_ASSERT( ! TypeTraits<const int>::isWritable);
         STATIC_ASSERT( ! TypeTraits<const int*>::isWritable);
@@ -442,21 +442,21 @@ TEST_CASE("Referenced objects have traits")
         //        static_assert( ! TypeTraits<decltype(intArray)>::isWritable,
         //                      "TypeTraits<>::isWriteable failed");
     }
-    
+
     SECTION("types can be references")
     {
         using ponder::detail::TypeTraits;
         using ponder::ReferenceKind;
-        
+
         // is ref
         STATIC_ASSERT(TypeTraits<int*>::isRef);
         STATIC_ASSERT(TypeTraits<char**>::isRef);
-        
+
         STATIC_ASSERT(ponder::detail::TypeTraits<int&>::isRef);
         STATIC_ASSERT(ponder::detail::TypeTraits<int&>::kind == ReferenceKind::Reference);
         //        static_assert(ponder::detail::TypeTraits<int*&>::isRef,
         //                      "TypeTraits<>::isRef failed");
-        
+
         // is not ref
         STATIC_ASSERT( ! TypeTraits<int>::isRef);
         STATIC_ASSERT( ! TypeTraits<float>::isRef);
@@ -467,67 +467,67 @@ TEST_CASE("Referenced objects have traits")
         STATIC_ASSERT(ponder::detail::TypeTraits<Callable>::kind != ReferenceKind::Reference);
         STATIC_ASSERT( ! ponder::detail::TypeTraits<NonCallable>::isRef);
     }
-    
+
     SECTION("types can be const")
     {
         using ponder::detail::TypeTraits;
         using ponder::ReferenceKind;
-        
+
         STATIC_ASSERT(!TypeTraits<const int*>::isWritable);
         STATIC_ASSERT(TypeTraits<int*>::isWritable);
-        
+
         STATIC_ASSERT(!TypeTraits<const int&>::isWritable);
         STATIC_ASSERT(TypeTraits<int&>::isWritable);
-        
+
         //        STATIC_ASSERT(!TypeTraits<const int[3]>::isWritable, "TypeTraits<>::isWritable failed");
         //        STATIC_ASSERT(TypeTraits<int[5]>::isWritable, "TypeTraits<>::isWritable failed");
-        
+
         //STATIC_ASSERT(!TypeTraits<const std::vector<float>::isWritable, "TypeTraits<>::isWritable failed");
         //STATIC_ASSERT(TypeTraits<std::vector<float>>::isWritable, "TypeTraits<>::isWritable failed");
     }
-    
+
     SECTION("types can be converted to reference types")
     {
         using ponder::detail::TypeTraits;
-        
+
         STATIC_ASSERT((std::is_same<int&, TypeTraits<int>::ReferenceType>::value));
         STATIC_ASSERT((std::is_same<const float&, TypeTraits<const float>::ReferenceType>::value));
-        
+
         // ref return
         STATIC_ASSERT((std::is_same<int*, TypeTraits<int*>::ReferenceType>::value));
         STATIC_ASSERT((std::is_same<const int*, TypeTraits<const int*>::ReferenceType>::value));
     }
-    
+
     SECTION("types can be pointers")
     {
         using ponder::detail::TypeTraits;
-        
+
         // pointer type
         STATIC_ASSERT((std::is_same<int*, TypeTraits<int*>::PointerType>::value));
         STATIC_ASSERT((std::is_same<const int*, TypeTraits<const int*>::PointerType>::value));
     }
-    
+
     SECTION("is a smart pointer")
     {
         using ponder::detail::IsSmartPointer;
-        
+
         STATIC_ASSERT((IsSmartPointer<int, int>::value == false));
-        
+
         STATIC_ASSERT((IsSmartPointer<int*, int>::value == false));
-        
+
         STATIC_ASSERT((IsSmartPointer<const int*, int>::value == false));
-        
+
         STATIC_ASSERT((IsSmartPointer<TraitsTest::TemplateClass<int>, int>::value == false));
-        
+
         STATIC_ASSERT((IsSmartPointer<std::unique_ptr<int>, int>::value == true));
-        
+
         STATIC_ASSERT((IsSmartPointer<std::shared_ptr<int>, int>::value == true));
     }
-    
+
     SECTION("types have a raw data type")
     {
         using ponder::detail::TypeTraits;
-        
+
         STATIC_ASSERT((std::is_same<int, TypeTraits<int>::DataType>::value));
         STATIC_ASSERT((std::is_same<int, TypeTraits<int*>::DataType>::value));
         STATIC_ASSERT((std::is_same<int, TypeTraits<const int>::DataType>::value));
@@ -547,37 +547,37 @@ TEST_CASE("Referenced objects have traits")
 //    {
 //        using ponder::detail::AccessTraits;
 //        using ponder::PropertyAccessKind;
-//        
+//
 //        STATIC_ASSERT(AccessTraits<bool>::kind == PropertyAccessKind::Simple);
 //        STATIC_ASSERT(AccessTraits<int>::kind == PropertyAccessKind::Simple);
 //        STATIC_ASSERT(AccessTraits<float>::kind == PropertyAccessKind::Simple);
 //        STATIC_ASSERT(AccessTraits<std::string>::kind == PropertyAccessKind::Simple);
 //    }
-//    
+//
 //    SECTION("Enum")
 //    {
 //        using ponder::detail::AccessTraits;
 //        using ponder::PropertyAccessKind;
-//        
+//
 //        STATIC_ASSERT(AccessTraits<Enum>::kind == PropertyAccessKind::Enum);
 //        STATIC_ASSERT(AccessTraits<EnumCls>::kind == PropertyAccessKind::Enum);
 //    }
-//    
+//
 //    SECTION("Array")
 //    {
 //        using ponder::detail::AccessTraits;
 //        using ponder::PropertyAccessKind;
-//        
+//
 //        STATIC_ASSERT(AccessTraits<int[10]>::kind == PropertyAccessKind::Container);
 //    }
-//    
+//
 //    SECTION("User")
 //    {
 //        using ponder::detail::AccessTraits;
 //        using ponder::PropertyAccessKind;
-//        
+//
 //        STATIC_ASSERT(ponder::detail::hasStaticTypeDecl<Class>());
-//        
+//
 //        static_assert(AccessTraits<Class>::kind == PropertyAccessKind::User);
 //        //static_assert(AccessTraits<Class&>::kind == PropertyAccessKind::User, "");
 //    }
@@ -872,7 +872,7 @@ TEST_CASE("Check functionality same as Boost")
 {
     SECTION("check traits same as Boost")
     {
-        typedef void (*fn1_t)(void);
+        using fn1_t = void(*)(void);
 
         static_assert(std::is_same<void(),
                       boost::function_types::function_type<fn1_t>::type>::value,
@@ -881,7 +881,7 @@ TEST_CASE("Check functionality same as Boost")
         static_assert(std::is_same<void(), ponder::detail::FunctionTraits<fn1_t>::type>::value,
                       "ponder::detail::FunctionTraits problem");
 
-        typedef int (*fn2_t)(int,const char*,float&);
+        using fn2_t = int(*)(int,const char*,float&);
 
         static_assert(std::is_same<int(int,const char*,float&),
                       boost::function_types::function_type<fn2_t>::type>::value,
@@ -894,7 +894,7 @@ TEST_CASE("Check functionality same as Boost")
             int foo(float) {return 0;}
         };
 
-        typedef int (TestClass::*fn3_t)(float);
+        using fn3_t = int(TestClass::*)(float);
 
         static_assert(std::is_same<int(TestClass&,float),
                       boost::function_types::function_type<fn3_t>::type>::value,
@@ -911,12 +911,12 @@ TEST_CASE("Check functionality same as Boost")
 
     SECTION("boost_function")
     {
-        typedef void (*fn1_t)(void);
+        using fn1_t = void(*)(void);
         static_assert(
             std::is_same<void(), boost::function_types::function_type<fn1_t>::type>::value,
             "boost::function_types problem");
 
-        typedef int (*fn2_t)(int,const char*,float&);
+        using fn2_t = int(*)(int,const char*,float&);
         static_assert(std::is_same<int(int,const char*,float&),
              boost::function_types::function_type<fn2_t>::type>::value,
              "boost::function_types problem");
@@ -925,7 +925,7 @@ TEST_CASE("Check functionality same as Boost")
             int foo(float) {return 0;}
         };
 
-        typedef int (TestClass::*fn3_t)(float);
+        using fn3_t = int(TestClass::*)(float);
         static_assert(std::is_same<int(TestClass&,float),
              boost::function_types::function_type<fn3_t>::type>::value,
              "boost::function_types problem");

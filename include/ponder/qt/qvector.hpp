@@ -44,7 +44,7 @@ namespace ponder_ext
  template <typename T>
  struct ArrayMapper<QVector<T> >
  {
-    typedef T ElementType;
+    using ElementType = T;
 
     static bool dynamic()
     {

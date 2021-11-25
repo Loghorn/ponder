@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,13 +36,13 @@
 #include <vector>
 
 namespace ponder_ext {
-    
+
 /**
  * \class ArrayMapper
  *
  * \brief Template providing a mapping between C++ arrays and Ponder ArrayProperty
  *
- * ArrayMapper<T> must define the following members in order to make T fully compliant 
+ * ArrayMapper<T> must define the following members in order to make T fully compliant
  * with the system:
  *
  *  - `ElementType`: type of the elements stored in the array
@@ -85,7 +85,7 @@ template <typename T, size_t N>
 struct ArrayMapper<T[N]>
 {
     static constexpr bool isArray = true;
-    typedef T ElementType;
+    using ElementType = T;
 
     static bool dynamic()
     {
@@ -123,7 +123,7 @@ template <typename T, size_t N>
 struct ArrayMapper<std::array<T,N>>
 {
     static constexpr bool isArray = true;
-    typedef T ElementType;
+    using ElementType = T;
 
     static bool dynamic()
     {
@@ -161,7 +161,7 @@ struct ArrayMapper<std::array<T,N>>
 //struct ArrayMapper<boost::array<T, N> >
 //{
 //    static constexpr bool isArray = true;
-//    typedef T ElementType;
+//    using ElementType = T;
 //
 //    static bool dynamic()
 //    {
@@ -200,33 +200,33 @@ template <typename T>
 struct ArrayMapper<std::vector<T> >
 {
     static constexpr bool isArray = true;
-    typedef T ElementType;
-    
+    using ElementType = T;
+
     static bool dynamic()
     {
         return true;
     }
-    
+
     static size_t size(const std::vector<T>& arr)
     {
         return arr.size();
     }
-    
+
     static const T& get(const std::vector<T>& arr, size_t index)
     {
         return arr[index];
     }
-    
+
     static void set(std::vector<T>& arr, size_t index, const T& value)
     {
         arr[index] = value;
     }
-    
+
     static void insert(std::vector<T>& arr, size_t before, const T& value)
     {
         arr.insert(arr.begin() + before, value);
     }
-    
+
     static void remove(std::vector<T>& arr, size_t index)
     {
         arr.erase(arr.begin() + index);
@@ -242,33 +242,33 @@ template <>
 struct ArrayMapper<std::vector<bool>>
 {
     static constexpr bool isArray = true;
-    typedef bool ElementType;
-    
+    using ElementType = bool;
+
     static bool dynamic()
     {
         return true;
     }
-    
+
     static size_t size(const std::vector<bool>& arr)
     {
         return arr.size();
     }
-    
+
     static bool get(const std::vector<bool>& arr, size_t index)
     {
         return arr[index];
     }
-    
+
     static void set(std::vector<bool>& arr, size_t index, const bool& value)
     {
         arr[index] = value;
     }
-    
+
     static void insert(std::vector<bool>& arr, size_t before, const bool& value)
     {
         arr.insert(arr.begin() + before, value);
     }
-    
+
     static void remove(std::vector<bool>& arr, size_t index)
     {
         arr.erase(arr.begin() + index);
@@ -282,39 +282,39 @@ template <typename T>
 struct ArrayMapper<std::list<T>>
 {
     static constexpr bool isArray = true;
-    typedef T ElementType;
-    
+    using ElementType = T;
+
     static bool dynamic()
     {
         return true;
     }
-    
+
     static size_t size(const std::list<T>& arr)
     {
         return arr.size();
     }
-    
+
     static const T& get(const std::list<T>& arr, size_t index)
     {
         typename std::list<T>::const_iterator it = arr.begin();
         std::advance(it, index);
         return *it;
     }
-    
+
     static void set(std::list<T>& arr, size_t index, const T& value)
     {
         typename std::list<T>::iterator it = arr.begin();
         std::advance(it, index);
         *it = value;
     }
-    
+
     static void insert(std::list<T>& arr, size_t before, const T& value)
     {
         typename std::list<T>::iterator it = arr.begin();
         std::advance(it, before);
         arr.insert(it, value);
     }
-    
+
     static void remove(std::list<T>& arr, size_t index)
     {
         typename std::list<T>::iterator it = arr.begin();

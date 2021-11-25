@@ -73,13 +73,13 @@ private:
         }
     };
 
-    typedef std::vector<pair_t> container_t;
+    using container_t = std::vector<pair_t>;
     container_t m_contents;
 
 public:
 
-    typedef pair_t value_type;
-    typedef typename container_t::const_iterator const_iterator;
+    using value_type = pair_t;
+    using const_iterator = typename container_t::const_iterator;
 
     const_iterator begin() const    { return m_contents.cbegin(); }
     const_iterator end() const      { return m_contents.cend(); }

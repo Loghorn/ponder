@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -49,41 +49,41 @@ struct FunctionDetails {};
 template <typename R, typename... A>
 struct FunctionDetails<R(*)(A...)>
 {
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(*FuncType)(A...);
-    typedef ReturnType(DispatchType)(A...);
-    typedef std::tuple<A...> FunctionCallTypes;
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(A...);
+    using DispatchType = ReturnType(A...);
+    using FunctionCallTypes = std::tuple<A...>;
 };
 
 template <typename R, typename... A>
 struct FunctionDetails<R(A...)>
 {
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(*FuncType)(A...);
-    typedef ReturnType(DispatchType)(A...);
-    typedef std::tuple<A...> FunctionCallTypes;
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(A...);
+    using DispatchType = ReturnType(A...);
+    using FunctionCallTypes = std::tuple<A...>;
 };
 
 template <typename R, typename... A>
 struct FunctionDetails<R(*)(A...) noexcept>
 {
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(*FuncType)(A...);
-    typedef ReturnType(DispatchType)(A...);
-    typedef std::tuple<A...> FunctionCallTypes;
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(A...);
+    using DispatchType = ReturnType(A...);
+    using FunctionCallTypes = std::tuple<A...>;
 };
 
 template <typename R, typename... A>
 struct FunctionDetails<R(A...) noexcept>
 {
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(*FuncType)(A...);
-    typedef ReturnType(DispatchType)(A...);
-    typedef std::tuple<A...> FunctionCallTypes;
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(A...);
+    using DispatchType = ReturnType(A...);
+    using FunctionCallTypes = std::tuple<A...>;
 };
 
 
@@ -95,12 +95,12 @@ struct MethodDetails {};
 template <typename C, typename R, typename... A>
 struct MethodDetails<R(C::*)(A...)>
 {
-    typedef C ClassType;
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(ClassType::*FuncType)(A...);
-    typedef ReturnType(DispatchType)(ClassType&, A...);
-    typedef std::tuple<ClassType&, A...> FunctionCallTypes;
+    using ClassType = C;
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using FuncType = ReturnType(ClassType::*)(A...);
+    using DispatchType = ReturnType(ClassType&, A...);
+    using FunctionCallTypes = std::tuple<ClassType&, A...>;
     static constexpr bool isConst = false;
 };
 
@@ -108,12 +108,12 @@ struct MethodDetails<R(C::*)(A...)>
 template <typename C, typename R, typename... A>
 struct MethodDetails<R(C::*)(A...) const>
 {
-    typedef const C ClassType;
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(DispatchType)(const ClassType&, A...);
-    typedef ReturnType(ClassType::*FuncType)(A...) const;
-    typedef std::tuple<const ClassType&, A...> FunctionCallTypes;
+    using ClassType = const C;
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using DispatchType = ReturnType(const ClassType&, A...);
+    using FuncType = ReturnType(ClassType::*)(A...) const;
+    using FunctionCallTypes = std::tuple<const ClassType&, A...>;
     static constexpr bool isConst = true;
 };
 
@@ -121,12 +121,12 @@ struct MethodDetails<R(C::*)(A...) const>
 template <typename C, typename R, typename... A>
 struct MethodDetails<R(C::*)(A...) noexcept>
 {
-    typedef C ClassType;
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(ClassType::*FuncType)(A...);
-    typedef ReturnType(DispatchType)(ClassType&, A...);
-    typedef std::tuple<ClassType&, A...> FunctionCallTypes;
+    using ClassType = C;
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using FuncType = ReturnType(ClassType::*)(A...);
+    using DispatchType = ReturnType(ClassType&, A...);
+    using FunctionCallTypes = std::tuple<ClassType&, A...>;
     static constexpr bool isConst = false;
 };
 
@@ -134,19 +134,19 @@ struct MethodDetails<R(C::*)(A...) noexcept>
 template <typename C, typename R, typename... A>
 struct MethodDetails<R(C::*)(A...) const noexcept>
 {
-    typedef const C ClassType;
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(DispatchType)(const ClassType&, A...);
-    typedef ReturnType(ClassType::*FuncType)(A...) const;
-    typedef std::tuple<const ClassType&, A...> FunctionCallTypes;
+    using ClassType = const C;
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using DispatchType = ReturnType(const ClassType&, A...);
+    using FuncType = ReturnType(ClassType::*)(A...) const;
+    using FunctionCallTypes = std::tuple<const ClassType&, A...>;
     static constexpr bool isConst = true;
 };
 
 
 template<typename T, typename = void>
 struct IsCallable : std::false_type {};
-    
+
 template<typename T>
 struct IsCallable<T,
     typename std::enable_if< std::is_same<decltype(void(&T::operator())), void>::value
@@ -163,38 +163,38 @@ struct IsFunctionWrapper<std::function<T>> : std::true_type {};
 template <typename T>
 struct CallableDetails : public CallableDetails<decltype(&T::operator())>
 {
-    typedef T FuncType;
+    using FuncType = T;
 };
 
 template <typename L, typename R, typename... A>
 struct CallableDetails<R(L::*)(A...) const>
 {
-    typedef L LambdaClassType;    // N.B. Lambda class
-    typedef std::tuple<A...> ParamTypes;
-    typedef R ReturnType;
-    typedef ReturnType(DispatchType)(A...);
-    typedef std::tuple<A...> FunctionCallTypes;
+    using LambdaClassType = L;    // N.B. Lambda class
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using DispatchType = ReturnType(A...);
+    using FunctionCallTypes = std::tuple<A...>;
 };
-    
+
 /*
  * For functions, if they return an rvalue, we cannot return by reference.
  */
 template <typename T, bool isWritable = true>
 struct ReturnType
 {
-    typedef T& Type; // Not a rvalue so we can reference
+    using Type = T&; // Not a rvalue so we can reference
 };
 
 template <>
 struct ReturnType<void>
 {
-    typedef void Type;
+    using Type = void;
 };
 
 template <typename T>
 struct ReturnType<T, false>
 {
-    typedef T Type; // T is an rvalue so return by value
+    using Type = T; // T is an rvalue so return by value
 };
 
 } // namespace function
@@ -222,26 +222,26 @@ template <typename T>
 struct FunctionTraits<T,
     typename std::enable_if<std::is_function<typename std::remove_pointer<T>::type>::value>::type>
 {
-    static constexpr FunctionKind kind = FunctionKind::Function;    
-    typedef typename function::FunctionDetails<typename std::remove_pointer<T>::type> Details;
-    typedef typename Details::FuncType          BoundType;
-    typedef typename Details::ReturnType        ExposedType;
-    typedef TypeTraits<ExposedType>             ExposedTraits;
+    static constexpr FunctionKind kind = FunctionKind::Function;
+    using Details = typename function::FunctionDetails<typename std::remove_pointer<T>::type>;
+    using BoundType = typename Details::FuncType;
+    using ExposedType = typename Details::ReturnType;
+    using ExposedTraits = TypeTraits<ExposedType>;
     static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value
                                        && !std::is_const<typename ExposedTraits::DereferencedType>::value;
-    typedef typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type AccessType;
-    typedef typename ExposedTraits::DataType       DataType;
-    typedef typename Details::DispatchType      DispatchType;
+    using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
+    using DataType = typename ExposedTraits::DataType;
+    using DispatchType = typename Details::DispatchType;
 
     template <typename C, typename A>
     class Binding
     {
     public:
-        typedef C ClassType;
-        typedef A AccessType;
-        
+        using ClassType = C;
+        using AccessType = A;
+
         Binding(BoundType d) : data(d) {}
-        
+
         AccessType access(ClassType& c) const {return (*data)(c);}
     private:
         BoundType data;
@@ -255,24 +255,24 @@ template <typename T>
 struct FunctionTraits<T, typename std::enable_if<std::is_member_function_pointer<T>::value>::type>
 {
     static constexpr FunctionKind kind = FunctionKind::MemberFunction;
-    typedef typename function::MethodDetails<T> Details;
-    typedef typename Details::FuncType          BoundType;
-    typedef typename Details::ReturnType        ExposedType;
-    typedef TypeTraits<ExposedType>             ExposedTraits;
+    using Details = typename function::MethodDetails<T>;
+    using BoundType = typename Details::FuncType;
+    using ExposedType = typename Details::ReturnType;
+    using ExposedTraits = TypeTraits<ExposedType>;
     static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value && !Details::isConst;
-    typedef typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type AccessType;
-    typedef typename ExposedTraits::DataType       DataType;
-    typedef typename Details::DispatchType      DispatchType;
+    using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
+    using DataType = typename ExposedTraits::DataType;
+    using DispatchType = typename Details::DispatchType;
 
     template <typename C, typename A>
     class Binding
     {
     public:
-        typedef C ClassType;
-        typedef A AccessType;
+        using ClassType = C;
+        using AccessType = A;
 
         Binding(BoundType d) : data(d) {}
-        
+
         AccessType access(ClassType& c) const {return (c.*data)();}
     private:
         BoundType data;
@@ -286,25 +286,25 @@ template <typename T>
 struct FunctionTraits<T, typename std::enable_if<std::is_bind_expression<T>::value>::type>
 {
     static constexpr FunctionKind kind = FunctionKind::BindExpression;
-    typedef function::CallableDetails<T>        Details;
-    typedef typename Details::FuncType          BoundType;
-    typedef typename Details::ReturnType        ExposedType;
-    typedef TypeTraits<ExposedType>             ExposedTraits;
+    using Details = function::CallableDetails<T>;
+    using BoundType = typename Details::FuncType;
+    using ExposedType = typename Details::ReturnType;
+    using ExposedTraits = TypeTraits<ExposedType>;
     static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value
                                        && !std::is_const<typename ExposedTraits::DereferencedType>::value;
-    typedef typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type AccessType;
-    typedef typename ExposedTraits::DataType       DataType;
-    typedef typename Details::DispatchType      DispatchType;
-    
+    using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
+    using DataType = typename ExposedTraits::DataType;
+    using DispatchType = typename Details::DispatchType;
+
     template <typename C, typename A>
     class Binding
     {
     public:
-        typedef C ClassType;
-        typedef A AccessType;
+        using ClassType = C;
+        using AccessType = A;
 
         Binding(BoundType d) : data(d) {}
-        
+
         AccessType access(ClassType& c) const {return data(c);}
     private:
         BoundType data;
@@ -320,25 +320,25 @@ struct FunctionTraits<T,
                             && function::IsFunctionWrapper<T>::value>::type>
 {
     static constexpr FunctionKind kind = FunctionKind::FunctionWrapper;
-    typedef function::CallableDetails<T>        Details;
-    typedef typename Details::FuncType          BoundType;
-    typedef typename Details::ReturnType        ExposedType;
-    typedef TypeTraits<ExposedType>             ExposedTraits;
+    using Details = function::CallableDetails<T>;
+    using BoundType = typename Details::FuncType;
+    using ExposedType = typename Details::ReturnType;
+    using ExposedTraits = TypeTraits<ExposedType>;
     static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value
                                        && !std::is_const<typename ExposedTraits::DereferencedType>::value;
-    typedef typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type AccessType;
-    typedef typename ExposedTraits::DataType       DataType;
-    typedef typename Details::DispatchType      DispatchType;
+    using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
+    using DataType = typename ExposedTraits::DataType;
+    using DispatchType = typename Details::DispatchType;
 
     template <typename C, typename A>
     class Binding
     {
     public:
-        typedef C ClassType;
-        typedef A AccessType;
+        using ClassType = C;
+        using AccessType = A;
 
         Binding(BoundType d) : data(d) {}
-        
+
         AccessType access(ClassType& c) const {return data(c);}
     private:
         BoundType data;
@@ -353,26 +353,26 @@ struct FunctionTraits<T,
     typename std::enable_if<function::IsCallable<T>::value
                             && !function::IsFunctionWrapper<T>::value>::type>
 {
-    static constexpr FunctionKind kind = FunctionKind::Lambda;    
-    typedef function::CallableDetails<T>        Details;
-    typedef T                                   BoundType;
-    typedef typename Details::ReturnType        ExposedType;
-    typedef TypeTraits<ExposedType>             ExposedTraits;
+    static constexpr FunctionKind kind = FunctionKind::Lambda;
+    using Details = function::CallableDetails<T>;
+    using BoundType = T;
+    using ExposedType = typename Details::ReturnType;
+    using ExposedTraits = TypeTraits<ExposedType>;
     static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value
                                        && !std::is_const<typename ExposedTraits::DereferencedType>::value;
-    typedef typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type AccessType;
-    typedef typename ExposedTraits::DataType       DataType;
-    typedef typename Details::DispatchType      DispatchType;
+    using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
+    using DataType = typename ExposedTraits::DataType;
+    using DispatchType = typename Details::DispatchType;
 
     template <typename C, typename A>
     class Binding
     {
     public:
-        typedef C ClassType;
-        typedef A AccessType;
+        using ClassType = C;
+        using AccessType = A;
 
         Binding(BoundType d) : data(d) {}
-        
+
         AccessType access(ClassType& c) const {return data(c);}
     private:
         BoundType data;
@@ -388,22 +388,22 @@ struct MemberTraits;
 template <typename C, typename T>
 struct MemberTraits<T(C::*)>
 {
-    typedef T(C::*BoundType);                                   // full type inc ref
-    typedef T                                   ExposedType;    // the type exposed inc refs
-    typedef TypeTraits<ExposedType>             ExposedTraits;
-    typedef typename ExposedTraits::DataType       DataType;       // raw type or container
+    using BoundType = T(C::*);                               // full type inc ref
+    using ExposedType = T;                                   // the type exposed inc refs
+    using ExposedTraits = TypeTraits<ExposedType>;
+    using DataType = typename ExposedTraits::DataType;       // raw type or container
     static constexpr bool isWritable = !std::is_const<typename ExposedTraits::DereferencedType>::value;
-    typedef typename ExposedTraits::DereferencedType AccessType;
+    using AccessType = typename ExposedTraits::DereferencedType;
 
     template <typename BC, typename A>
     class Binding
     {
     public:
-        typedef BC ClassType;
-        typedef A AccessType;
+        using ClassType = BC;
+        using AccessType = A;
 
         Binding(const BoundType& d) : data(d) {}
-        
+
         AccessType access(ClassType& c) const { return c.*data; }
     private:
         BoundType data;

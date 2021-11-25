@@ -40,7 +40,7 @@
 template <typename T>
 struct Data
 {
-    typedef T Type;
+    using Type = T;
     Data(Type v) : m_value(v) {}
     Type m_value;
 };

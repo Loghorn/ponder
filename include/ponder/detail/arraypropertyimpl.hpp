@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,7 +37,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 /**
  * \brief Typed implementation of ArrayProperty
  *
@@ -98,9 +98,9 @@ protected:
 
 private:
 
-    typedef typename A::ExposedType ArrayType;
-    typedef typename A::InterfaceType Mapper;
-    typedef typename Mapper::ElementType ElementType;
+    using ArrayType = typename A::ExposedType;
+    using Mapper = typename A::InterfaceType;
+    using ElementType = typename Mapper::ElementType;
 
     /*
      * \brief Retrieve a reference to the array

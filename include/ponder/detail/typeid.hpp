@@ -52,7 +52,7 @@ template <typename T>
 struct StaticTypeDecl
 {
     static constexpr bool defined = false, copyable = true;
-    typedef T type;
+    using type = T;
 
     static TypeId id(bool = true)
     {
@@ -110,7 +110,7 @@ struct DynamicTypeDecl
 {
     static TypeId id(const T& object)
     {
-        typedef TypeTraits<const T&> PropTraits;
+        using PropTraits = TypeTraits<const T&>;
         typename PropTraits::PointerType pointer = PropTraits::getPointer(object);
         static_assert(PropTraits::kind != ReferenceKind::None, "");
         static_assert(std::is_pointer<decltype(pointer)>::value, "Not pointer");

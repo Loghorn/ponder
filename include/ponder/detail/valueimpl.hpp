@@ -43,7 +43,7 @@ namespace detail {
 template <typename T>
 struct ConvertVisitor
 {
-    typedef T result_type;
+    using result_type = T;
     
     template <typename U>
     T operator()(const U& value) const
@@ -74,7 +74,7 @@ struct ConvertVisitor
  */
 struct LessThanVisitor
 {
-    typedef bool result_type;
+    using result_type = bool;
     
     template <typename T, typename U>
     bool operator()(const T&, const U&) const
@@ -102,7 +102,7 @@ struct LessThanVisitor
  */
 struct EqualVisitor
 {
-    typedef bool result_type;
+    using result_type = bool;
 
     template <typename T, typename U>
     bool operator()(const T&, const U&) const

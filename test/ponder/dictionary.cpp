@@ -42,7 +42,7 @@ using namespace ponder;
 
 TEST_CASE("Ponder has a dictionary")
 {
-    typedef ponder::detail::Dictionary<Id, IdRef, int> Dict;
+    using Dict = ponder::detail::Dictionary<Id, IdRef, int>;
     std::unique_ptr<Dict> dict(new Dict());
     
     REQUIRE((dict != nullptr));
@@ -154,8 +154,8 @@ TEST_CASE("Dictionary can have customised sorter")
             return a > b;
         }
     };
-    
-    typedef ponder::detail::Dictionary<Id, IdRef, int, ReverseKeyCmp> Dict;
+
+    using Dict = ponder::detail::Dictionary<Id, IdRef, int, ReverseKeyCmp>;
     std::unique_ptr<Dict> dict(new Dict());
     
     REQUIRE((dict != nullptr));

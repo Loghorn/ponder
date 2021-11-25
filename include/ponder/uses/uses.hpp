@@ -105,18 +105,18 @@ struct Uses
     };
     
      /// Metadata uses we are using.
-    typedef std::tuple<RuntimeUse
-                       PONDER_IF_LUA(,LuaUse)
-                      > Users;
+    using Users = std::tuple<RuntimeUse
+        PONDER_IF_LUA(,LuaUse)
+    >;
 
     /// Type that stores the per-function uses data
-    typedef std::tuple<
-            runtime::detail::FunctionCaller*
-            PONDER_IF_LUA(,lua::detail::FunctionCaller*)
-        > PerFunctionUserData;
+    using PerFunctionUserData = std::tuple<
+        runtime::detail::FunctionCaller*
+        PONDER_IF_LUA(,lua::detail::FunctionCaller*)
+    >;
     
     // Access note:
-    //  typedef typename std::tuple_element<I, PerFunctionUserData>::type PerFunc_t;
+    //  using PerFunc_t typename std::tuple_element<I, PerFunctionUserData>::type;
     //  PerFunc_t* std::get<I>(getUsesData());
 };
     

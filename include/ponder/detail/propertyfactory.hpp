@@ -46,10 +46,10 @@ template <class C, typename PropTraits>
 class ValueBinder
 {
 public:
-    typedef C ClassType;
-    typedef typename std::conditional<PropTraits::isWritable,
-                typename PropTraits::AccessType&, typename PropTraits::AccessType>::type AccessType;
-    typedef typename std::remove_reference<AccessType>::type SetType;
+    using ClassType = C;
+    using AccessType = typename std::conditional<PropTraits::isWritable,
+                                                 typename PropTraits::AccessType&, typename PropTraits::AccessType>::type;
+    using SetType = typename std::remove_reference<AccessType>::type;
 
     using Binding = typename PropTraits::template Binding<ClassType, AccessType>;
 
@@ -84,7 +84,7 @@ protected:
 template <class C, typename PropTraits>
 class ValueBinder2 : public ValueBinder<C, PropTraits>
 {
-    typedef ValueBinder<C, PropTraits> Base;
+    using Base = ValueBinder<C, PropTraits>;
 public:
     template <typename S>
     ValueBinder2(const typename Base::Binding& g, S s) : Base(g), m_set(s) {}
@@ -106,9 +106,9 @@ protected:
 template <class C, typename PropTraits>
 class InternalRefBinder
 {
-public:        
-    typedef C ClassType;
-    typedef typename PropTraits::ExposedType AccessType;
+public:
+    using ClassType = C;
+    using AccessType = typename PropTraits::ExposedType;
 
     using Binding = typename PropTraits::template Binding<ClassType, AccessType>;
 
@@ -136,7 +136,7 @@ protected:
 template <class C, typename PropTraits>
 class InternalRefBinder2 : public InternalRefBinder<C, PropTraits>
 {
-    typedef InternalRefBinder<C, PropTraits> Base;
+    using Base = InternalRefBinder<C, PropTraits>;
 public:
     template <typename S>
     InternalRefBinder2(const typename Base::Binding& g, S s) : Base(g), m_set(s) {}
@@ -202,15 +202,15 @@ struct AccessTraits<PT,
 {
     static constexpr PropertyAccessKind kind = PropertyAccessKind::Container;
 
-    typedef ponder_ext::ArrayMapper<typename PT::ExposedTraits::DereferencedType> ArrayTraits;
+    using ArrayTraits = ponder_ext::ArrayMapper<typename PT::ExposedTraits::DereferencedType>;
 
     template <class C>
     class ValueBinder : public ArrayTraits
     {
     public:
-        typedef typename PT::ExposedTraits::DereferencedType ArrayType;
-        typedef C ClassType;
-        typedef typename PT::AccessType& AccessType;
+        using ArrayType = typename PT::ExposedTraits::DereferencedType;
+        using ClassType = C;
+        using AccessType = typename PT::AccessType&;
 
         using Binding = typename PT::template Binding<ClassType, AccessType>;
 
@@ -266,17 +266,17 @@ template <class C, typename TRAITS>
 class GetSet1
 {
 public:
-    typedef TRAITS PropTraits;
-    typedef C ClassType;
-    typedef typename PropTraits::ExposedType ExposedType;
-    typedef typename PropTraits::ExposedTraits TypeTraits;
-    typedef typename PropTraits::DataType DataType; // raw type or container
+    using PropTraits = TRAITS;
+    using ClassType = C;
+    using ExposedType = typename PropTraits::ExposedType;
+    using TypeTraits = typename PropTraits::ExposedTraits;
+    using DataType = typename PropTraits::DataType; // raw type or container
     static constexpr bool canRead = true;
     static constexpr bool canWrite = PropTraits::isWritable;
 
-    typedef AccessTraits<PropTraits> Access;
+    using Access = AccessTraits<PropTraits>;
 
-    typedef typename Access::template ValueBinder<ClassType> InterfaceType;
+    using InterfaceType = typename Access::template ValueBinder<ClassType>;
 
     InterfaceType m_interface;
 
@@ -293,17 +293,17 @@ class GetSet2
 {
 public:
 
-    typedef FUNCTRAITS PropTraits;
-    typedef C ClassType;
-    typedef typename PropTraits::ExposedType ExposedType;
-    typedef typename PropTraits::ExposedTraits TypeTraits;
-    typedef typename PropTraits::DataType DataType; // raw type
+    using PropTraits = FUNCTRAITS;
+    using ClassType = C;
+    using ExposedType = typename PropTraits::ExposedType;
+    using TypeTraits = typename PropTraits::ExposedTraits;
+    using DataType = typename PropTraits::DataType; // raw type
     static constexpr bool canRead = true;
     static constexpr bool canWrite = true;
-    
-    typedef AccessTraits<PropTraits> Access;
 
-    typedef typename Access::template ValueBinder2<ClassType> InterfaceType;
+    using Access = AccessTraits<PropTraits>;
+
+    using InterfaceType = typename Access::template ValueBinder2<ClassType>;
 
     InterfaceType m_interface;
 
@@ -323,9 +323,9 @@ struct PropertyFactory1
 
     static Property* create(IdRef name, T accessor)
     {
-        typedef GetSet1<C, FunctionTraits<T>> Accessor; // read-only?
-        
-        typedef typename Accessor::Access::template Impl<Accessor> PropertyImpl;
+        using Accessor = GetSet1<C, FunctionTraits<T>>; // read-only?
+
+        using PropertyImpl = typename Accessor::Access::template Impl<Accessor>;
         
         return new PropertyImpl(name, Accessor(accessor));
     }
@@ -338,9 +338,9 @@ struct PropertyFactory1<C, T, typename std::enable_if<std::is_member_object_poin
 
     static Property* create(IdRef name, T accessor)
     {
-        typedef GetSet1<C, MemberTraits<T>> Accessor; // read-only?
+        using Accessor = GetSet1<C, MemberTraits<T>>; // read-only?
 
-        typedef typename Accessor::Access::template Impl<Accessor> PropertyImpl;
+        using PropertyImpl = typename Accessor::Access::template Impl<Accessor>;
 
         return new PropertyImpl(name, Accessor(accessor));
     }
@@ -355,9 +355,9 @@ struct PropertyFactory2
 {
     static Property* create(IdRef name, F1 accessor1, F2 accessor2)
     {
-        typedef GetSet2<C, FunctionTraits<F1>> Accessor; // read-write wrapper
-        
-        typedef typename Accessor::Access::template Impl<Accessor> PropertyImpl;
+        using Accessor = GetSet2<C, FunctionTraits<F1>>; // read-write wrapper
+
+        using PropertyImpl = typename Accessor::Access::template Impl<Accessor>;
 
         return new PropertyImpl(name, Accessor(accessor1, accessor2));
     }

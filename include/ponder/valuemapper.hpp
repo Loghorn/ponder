@@ -510,7 +510,7 @@ struct ValueMapper<ponder::NoType>
 template <typename T>
 struct ValueMapper<const T&>
 {
-    typedef int ReferencesNotAllowed[-(int)sizeof(T)];
+    using ReferencesNotAllowed = int[-(int)sizeof(T)];
 };
 
 /**
@@ -520,7 +520,7 @@ template <template <typename> class T, typename U>
 struct ValueMapper<T<U>,
     typename std::enable_if<ponder::detail::IsSmartPointer<T<U>,U>::value>::type>
 {
-    typedef int ReferencesNotAllowed[-(int)sizeof(U)];
+    using ReferencesNotAllowed = int[-(int)sizeof(U)];
 };
 
 /** \endcond NoDocumentation */

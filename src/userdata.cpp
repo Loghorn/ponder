@@ -33,9 +33,9 @@ namespace ponder {
     
 class TypeUserDataStore : public IUserDataStore
 {
-    typedef const Type* key_t;
-    typedef detail::Dictionary<Id, IdRef, Value> store_t;
-    typedef std::map<key_t, store_t> class_store_t;
+    using key_t = const Type*;
+    using store_t = detail::Dictionary<Id, IdRef, Value>;
+    using class_store_t = std::map<key_t, store_t>;
     class_store_t m_store;
     
 public:

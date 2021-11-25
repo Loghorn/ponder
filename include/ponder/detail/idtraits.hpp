@@ -37,20 +37,20 @@
 
 namespace ponder {
 
-    typedef std::size_t size_t;
+    using std::size_t;
 
 namespace detail {
-    
+
 struct IdTraits
 {
-    typedef std::string         string_t;
-    typedef string_t            id_value_t;
-    typedef const id_value_t&   id_ref_t;
-    typedef const id_value_t&   id_return_t;
+    using string_t = std::string;
+    using id_value_t = string_t;
+    using id_ref_t = const id_value_t&;
+    using id_return_t = const id_value_t&;
 
     static inline const char* cstr(id_ref_t r) {return r.c_str();}
 };
-    
+
 } // namespace detail
 } // namespace ponder
 
@@ -61,17 +61,17 @@ struct IdTraits
 
 namespace ponder {
 
-    typedef std::size_t size_t;
+    using std::size_t;
 
 namespace detail {
 
 struct IdTraits
 {
-    typedef std::string         string_t;
-    typedef string_t            id_value_t;
-    typedef string_view         id_ref_t;
-    typedef const id_value_t&   id_return_t;
-    
+    using string_t = std::string;
+    using id_value_t = string_t;
+    using id_ref_t = string_view;
+    using id_return_t = const id_value_t&;
+
     static inline const char* cstr(id_ref_t r) {return r.data();}
 };
 
@@ -83,16 +83,16 @@ struct IdTraits
 namespace ponder {
 
 /// Ponder string class. Needs to have traits of std::string.
-typedef detail::IdTraits::string_t      String;
+using String = detail::IdTraits::string_t;
 
 /// Type used to hold identifier values.
-typedef detail::IdTraits::id_value_t    Id;
+using Id = detail::IdTraits::id_value_t;
 
 /// Type used to pass around references to the an identifier type.
-typedef detail::IdTraits::id_ref_t      IdRef;
+using IdRef = detail::IdTraits::id_ref_t;
 
 /// Type used to return a identifier value.
-typedef detail::IdTraits::id_return_t   IdReturn;
+using IdReturn = detail::IdTraits::id_return_t;
 
 namespace id {
 

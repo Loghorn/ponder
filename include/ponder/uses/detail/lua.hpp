@@ -106,9 +106,9 @@ struct LuaValueReader<P,
 };
 
 template <>
-struct LuaValueReader<ponder::detail::string_view>
+struct LuaValueReader<ponder::string_view>
 {
-    using ParamType = ponder::detail::string_view;
+    using ParamType = ponder::string_view;
     static inline ParamType convert(lua_State* L, size_t index)
     {
         return ParamType(luaL_checkstring(L, (int)index));
@@ -215,9 +215,9 @@ struct LuaValueWriter<const char* const>    // const object
 };
 
 template <>
-struct LuaValueWriter<ponder::detail::string_view>
+struct LuaValueWriter<ponder::string_view>
 {
-    static inline int push(lua_State *L, const ponder::detail::string_view& value)
+    static inline int push(lua_State *L, const ponder::string_view& value)
     {
         return lua_pushstring(L, value.data()), 1;
     }

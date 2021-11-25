@@ -32,7 +32,6 @@
 #define PONDER_ARCHIVE_RAPIDXML_HPP
 
 #include <rapidxml/rapidxml.hpp>
-#include <ponder/detail/string_view.hpp>
 
 namespace ponder {
 namespace archive {
@@ -55,11 +54,11 @@ public:
     class ArrayIterator
     {
         Node m_node{};
-        detail::string_view m_name;
+        string_view m_name;
 
     public:
 
-        ArrayIterator(Node arrayNode, detail::string_view name)
+        ArrayIterator(Node arrayNode, string_view name)
             : m_name(name)
         {
             m_node = arrayNode->first_node(name.data(), name.length());
@@ -109,12 +108,12 @@ public:
 
     ArrayIterator createArrayIterator(Node node, const std::string& name)
     {
-        return ArrayIterator(node, detail::string_view(name.c_str(), name.length()));
+        return ArrayIterator(node, string_view(name.c_str(), name.length()));
     }
     
-    detail::string_view getValue(Node node)
+    string_view getValue(Node node)
     {
-        return detail::string_view(node->value(), node->value_size());
+        return string_view(node->value(), node->value_size());
     }
 
     bool isValid(Node node)

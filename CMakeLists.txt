@@ -120,7 +120,6 @@ set(SRC_HEADERS
     include/ponder/detail/rawtype.hpp
     include/ponder/detail/simplepropertyimpl.hpp
     include/ponder/detail/simplepropertyimpl.inl
-    include/ponder/detail/string_view.hpp
     include/ponder/detail/typeid.hpp
     include/ponder/detail/userpropertyimpl.hpp
     include/ponder/detail/userpropertyimpl.inl

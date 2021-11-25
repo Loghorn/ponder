@@ -314,15 +314,15 @@ template <>
 struct ValueMapper<const ponder::String> : ValueMapper<ponder::String> {};
 
 template <>
-struct ValueMapper<ponder::detail::string_view>
+struct ValueMapper<ponder::string_view>
 {
     static constexpr ponder::ValueKind kind = ponder::ValueKind::String;
     
-    static ponder::String to(const ponder::detail::string_view& sv)
+    static ponder::String to(const ponder::string_view& sv)
         {return ponder::String(sv.data(), sv.length());}
     template <typename T>
-    static ponder::detail::string_view from(const T& source)
-        {return ponder::detail::string_view(ValueMapper<ponder::String>::from(source));}
+    static ponder::string_view from(const T& source)
+        {return ponder::string_view(ValueMapper<ponder::String>::from(source));}
 };
 
 /**

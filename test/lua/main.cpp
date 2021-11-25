@@ -105,7 +105,7 @@ namespace lib
             Obj(const Obj&) = delete;
         } o;
         
-        static int len(const ponder::detail::string_view str) { return (int) str.length(); }
+        static int len(const ponder::string_view str) { return (int) str.length(); }
         
         Obj* retPtr() { return &o; }
         void passPtr(Obj *po) {}

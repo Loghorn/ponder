@@ -57,11 +57,12 @@ struct IdTraits
 #elif defined(PONDER_ID_TRAITS_STRING_VIEW)
 
 #include <string>
-#include <ponder/detail/string_view.hpp>
+#include <string_view>
 
 namespace ponder {
 
     using std::size_t;
+    using std::string_view;
 
 namespace detail {
 

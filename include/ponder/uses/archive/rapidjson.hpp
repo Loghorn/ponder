@@ -91,9 +91,9 @@ public:
         --m_arrayLevel;
     }
 
-    detail::string_view getValue(Node node)
+    string_view getValue(Node node)
     {
-        return detail::string_view();
+        return string_view();
     }
 
     bool isValid(Node node)
@@ -143,9 +143,9 @@ public:
         return ArrayIterator({ node.m_value, node.m_value.Begin() });
     }
 
-    detail::string_view getValue(Node node)
+    string_view getValue(Node node)
     {
-        return detail::string_view(node.m_value.GetString(), node.m_value.GetStringLength());
+        return string_view(node.m_value.GetString(), node.m_value.GetStringLength());
     }
 
     bool isValid(Node node)

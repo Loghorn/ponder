@@ -5,9 +5,9 @@ shallow_clone: true
 image:
   - Ubuntu
   - macOS-Mojave
-#  - Visual Studio 2017
-#  - Visual Studio 2019
-#  - Visual Studio 2022
+  - Visual Studio 2017
+  - Visual Studio 2019
+  - Visual Studio 2022
 
 environment:
   matrix:
@@ -26,6 +26,8 @@ environment:
       CMOPTS: "-DBUILD_TEST=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TEST_LUA=ON"
 
 matrix:
+  allow_failures:
+    - image: macOS-Mojave
   exclude:
     - image: Ubuntu
       ARCH: 32-bit

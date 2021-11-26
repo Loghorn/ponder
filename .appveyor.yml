@@ -4,6 +4,7 @@ shallow_clone: true
 
 image:
   - Ubuntu
+  - macOS-Mojave
 #  - Visual Studio 2017
 #  - Visual Studio 2019
 #  - Visual Studio 2022
@@ -50,6 +51,9 @@ for:
   matrix:
     only:
       - image: Ubuntu
+        ARCH: 64-bit
+      - image: macOS-Mojave
+        ARCH: 64-bit
 
   build_script:
   - sh: |

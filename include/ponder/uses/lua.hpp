@@ -286,7 +286,7 @@ static int l_inst_index(lua_State *L)
     // check if calling function object
     if (const Function *fp = nullptr; cls->tryFunction(key, fp))
     {
-        FunctionCaller*caller =
+        auto& caller =
             std::get<uses::Uses::eLuaModule>(
                 *static_cast<const uses::Uses::PerFunctionUserData*>(fp->getUsesData()));
 
@@ -369,7 +369,7 @@ static int l_get_class_static(lua_State *L)
 
     if (const Function *func = nullptr; cls->tryFunction(key, func))
     {
-        FunctionCaller*caller =
+        auto& caller =
             std::get<uses::Uses::eLuaModule>(
                 *static_cast<const uses::Uses::PerFunctionUserData*>(func->getUsesData()));
 

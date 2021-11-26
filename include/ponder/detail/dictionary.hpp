@@ -67,7 +67,7 @@ public:
 private:
 
     struct KeyCmp {
-        bool operator () (const pair_t& a, KEY_REF b) const {
+        bool operator () (const pair_t& a, KEY_REF b) const noexcept {
             return CMP() (a.first, b);
         }
     };
@@ -80,10 +80,10 @@ public:
     using value_type = pair_t;
     using const_iterator = typename container_t::const_iterator;
 
-    [[nodiscard]] const_iterator begin() const    { return m_contents.cbegin(); }
-    [[nodiscard]] const_iterator end() const      { return m_contents.cend(); }
+    [[nodiscard]] const_iterator begin() const noexcept { return m_contents.cbegin(); }
+    [[nodiscard]] const_iterator end() const noexcept { return m_contents.cend(); }
 
-    [[nodiscard]] const_iterator findKey(KEY_REF key) const
+    [[nodiscard]] const_iterator findKey(KEY_REF key) const noexcept
     {
         // binary search for key
         auto it(std::lower_bound(begin(), end(), key, KeyCmp()));
@@ -92,7 +92,7 @@ public:
         return it;
     }
 
-    [[nodiscard]] const_iterator findValue(const VALUE& value) const
+    [[nodiscard]] const_iterator findValue(const VALUE& value) const noexcept
     {
         for (auto&& it = begin(); it != end(); ++it)
         {
@@ -102,10 +102,9 @@ public:
         return end();
     }
 
-    bool tryFind(KEY_REF key, const_iterator& returnValue) const
+    [[nodiscard]] bool tryFind(KEY_REF key, const_iterator& returnValue) const noexcept
     {
-        auto it = findKey(key);
-        if (it != end())
+        if (auto it = findKey(key); it != end())
         {
             returnValue = it;
             return true;
@@ -113,17 +112,17 @@ public:
         return false; // not found
     }
 
-    [[nodiscard]] bool containsKey(KEY_REF key) const
+    [[nodiscard]] bool containsKey(KEY_REF key) const noexcept
     {
         return findKey(key) != end();
     }
 
-    [[nodiscard]] bool containsValue(const VALUE& value) const
+    [[nodiscard]] bool containsValue(const VALUE& value) const noexcept
     {
         return findValue(value) != end();
     }
 
-    [[nodiscard]] size_t size() const { return m_contents.size(); }
+    [[nodiscard]] size_t size() const noexcept { return m_contents.size(); }
 
     void insert(KEY_REF key, const VALUE &value)
     {
@@ -137,7 +136,7 @@ public:
         insert(it->first, it->second);
     }
 
-    void erase(KEY_REF key)
+    void erase(KEY_REF key) noexcept
     {
         auto it = findKey(key);
         if (it != end())

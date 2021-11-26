@@ -57,6 +57,9 @@ class PONDER_API ClassManager : public ObserverNotifier
 
 public:
 
+    ClassManager(ClassManager&) = delete;
+    ClassManager& operator=(ClassManager&) = delete;
+
     using ClassView = View<const Class&, ClassTable::const_iterator>;
 
     /**

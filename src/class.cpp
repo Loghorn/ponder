@@ -40,17 +40,17 @@ Class::Class(TypeId const& id, IdRef name)
 {
 }
 
-IdReturn Class::name() const
+IdReturn Class::name() const noexcept
 {
     return m_name;
 }
 
-size_t Class::sizeOf() const
+size_t Class::sizeOf() const noexcept
 {
     return m_sizeof;
 }
 
-size_t Class::constructorCount() const
+size_t Class::constructorCount() const noexcept
 {
     return m_constructors.size();
 }
@@ -60,12 +60,12 @@ const Constructor* Class::constructor(size_t index) const
     return m_constructors[index].get();
 }
 
-void Class::destruct(const UserObject &uobj, bool destruct) const
+void Class::destruct(const UserObject &uobj, bool destruct) const noexcept
 {
     m_destructor(uobj, destruct);
 }
 
-size_t Class::baseCount() const
+size_t Class::baseCount() const noexcept
 {
     return m_bases.size();
 }
@@ -79,12 +79,12 @@ const Class& Class::base(size_t index) const
     return *m_bases[index].base;
 }
 
-size_t Class::functionCount() const
+size_t Class::functionCount() const noexcept
 {
     return m_functions.size();
 }
 
-bool Class::hasFunction(IdRef name) const
+bool Class::hasFunction(IdRef name) const noexcept
 {
     return m_functions.containsKey(name);
 }
@@ -112,12 +112,12 @@ const Function& Class::function(IdRef name) const
     return *it->second;
 }
 
-size_t Class::propertyCount() const
+size_t Class::propertyCount() const noexcept
 {
     return m_properties.size();
 }
 
-bool Class::hasProperty(IdRef name) const
+bool Class::hasProperty(IdRef name) const noexcept
 {
     return m_properties.containsKey(name);
 }
@@ -180,17 +180,17 @@ void* Class::applyOffset(void* pointer, const Class& target) const
     PONDER_ERROR(ClassUnrelated(name(), target.name()));
 }
 
-bool Class::operator == (const Class& other) const
+bool Class::operator == (const Class& other) const noexcept
 {
     return m_id == other.m_id;
 }
 
-bool Class::operator != (const Class& other) const
+bool Class::operator != (const Class& other) const noexcept
 {
     return m_id != other.m_id;
 }
 
-int Class::baseOffset(const Class& base) const
+int Class::baseOffset(const Class& base) const noexcept
 {
     // Check self
     if (&base == this)

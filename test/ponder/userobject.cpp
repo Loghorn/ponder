@@ -94,7 +94,8 @@ namespace UserObjectTest
     struct MyNonCopyableClass
     {
         MyNonCopyableClass() = default;
-        PONDER_NON_COPYABLE(MyNonCopyableClass);
+        MyNonCopyableClass(MyNonCopyableClass const&) = delete;
+        MyNonCopyableClass& operator=(MyNonCopyableClass const&) = delete;
     };
 
     struct MyAbstractClass

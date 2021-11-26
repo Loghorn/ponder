@@ -49,8 +49,9 @@ class ClassVisitor;
  */
 class PONDER_API Function : public Type
 {
-    PONDER_NON_COPYABLE(Function);
 public:
+    Function(Function const&) = delete;
+    Function& operator=(Function const&) = delete;
 
     /**
      * \brief Get the name of the function

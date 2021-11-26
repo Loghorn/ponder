@@ -81,8 +81,6 @@ class ClassVisitor;
  */
 class PONDER_API Class : public Type
 {
-    PONDER_NON_COPYABLE(Class);
-
     // Structure holding informations about a base metaclass
     struct BaseInfo
     {
@@ -115,6 +113,9 @@ class PONDER_API Class : public Type
 
 public: // declaration
 
+    Class(Class const&) = delete;
+    Class& operator=(Class const&) = delete;
+
     /**
      * \brief Declare a new metaclass
      *
@@ -144,7 +145,7 @@ public: // declaration
      * \see Class::declare, Enum::undeclare
      */
     template <typename T>
-    static void undeclare();
+    static void undeclare() noexcept;
 
 public: // reflection
 
@@ -156,14 +157,14 @@ public: // reflection
      *
      * \return String containing the name of the metaclass
      */
-    [[nodiscard]] IdReturn name() const;
+    [[nodiscard]] IdReturn name() const noexcept;
 
     /**
      * \brief Return the total number of base metaclasses of this metaclass
      *
      * \return Number of base metaclasses
      */
-    [[nodiscard]] size_t baseCount() const;
+    [[nodiscard]] size_t baseCount() const noexcept;
 
     /**
      * \brief Return a base metaclass from its index
@@ -180,7 +181,7 @@ public: // reflection
      *
      * \return Number of constructors
      */
-    [[nodiscard]] size_t constructorCount() const;
+    [[nodiscard]] size_t constructorCount() const noexcept;
 
     /**
      * \brief Access constructors by index
@@ -197,14 +198,14 @@ public: // reflection
      * \param uobj User object to destruct
      * \param destruct True for destruct (placement new), else destroy (new)
      */
-    void destruct(const UserObject &uobj, bool destruct) const;
+    void destruct(const UserObject &uobj, bool destruct) const noexcept;
 
     /**
      * \brief Return the total number of functions of this metaclass
      *
      * \return Number of functions
      */
-    [[nodiscard]] size_t functionCount() const;
+    [[nodiscard]] size_t functionCount() const noexcept;
 
     /**
      * \brief Check if this metaclass contains the given function
@@ -213,7 +214,7 @@ public: // reflection
      *
      * \return True if the function is in the metaclass, false otherwise
      */
-    [[nodiscard]] bool hasFunction(IdRef name) const;
+    [[nodiscard]] bool hasFunction(IdRef name) const noexcept;
 
     /**
      * \brief Get a function from its index in this metaclass
@@ -247,7 +248,7 @@ public: // reflection
      *     foo(func.name(), func.value());
      * \endcode
      */
-    [[nodiscard]] FunctionView functions() const;
+    [[nodiscard]] FunctionView functions() const noexcept;
 
     /**
      * \brief Look up a function by name and return success
@@ -262,14 +263,14 @@ public: // reflection
      *     func.call(...);
      * \endcode
      */
-    bool tryFunction(IdRef name, const Function*& funcRet) const;
+    bool tryFunction(IdRef name, const Function*& funcRet) const noexcept;
 
     /**
      * \brief Return the total number of properties of this metaclass
      *
      * \return Number of properties
      */
-    [[nodiscard]] size_t propertyCount() const;
+    [[nodiscard]] size_t propertyCount() const noexcept;
 
     /**
      * \brief Check if this metaclass contains the given property
@@ -277,7 +278,7 @@ public: // reflection
      * \param name Name of the property to check
      * \return True if the property is in the metaclass, false otherwise
      */
-    [[nodiscard]] bool hasProperty(IdRef name) const;
+    [[nodiscard]] bool hasProperty(IdRef name) const noexcept;
 
     /**
      * \brief Get a property from its index in this metaclass
@@ -309,7 +310,7 @@ public: // reflection
      *     foo(prop.name(), prop.value());
      * \endcode
      */
-    [[nodiscard]] PropertyView properties() const;
+    [[nodiscard]] PropertyView properties() const noexcept;
 
     /**
      * \brief Look up a property by name and return success
@@ -324,14 +325,14 @@ public: // reflection
      *     ... ;
      * \endcode
      */
-    bool tryProperty(IdRef name, const Property*& propRet) const;
+    bool tryProperty(IdRef name, const Property*& propRet) const noexcept;
 
     /**
      * \brief Return the memory size of a class instance
      *
      * \return Size in bytes
      */
-    [[nodiscard]] size_t sizeOf() const;
+    [[nodiscard]] size_t sizeOf() const noexcept;
 
     /**
      * \brief Create a UserObject from an opaque user pointer
@@ -381,7 +382,7 @@ public: // reflection
      *
      * \return True if both metaclasses are the same, false otherwise
      */
-    bool operator == (const Class& other) const;
+    bool operator == (const Class& other) const noexcept;
 
     /**
      * \brief Operator != to check inequality between two metaclasses
@@ -390,7 +391,7 @@ public: // reflection
      *
      * \return True if metaclasses are different, false if they are equal
      */
-     bool operator != (const Class& other) const;
+     bool operator != (const Class& other) const noexcept;
 
 private:
 
@@ -402,7 +403,7 @@ private:
     /* Get the offset of a base metaclass
      * - offset between this and base, or -1 if both classes are unrelated
      */
-    [[nodiscard]] int baseOffset(const Class& base) const;
+    [[nodiscard]] int baseOffset(const Class& base) const noexcept;
 
 };
 

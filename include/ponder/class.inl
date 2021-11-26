@@ -62,17 +62,17 @@ ClassBuilder<T> Class::declare(IdRef name)
 }
 
 template <typename T>
-void Class::undeclare()
+void Class::undeclare() noexcept
 {
     detail::ClassManager::instance().removeClass(detail::getTypeId<T>());
 }
 
-inline Class::FunctionView Class::functions() const
+inline Class::FunctionView Class::functions() const noexcept
 {
     return {m_functions.begin(), m_functions.end()};
 }
 
-inline bool Class::tryFunction(const IdRef name, const Function *& funcRet) const
+inline bool Class::tryFunction(const IdRef name, const Function *& funcRet) const noexcept
 {
     if (FunctionTable::const_iterator it; m_functions.tryFind(name, it))
     {
@@ -82,12 +82,12 @@ inline bool Class::tryFunction(const IdRef name, const Function *& funcRet) cons
     return false;
 }
 
-inline Class::PropertyView Class::properties() const
+inline Class::PropertyView Class::properties() const noexcept
 {
     return {m_properties.begin(), m_properties.end()};
 }
 
-inline bool Class::tryProperty(const IdRef name, const Property *& propRet) const
+inline bool Class::tryProperty(const IdRef name, const Property *& propRet) const noexcept
 {
     if (PropertyTable::const_iterator it; m_properties.tryFind(name, it))
     {

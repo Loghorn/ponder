@@ -67,7 +67,7 @@ public:
      *
      * \param target Metaclass to build
      */
-    ClassBuilder(Class& target);
+    ClassBuilder(Class& target) noexcept;
 
     /**
      * \brief Declare a base metaclass
@@ -242,8 +242,8 @@ public:
 
 private:
 
-    ClassBuilder<T>& addProperty(Property* property);
-    ClassBuilder<T>& addFunction(Function* function);
+    ClassBuilder<T>& addProperty(Class::PropertyPtr property);
+    ClassBuilder<T>& addFunction(Class::FunctionPtr function);
 
     Class* m_target; // Target metaclass to fill
     Type* m_currentType; // Last member type which has been declared

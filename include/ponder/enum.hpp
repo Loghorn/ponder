@@ -76,8 +76,10 @@ namespace ponder {
  */
 class PONDER_API Enum : public Type
 {
-    PONDER_NON_COPYABLE(Enum);
 public:
+    Enum(Enum const&) = delete;
+    Enum& operator=(Enum const&) = delete;
+
     using EnumValue = long;  //!< Type used to hold the enum value.
 
     /**

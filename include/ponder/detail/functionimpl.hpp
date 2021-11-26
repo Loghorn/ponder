@@ -132,6 +132,9 @@ public:
     }
 
     FunctionImpl(const FunctionImpl&) = delete;
+    FunctionImpl& operator=(const FunctionImpl&) = delete;
+    FunctionImpl(FunctionImpl&&) = delete;
+    FunctionImpl& operator=(FunctionImpl&&) = delete;
 
 private:
 
@@ -160,13 +163,13 @@ private:
 
 // Used by ClassBuilder to create new function instance.
 template <typename F, typename... P>
-static Function* newFunction(IdRef name, F function, P... policies)
+static std::shared_ptr<Function> newFunction(IdRef name, F function, P... policies)
 {
     using FuncTraits = FunctionTraits<F>;
 
     static_assert(FuncTraits::kind != FunctionKind::None, "Type is not a function");
 
-    return new FunctionImpl<FuncTraits, F, P...>(name, function, policies...);
+    return std::make_shared<FunctionImpl<FuncTraits, F, P...>>(name, function, policies...);
 }
 
 } // namespace detail

@@ -222,7 +222,7 @@ public:
 private:
 
     const Function &m_func;
-    detail::FunctionCaller *m_caller;
+    const std::unique_ptr<detail::FunctionCaller>& m_caller;
 };
 
 /**
@@ -271,7 +271,7 @@ public:
 private:
 
     const Function &m_func;
-    detail::FunctionCaller *m_caller;
+    const std::unique_ptr<detail::FunctionCaller>& m_caller;
 };
 
 //--------------------------------------------------------------------------------------
@@ -298,17 +298,10 @@ static UserObject create(const Class &cls, A... args)
 
 using UniquePtr = std::unique_ptr<UserObject>;
 
-inline UniquePtr makeUniquePtr(UserObject *obj)
-{
-    return UniquePtr(obj);
-}
-
 template <typename... A>
 static UniquePtr createUnique(const Class &cls, A... args)
 {
-    const auto p = new UserObject;
-    *p = create(cls, args...);
-    return makeUniquePtr(p);
+    return std::make_unique<UserObject>(create(cls, args...));
 }
 
 /**

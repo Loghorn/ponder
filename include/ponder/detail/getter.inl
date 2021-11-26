@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,7 +30,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 template <typename T>
 GetterInterface<T>::~GetterInterface()
 {
@@ -58,7 +58,7 @@ Getter<T>::Getter(const T& defaultValue)
 template <typename T>
 template <typename C>
 Getter<T>::Getter(std::function<T (C&)> function)
-    : m_getter(new GetterImpl<T, C>(function))
+    : m_getter(std::make_shared<GetterImpl<T, C>>(function))
 {
 }
 

@@ -12,10 +12,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,9 +47,9 @@ namespace uses {
  *  information. For example, this may be templated code that uses the types only
  *  available during compilation. These may then be used at runtime. The idea is
  *  to decouple modules from the metaclass data to avoid complexity.
- *      
+ *
  *  Each module supplies (pseudo-code):
- *      
+ *
  *  \code
  *  struct Use_name {
  *      static module_ns::detail::PerConstructor_t* perConstructor(IdRef name, C constructor)
@@ -57,20 +57,20 @@ namespace uses {
  *  }
  *  \endcode
  */
-        
+
 /**
  *  \brief Runtime behaviour
  *
- *  This module provides runtime behaviour like creation of UserObjects and calling 
+ *  This module provides runtime behaviour like creation of UserObjects and calling
  *  functions
  */
 struct RuntimeUse
 {
     /// Factory for per-function runtime data
     template <typename F, typename FTraits, typename Policies_t>
-    static runtime::detail::FunctionCaller* perFunction(IdRef name, F function)
+    static std::unique_ptr<runtime::detail::FunctionCaller> perFunction(IdRef name, F function)
     {
-        return new runtime::detail::FunctionCallerImpl<F, FTraits, Policies_t>(name, function);
+        return std::make_unique<runtime::detail::FunctionCallerImpl<F, FTraits, Policies_t>>(name, function);
     }
 };
 
@@ -84,9 +84,9 @@ struct LuaUse
 {
     /// Factory for per-function runtime data
     template <typename F, typename FTraits, typename Policies_t>
-    static lua::detail::FunctionCaller* perFunction(IdRef name, F function)
+    static std::unique_ptr<lua::detail::FunctionCaller> perFunction(IdRef name, F function)
     {
-        return new lua::detail::FunctionCallerImpl<F, FTraits, Policies_t>(name, function);
+        return std::make_unique<lua::detail::FunctionCallerImpl<F, FTraits, Policies_t>>(name, function);
     }
 };
 #endif // PONDER_USING_LUA
@@ -103,7 +103,7 @@ struct Uses
         PONDER_IF_LUA(eLuaModule,)      ///< Lua module enumeration
         eUseCount
     };
-    
+
      /// Metadata uses we are using.
     using Users = std::tuple<RuntimeUse
         PONDER_IF_LUA(,LuaUse)
@@ -111,15 +111,15 @@ struct Uses
 
     /// Type that stores the per-function uses data
     using PerFunctionUserData = std::tuple<
-        runtime::detail::FunctionCaller*
-        PONDER_IF_LUA(,lua::detail::FunctionCaller*)
+        std::unique_ptr<runtime::detail::FunctionCaller>
+        PONDER_IF_LUA(,std::unique_ptr<lua::detail::FunctionCaller>)
     >;
-    
+
     // Access note:
     //  using PerFunc_t typename std::tuple_element<I, PerFunctionUserData>::type;
     //  PerFunc_t* std::get<I>(getUsesData());
 };
-    
+
 static_assert(Uses::eUseCount==std::tuple_size_v<Uses::Users>, "Size mismatch");
 static_assert(Uses::eUseCount==std::tuple_size_v<Uses::PerFunctionUserData>, "Size mismatch");
 

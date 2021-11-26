@@ -30,7 +30,7 @@
 namespace ponder {
 
 template <typename T>
-ClassBuilder<T>::ClassBuilder(Class& target)
+ClassBuilder<T>::ClassBuilder(Class& target) noexcept
     : m_target(&target)
     , m_currentType(&target)
 {
@@ -108,8 +108,8 @@ template <typename T>
 template <typename... A>
 ClassBuilder<T>& ClassBuilder<T>::constructor()
 {
-    Constructor* constructor = new detail::ConstructorImpl<T, A...>();
-    m_target->m_constructors.push_back(Class::ConstructorPtr(constructor));
+    auto constructor = std::make_shared<detail::ConstructorImpl<T, A...>>();
+    m_target->m_constructors.emplace_back(constructor);
     return *this;
 }
 
@@ -134,7 +134,7 @@ ClassBuilder<T>& ClassBuilder<T>::external()
 }
 
 template <typename T>
-ClassBuilder<T>& ClassBuilder<T>::addProperty(Property* property)
+ClassBuilder<T>& ClassBuilder<T>::addProperty(Class::PropertyPtr property)
 {
     // Retrieve the class' properties indexed by name
     Class::PropertyTable& properties = m_target->m_properties;
@@ -143,15 +143,15 @@ ClassBuilder<T>& ClassBuilder<T>::addProperty(Property* property)
     properties.erase(property->name());
 
     // Insert the new property
-    properties.insert(property->name(), Class::PropertyPtr(property));
+    properties.insert(property->name(), property);
 
-    m_currentType = property;
+    m_currentType = property.get();
 
     return *this;
 }
 
 template <typename T>
-ClassBuilder<T>& ClassBuilder<T>::addFunction(Function* function)
+ClassBuilder<T>& ClassBuilder<T>::addFunction(Class::FunctionPtr function)
 {
     // Retrieve the class' functions indexed by name
     Class::FunctionTable& functions = m_target->m_functions;
@@ -160,9 +160,9 @@ ClassBuilder<T>& ClassBuilder<T>::addFunction(Function* function)
     functions.erase(function->name());
 
     // Insert the new function
-    functions.insert(function->name(), Class::FunctionPtr(function));
+    functions.insert(function->name(), function);
 
-    m_currentType = function;
+    m_currentType = function.get();
 
     return *this;
 }

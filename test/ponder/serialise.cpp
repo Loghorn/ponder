@@ -154,7 +154,7 @@ TEST_CASE("Can serialise using RapidXML")
         std::string storage;
 
         {
-            std::unique_ptr<Ref> r{ new Ref };
+            std::unique_ptr<Ref> r = std::make_unique<Ref>();
             REQUIRE(r != nullptr);
 
             r->m_instance.m_i = 89;
@@ -263,7 +263,7 @@ TEST_CASE("Can serialise using RapidJSON")
         std::string storage;
 
         {
-            std::unique_ptr<Ref> r{ new Ref };
+            std::unique_ptr<Ref> r = std::make_unique<Ref>();
             REQUIRE(r != nullptr);
 
             r->m_instance.m_i = 89;

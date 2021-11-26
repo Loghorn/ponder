@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -215,7 +215,7 @@ struct AccessTraits<PT,
         using Binding = typename PT::template Binding<ClassType, AccessType>;
 
         ValueBinder(const Binding& a) : m_bound(a) {}
-        
+
         AccessType getter(ClassType& c) const {return m_bound.access(c);}
 
         bool setter(ClassType& c, AccessType v) const {
@@ -321,13 +321,13 @@ struct PropertyFactory1
 {
     static constexpr PropertyKind kind = PropertyKind::Function;
 
-    static Property* create(IdRef name, T accessor)
+    static std::shared_ptr<Property> create(IdRef name, T accessor)
     {
         using Accessor = GetSet1<C, FunctionTraits<T>>; // read-only?
 
         using PropertyImpl = typename Accessor::Access::template Impl<Accessor>;
-        
-        return new PropertyImpl(name, Accessor(accessor));
+
+        return std::make_shared<PropertyImpl>(name, Accessor(accessor));
     }
 };
 
@@ -336,13 +336,13 @@ struct PropertyFactory1<C, T, std::enable_if_t<std::is_member_object_pointer_v<T
 {
     static constexpr PropertyKind kind = PropertyKind::MemberObject;
 
-    static Property* create(IdRef name, T accessor)
+    static std::shared_ptr<Property> create(IdRef name, T accessor)
     {
         using Accessor = GetSet1<C, MemberTraits<T>>; // read-only?
 
         using PropertyImpl = typename Accessor::Access::template Impl<Accessor>;
 
-        return new PropertyImpl(name, Accessor(accessor));
+        return std::make_shared<PropertyImpl>(name, Accessor(accessor));
     }
 };
 
@@ -353,13 +353,13 @@ struct PropertyFactory1<C, T, std::enable_if_t<std::is_member_object_pointer_v<T
 template <typename C, typename F1, typename F2, typename E = void>
 struct PropertyFactory2
 {
-    static Property* create(IdRef name, F1 accessor1, F2 accessor2)
+    static std::shared_ptr<Property> create(IdRef name, F1 accessor1, F2 accessor2)
     {
         using Accessor = GetSet2<C, FunctionTraits<F1>>; // read-write wrapper
 
         using PropertyImpl = typename Accessor::Access::template Impl<Accessor>;
 
-        return new PropertyImpl(name, Accessor(accessor1, accessor2));
+        return std::make_shared<PropertyImpl>(name, Accessor(accessor1, accessor2));
     }
 };
 

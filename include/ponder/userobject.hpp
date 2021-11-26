@@ -312,9 +312,9 @@ private:
      // Assign a new value to a property of the object
     void set(const Property& property, const Value& value) const;
 
-    UserObject(const Class* cls, detail::AbstractObjectHolder* h)
+    UserObject(const Class* cls, std::shared_ptr<detail::AbstractObjectHolder> h)
         :   m_class(cls)
-        ,   m_holder(h)
+        ,   m_holder(std::move(h))
     {}
 
     // Metaclass of the stored object

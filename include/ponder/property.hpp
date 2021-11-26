@@ -49,8 +49,9 @@ class ClassVisitor;
  */
 class PONDER_API Property : public Type
 {
-    PONDER_NON_COPYABLE(Property);
 public:
+    Property(Property const&) = delete;
+    Property& operator=(Property const&) = delete;
 
     /**
      * \brief Get the name of the property

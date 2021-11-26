@@ -39,7 +39,7 @@ UserObject::UserObject(const T& object)
 {
     using PropTraits = detail::TypeTraits<const T>;
     using Holder = detail::ObjectHolderByCopy<typename PropTraits::DataType>;
-    m_holder.reset(new Holder(PropTraits::getPointer(object)));
+    m_holder = std::make_shared<Holder>(PropTraits::getPointer(object));
 }
 
 template <typename T>
@@ -52,7 +52,7 @@ UserObject::UserObject(T* object)
     using Holder = std::conditional_t<std::is_const_v<T>,
                                     detail::ObjectHolderByConstRef<typename PropTraits::DataType>,
                                     detail::ObjectHolderByRef<typename PropTraits::DataType>>;
-    m_holder.reset(new Holder(object));
+    m_holder = std::make_shared<Holder>(object);
 }
 
 template <typename T>
@@ -84,7 +84,7 @@ UserObject UserObject::makeRef(T& object)
                                     detail::ObjectHolderByConstRef<typename TypeTraits::DataType>,
                                     detail::ObjectHolderByRef<typename TypeTraits::DataType>>;
 
-    return UserObject(&classByObject(object), new Holder(TypeTraits::getPointer(object)));
+    return UserObject(&classByObject(object), std::make_shared<Holder>(TypeTraits::getPointer(object)));
 }
 
 template <typename T>
@@ -98,7 +98,7 @@ UserObject UserObject::makeCopy(const T& object)
 {
     using PropTraits = detail::TypeTraits<const T>;
     using Holder = detail::ObjectHolderByCopy<typename PropTraits::DataType>;
-    return UserObject(&classByType<T>(), new Holder(PropTraits::getPointer(object)));
+    return UserObject(&classByType<T>(), std::make_shared<Holder>(PropTraits::getPointer(object)));
 }
 
 template <typename T>
@@ -106,7 +106,7 @@ UserObject UserObject::makeOwned(T&& object)
 {
     using PropTraits = detail::TypeTraits<const T>;
     using Holder = detail::ObjectHolderByCopy<typename PropTraits::DataType>;
-    return UserObject(&classByType<T>(), new Holder(std::forward<T>(object)));
+    return UserObject(&classByType<T>(), std::make_shared<Holder>(std::forward<T>(object)));
 }
 
 template <typename T>

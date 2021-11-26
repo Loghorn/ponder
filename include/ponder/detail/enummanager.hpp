@@ -52,8 +52,9 @@ namespace detail
  */
 class PONDER_API EnumManager : public ObserverNotifier
 {
-    PONDER_NON_COPYABLE(EnumManager);
 public:
+    EnumManager(EnumManager const&) = delete;
+    EnumManager& operator=(EnumManager const&) = delete;
 
     /**
      * \brief Get the unique instance of the class

@@ -61,7 +61,7 @@ struct StaticTypeDecl
         return T::PONDER_TYPE_NOT_REGISTERED();
     }
 
-    static const char* name(bool = true)
+    static constexpr const char* name(bool = true)
     {
         // If you get this error, it means you didn't register your class/enum T with
         // the PONDER_TYPE macro

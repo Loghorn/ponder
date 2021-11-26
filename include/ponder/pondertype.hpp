@@ -237,20 +237,26 @@ namespace detail
  *
  * \sa \ref eg_page_shapes
  */
+#if defined(_MSC_VER)
+
 #define PONDER_POLYMORPHIC() \
+    _Pragma("warning(push, 0)") \
     public: \
-        virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} \
-    private:
+        virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} /* NOLINT */ \
+    private:\
+    _Pragma("warning(pop)")
 
-#define PONDER_POLYMORPHIC_BASE() \
-    public: \
-        virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} \
-    private:
+#else
 
-#define PONDER_POLYMORPHIC_DERIVED() \
+#define PONDER_POLYMORPHIC() \
+    _Pragma("GCC diagnostic push") \
+    _Pragma("GCC diagnostic ignored \"-Winconsistent-missing-override\"") \
     public: \
-        ponder::TypeId ponderClassId() const override {return ponder::detail::staticTypeId(*this);} \
-    private:
+        virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} /* NOLINT */ \
+    private:\
+    _Pragma("GCC diagnostic pop")
+
+#endif
 
 } // namespace ponder
 

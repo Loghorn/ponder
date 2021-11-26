@@ -5,7 +5,7 @@ dist: bionic
 jobs:
   include:
     - os: osx
-      osx_image: xcode10    # OS X 10.13 (oldest Xcode/macOS we support)
+      osx_image: xcode10.2  # OS X 10.13 (oldest Xcode/macOS we support)
     - os: osx
       osx_image: xcode12    # OS X 10.15.5
     - os: linux             # see dist above

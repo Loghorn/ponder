@@ -57,6 +57,7 @@ struct IdTraits
 #elif defined(PONDER_ID_TRAITS_STRING_VIEW)
 
 #include <string>
+#include <string_view>
 
 namespace ponder {
 

@@ -250,7 +250,7 @@ namespace detail
 
 #define PONDER_POLYMORPHIC() \
     _Pragma("GCC diagnostic push") \
-    _Pragma("GCC diagnostic ignored \"-Winconsistent-missing-override\"") \
+    _Pragma("GCC diagnostic ignored \"-Wall\"") \
     public: \
         virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} /* NOLINT */ \
     private:\

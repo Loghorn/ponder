@@ -25,6 +25,13 @@ environment:
       VS22ARCH: "-A x64"
       CMOPTS: "-DBUILD_TEST=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TEST_LUA=ON"
 
+matrix:
+  exclude:
+    - image: Ubuntu
+      ARCH: 32-bit
+    - image: macOS-Mojave
+      ARCH: 32-bit
+
 build:
   parallel: true
 
@@ -51,9 +58,7 @@ for:
   matrix:
     only:
       - image: Ubuntu
-        ARCH: 64-bit
       - image: macOS-Mojave
-        ARCH: 64-bit
 
   build_script:
   - sh: |

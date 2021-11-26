@@ -3,10 +3,10 @@ version: 1.0.{build}
 shallow_clone: true
 
 image:
-  - Visual Studio 2017
-  - Visual Studio 2019
-  - Visual Studio 2022
   - Ubuntu
+#  - Visual Studio 2017
+#  - Visual Studio 2019
+#  - Visual Studio 2022
 
 environment:
   matrix:
@@ -52,4 +52,6 @@ for:
       - image: Ubuntu
 
   build_script:
-  - ./ci/build.sh
+  - sh: |
+      chmod +x ./ci/build.sh
+      ./ci/build.sh

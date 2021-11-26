@@ -246,6 +246,16 @@ namespace detail
     private:\
     _Pragma("warning(pop)")
 
+#elif defined(__clang__)
+
+#define PONDER_POLYMORPHIC() \
+    _Pragma("GCC diagnostic push") \
+    _Pragma("GCC diagnostic ignored \"-Winconsistent-missing-override\"") \
+    public: \
+        virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} /* NOLINT */ \
+    private:\
+    _Pragma("GCC diagnostic pop")
+
 #else
 
 #define PONDER_POLYMORPHIC() \

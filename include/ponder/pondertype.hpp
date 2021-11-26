@@ -237,7 +237,7 @@ namespace detail
  *
  * \sa \ref eg_page_shapes
  */
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && _MSC_VER >= 1920
 
 #define PONDER_POLYMORPHIC() \
     _Pragma("warning(push, 0)") \
@@ -245,6 +245,13 @@ namespace detail
         virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} /* NOLINT */ \
     private:\
     _Pragma("warning(pop)")
+
+#elif defined(_MSC_VER) && _MSC_VER < 1920
+
+#define PONDER_POLYMORPHIC() \
+    public:\
+        virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} /* NOLINT */ \
+    private:
 
 #elif defined(__clang__)
 
@@ -256,7 +263,7 @@ namespace detail
     private:\
     _Pragma("GCC diagnostic pop")
 
-#else
+#elif defined(__GNUC__)
 
 #define PONDER_POLYMORPHIC() \
     _Pragma("GCC diagnostic push") \

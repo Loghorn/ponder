@@ -39,7 +39,6 @@
 #include <ponder/detail/typeid.hpp>
 #include <ponder/detail/dictionary.hpp>
 #include <string>
-#include <map>
 
 namespace ponder {
 
@@ -82,7 +81,7 @@ class ClassVisitor;
  */
 class PONDER_API Class : public Type
 {
-    PONDER__NON_COPYABLE(Class);
+    PONDER_NON_COPYABLE(Class);
 
     // Structure holding informations about a base metaclass
     struct BaseInfo
@@ -122,16 +121,16 @@ public: // declaration
      * Call this to create a new metaclass. The template parameter T is the
      * C++ class that will be bound to the metaclass.
      *
-     * \param id Name of the metaclass in Ponder. This name identifies
-     *           the metaclass and thus has to be unique. If not specified, the C++ type
-     *           id is used.
+     * \param name Name of the metaclass in Ponder. This name identifies
+     *             the metaclass and thus has to be unique. If not specified, the C++ type
+     *             id name is used.
      * \return A ClassBuilder<T> object that will provide functions
      *         to fill the new metaclass with properties, functions, etc.
      *
      * \remark It is best to leave the name blank and use the default class name.
      */
     template <typename T>
-    static ClassBuilder<T> declare(IdRef id = ponder::IdRef());
+    static ClassBuilder<T> declare(IdRef name = {});
 
     /**
      * \brief Undeclare an existing metaclass
@@ -157,14 +156,14 @@ public: // reflection
      *
      * \return String containing the name of the metaclass
      */
-    IdReturn name() const;
+    [[nodiscard]] IdReturn name() const;
 
     /**
      * \brief Return the total number of base metaclasses of this metaclass
      *
      * \return Number of base metaclasses
      */
-    size_t baseCount() const;
+    [[nodiscard]] size_t baseCount() const;
 
     /**
      * \brief Return a base metaclass from its index
@@ -174,14 +173,14 @@ public: // reflection
      *
      * \throw OutOfRange index is out of range
      */
-    const Class& base(size_t index) const;
+    [[nodiscard]] const Class& base(size_t index) const;
 
     /**
      * \brief Return the total number of constructors of this metaclass
      *
      * \return Number of constructors
      */
-    size_t constructorCount() const;
+    [[nodiscard]] size_t constructorCount() const;
 
     /**
      * \brief Access constructors by index
@@ -190,7 +189,7 @@ public: // reflection
      *
      * \return Constructor
      */
-    const Constructor* constructor(size_t index) const;
+    [[nodiscard]] const Constructor* constructor(size_t index) const;
 
     /**
      * \brief Destroy a UserObject instance
@@ -205,7 +204,7 @@ public: // reflection
      *
      * \return Number of functions
      */
-    size_t functionCount() const;
+    [[nodiscard]] size_t functionCount() const;
 
     /**
      * \brief Check if this metaclass contains the given function
@@ -214,7 +213,7 @@ public: // reflection
      *
      * \return True if the function is in the metaclass, false otherwise
      */
-    bool hasFunction(IdRef name) const;
+    [[nodiscard]] bool hasFunction(IdRef name) const;
 
     /**
      * \brief Get a function from its index in this metaclass
@@ -225,7 +224,7 @@ public: // reflection
      *
      * \throw OutOfRange index is out of range
      */
-    const Function& function(size_t index) const;
+    [[nodiscard]] const Function& function(size_t index) const;
 
     /**
      * \brief Get a function from its name
@@ -236,7 +235,7 @@ public: // reflection
      *
      * \throw FunctionNotFound \a name is not a function of the metaclass
      */
-    const Function& function(IdRef name) const;
+    [[nodiscard]] const Function& function(IdRef name) const;
 
     /**
      * \brief Get a function iterator
@@ -248,7 +247,7 @@ public: // reflection
      *     foo(func.name(), func.value());
      * \endcode
      */
-    FunctionView functions() const;
+    [[nodiscard]] FunctionView functions() const;
 
     /**
      * \brief Look up a function by name and return success
@@ -263,14 +262,14 @@ public: // reflection
      *     func.call(...);
      * \endcode
      */
-    bool tryFunction(const IdRef name, const Function*& funcRet) const;
+    bool tryFunction(IdRef name, const Function*& funcRet) const;
 
     /**
      * \brief Return the total number of properties of this metaclass
      *
      * \return Number of properties
      */
-    size_t propertyCount() const;
+    [[nodiscard]] size_t propertyCount() const;
 
     /**
      * \brief Check if this metaclass contains the given property
@@ -278,7 +277,7 @@ public: // reflection
      * \param name Name of the property to check
      * \return True if the property is in the metaclass, false otherwise
      */
-    bool hasProperty(IdRef name) const;
+    [[nodiscard]] bool hasProperty(IdRef name) const;
 
     /**
      * \brief Get a property from its index in this metaclass
@@ -288,7 +287,7 @@ public: // reflection
      *
      * \throw OutOfRange index is out of range
      */
-    const Property& property(size_t index) const;
+    [[nodiscard]] const Property& property(size_t index) const;
 
     /**
      * \brief Get a property from its name
@@ -298,7 +297,7 @@ public: // reflection
      *
      * \throw PropertyNotFound \a name is not a property of the metaclass
      */
-    const Property& property(IdRef name) const;
+    [[nodiscard]] const Property& property(IdRef name) const;
 
     /**
      * \brief Get a property iterator
@@ -310,7 +309,7 @@ public: // reflection
      *     foo(prop.name(), prop.value());
      * \endcode
      */
-    PropertyView properties() const;
+    [[nodiscard]] PropertyView properties() const;
 
     /**
      * \brief Look up a property by name and return success
@@ -325,14 +324,14 @@ public: // reflection
      *     ... ;
      * \endcode
      */
-    bool tryProperty(const IdRef name, const Property*& propRet) const;
+    bool tryProperty(IdRef name, const Property*& propRet) const;
 
     /**
      * \brief Return the memory size of a class instance
      *
      * \return Size in bytes
      */
-    size_t sizeOf() const;
+    [[nodiscard]] size_t sizeOf() const;
 
     /**
      * \brief Create a UserObject from an opaque user pointer
@@ -403,7 +402,7 @@ private:
     /* Get the offset of a base metaclass
      * - offset between this and base, or -1 if both classes are unrelated
      */
-    int baseOffset(const Class& base) const;
+    [[nodiscard]] int baseOffset(const Class& base) const;
 
 };
 

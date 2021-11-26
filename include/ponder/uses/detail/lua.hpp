@@ -12,10 +12,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,14 +47,14 @@ namespace ponder { namespace lua {
 //-----------------------------------------------------------------------------
 
 namespace ponder_ext {
-    
+
 using namespace ponder;
 
 inline UserObject* toUserObject(lua_State *L, int index)
 {
     return reinterpret_cast<UserObject*>(lua_touserdata(L, (int)index));
 }
-    
+
 struct LuaTable { lua_State *L; };
 
 //-----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ struct LuaTable { lua_State *L; };
 template <typename P, typename U = void> struct LuaValueReader {};
 
 template <typename P>
-struct LuaValueReader<P, typename std::enable_if<std::is_integral<P>::value>::type>
+struct LuaValueReader<P, std::enable_if_t<std::is_integral_v<P>>>
 {
     using ParamType = P;
     static inline ParamType convert(lua_State* L, size_t index)
@@ -73,7 +73,7 @@ struct LuaValueReader<P, typename std::enable_if<std::is_integral<P>::value>::ty
 };
 
 template <typename P>
-struct LuaValueReader<P, typename std::enable_if<std::is_floating_point<P>::value>::type>
+struct LuaValueReader<P, std::enable_if_t<std::is_floating_point_v<P>>>
 {
     using ParamType = P;
     static inline ParamType convert(lua_State* L, size_t index)
@@ -83,7 +83,7 @@ struct LuaValueReader<P, typename std::enable_if<std::is_floating_point<P>::valu
 };
 
 template <typename P>
-struct LuaValueReader<P, typename std::enable_if<std::is_enum<P>::value>::type>
+struct LuaValueReader<P, std::enable_if_t<std::is_enum_v<P>>>
 {
     using ParamType = P;
     static inline ParamType convert(lua_State* L, size_t index)
@@ -95,8 +95,8 @@ struct LuaValueReader<P, typename std::enable_if<std::is_enum<P>::value>::type>
 
 template <typename P>
 struct LuaValueReader<P,
-    typename std::enable_if<std::is_same<std::string,
-                            typename detail::DataType<P>::Type>::value>::type>
+                      std::enable_if_t<std::is_same_v<std::string,
+                                                    typename detail::DataType<P>::Type>>>
 {
     using ParamType = std::string;
     static inline ParamType convert(lua_State* L, size_t index)
@@ -116,37 +116,37 @@ struct LuaValueReader<ponder::string_view>
 };
 
 template <typename P>
-struct LuaValueReader<P&, typename std::enable_if<detail::IsUserType<P>::value>::type>
+struct LuaValueReader<P&, std::enable_if_t<detail::IsUserType<P>::value>>
 {
     using ParamType = P&;
     using DataType = typename detail::DataType<ParamType>::Type;
-    
+
     static inline ParamType convert(lua_State* L, size_t index)
     {
         if (!lua_isuserdata(L, (int)index))
         {
             luaL_error(L, "Argument %d: expecting user data", (int)index);
         }
-        
-        UserObject *uobj = reinterpret_cast<UserObject*>(lua_touserdata(L, (int)index));        
+
+        UserObject *uobj = reinterpret_cast<UserObject*>(lua_touserdata(L, (int)index));
         return uobj->ref<DataType>();
     }
 };
 
 template <typename P>
-struct LuaValueReader<P*, typename std::enable_if<ponder::detail::IsUserType<P>::value>::type>
+struct LuaValueReader<P*, std::enable_if_t<ponder::detail::IsUserType<P>::value>>
 {
     using ParamType = P*;
     using DataType = typename ponder::detail::DataType<ParamType>::Type;
-    
+
     static inline ParamType convert(lua_State* L, size_t index)
     {
         if (!lua_isuserdata(L, (int)index))
         {
             luaL_error(L, "Argument %d: expecting user data", (int)index);
         }
-        
-        UserObject *uobj = reinterpret_cast<UserObject*>(lua_touserdata(L, (int)index));        
+
+        UserObject *uobj = reinterpret_cast<UserObject*>(lua_touserdata(L, (int)index));
         return &uobj->ref<DataType>();
     }
 };
@@ -170,7 +170,7 @@ struct LuaValueReader<LuaTable>
 template <typename T, typename U = void> struct LuaValueWriter {};
 
 template <typename T>
-struct LuaValueWriter<T, typename std::enable_if<std::is_integral<T>::value>::type>
+struct LuaValueWriter<T, std::enable_if_t<std::is_integral_v<T>>>
 {
     static inline int push(lua_State *L, T value)
     {
@@ -179,7 +179,7 @@ struct LuaValueWriter<T, typename std::enable_if<std::is_integral<T>::value>::ty
 };
 
 template <typename T>
-struct LuaValueWriter<T, typename std::enable_if<std::is_floating_point<T>::value>::type>
+struct LuaValueWriter<T, std::enable_if_t<std::is_floating_point_v<T>>>
 {
     static inline int push(lua_State *L, T value)
     {
@@ -239,30 +239,30 @@ struct LuaValueWriter<const std::tuple<R...>>
     template <size_t... Is>
     static inline void pushElements(lua_State *L,
                                     std::tuple<R...> const& value,
-                                    PONDER__SEQNS::index_sequence<Is...>)
+                                    std::index_sequence<Is...>)
     {
         const int r[sizeof...(R)] = { LuaValueWriter<R>::push(L, std::get<Is>(value))... };
         (void)r;
     }
-    
+
     static inline int push(lua_State *L, std::tuple<R...> const& value)
     {
-        using Enumerator = PONDER__SEQNS::make_index_sequence<sizeof...(R)>;
+        using Enumerator = std::make_index_sequence<sizeof...(R)>;
         pushElements(L, value, Enumerator());
         return sizeof...(R);
     }
 };
-    
+
 // Non-const tuples are const to us.
 template <typename... R>
 struct LuaValueWriter<std::tuple<R...>> : public LuaValueWriter<const std::tuple<R...>> {};
-    
+
 } // namespace ponder_ext
 
 namespace ponder {
 namespace lua {
 namespace detail {
-    
+
 using namespace ponder_ext;
 
 //-----------------------------------------------------------------------------
@@ -275,21 +275,21 @@ struct CallReturnMultiple<R>
 {
     static inline int value(lua_State *L, R&& o) {return LuaValueWriter<R>::push(L, o);}
 };
-    
+
 //-----------------------------------------------------------------------------
 // Handle returning copies
 
 template <typename R, typename U = void> struct CallReturnCopy;
 
 template <typename R>
-struct CallReturnCopy<R, typename std::enable_if<!ponder::detail::IsUserType<R>::value>::type>
+struct CallReturnCopy<R, std::enable_if_t<!ponder::detail::IsUserType<R>::value>>
 {
     // "no member named push" error here means the type returned is not covered.
     static inline int value(lua_State *L, R&& o) {return LuaValueWriter<R>::push(L, o);}
 };
 
 template <typename R>
-struct CallReturnCopy<R, typename std::enable_if<ponder::detail::IsUserType<R>::value>::type>
+struct CallReturnCopy<R, std::enable_if_t<ponder::detail::IsUserType<R>::value>>
 {
     static inline int value(lua_State *L, R&& o)
     {return LuaValueWriter<UserObject>::push(L, UserObject::makeCopy(std::forward<R>(o)));}
@@ -302,20 +302,20 @@ template <typename R, typename U = void> struct CallReturnInternalRef;
 
 template <typename R>
 struct CallReturnInternalRef<R,
-    typename std::enable_if<
+                             std::enable_if_t<
         !ponder::detail::IsUserType<R>::value
-        && !std::is_same<typename ponder::detail::DataType<R>::Type, UserObject>::value
-    >::type>
+        && !std::is_same_v<typename ponder::detail::DataType<R>::Type, UserObject>
+    >>
 {
     static inline int value(lua_State *L, R&& o) {return LuaValueWriter<R>::push(L, o);}
 };
 
 template <typename R>
 struct CallReturnInternalRef<R,
-    typename std::enable_if<
+                             std::enable_if_t<
         ponder::detail::IsUserType<R>::value
-        || std::is_same<typename ponder::detail::DataType<R>::Type, UserObject>::value
-    >::type>
+        || std::is_same_v<typename ponder::detail::DataType<R>::Type, UserObject>
+    >>
 {
     static inline int value(lua_State *L, R&& o)
     {
@@ -366,7 +366,7 @@ template <typename P>
 struct ConvertArgs
 {
     using Convertor = LuaValueReader<P>;
-    
+
     static typename Convertor::ParamType convert(lua_State* L, size_t index)
     {
         return Convertor::convert(L, index+1);
@@ -377,9 +377,9 @@ template <typename R, typename FTraits, typename FPolicies>
 class CallHelper
 {
 public:
-    
+
     template<typename F, typename... A, size_t... Is>
-    static int call(F func, lua_State* L, PONDER__SEQNS::index_sequence<Is...>)
+    static int call(F func, lua_State* L, std::index_sequence<Is...>)
     {
         using CallReturner =  typename ChooseCallReturner<FPolicies, R>::type;
         return CallReturner::value(L, func(ConvertArgs<A>::convert(L, Is)...));
@@ -391,9 +391,9 @@ template <typename FTraits, typename FPolicies>
 class CallHelper<void, FTraits, FPolicies>
 {
 public:
-    
+
     template<typename F, typename... A, size_t... Is>
-    static int call(F func, lua_State* L, PONDER__SEQNS::index_sequence<Is...>)
+    static int call(F func, lua_State* L, std::index_sequence<Is...>)
     {
         func(ConvertArgs<A>::convert(L, Is)...);
         return 0; // return nil
@@ -407,13 +407,13 @@ template <typename R, typename P> struct FunctionWrapper;
 
 template <typename R, typename... P> struct FunctionWrapper<R, std::tuple<P...>>
 {
-    using Type = typename std::function<R(P...)>;
-    
+    using Type = std::function<R(P...)>;
+
     template <typename F, typename FTraits, typename FPolicies>
     static int call(F func, lua_State* L)
     {
-        using ArgEnumerator = PONDER__SEQNS::make_index_sequence<sizeof...(P)>;
-        
+        using ArgEnumerator = std::make_index_sequence<sizeof...(P)>;
+
         return CallHelper<R, FTraits, FPolicies>::template call<F, P...>(func, L, ArgEnumerator());
     }
 };
@@ -428,18 +428,18 @@ public:
         :   m_name(name)
         ,   m_luaFunc(fn)
     {}
-    
+
     FunctionCaller(const FunctionCaller&) = delete; // no copying
     virtual ~FunctionCaller() {}
-    
-    const IdRef name() const { return m_name; }
+
+    [[nodiscard]] const IdRef name() const { return m_name; }
 
     void pushFunction(lua_State* L)
     {
         lua_pushlightuserdata(L, (void*) this);
         lua_pushcclosure(L, m_luaFunc, 1);
     }
-    
+
 private:
     const IdRef m_name;
     int (*m_luaFunc)(lua_State*);
@@ -451,21 +451,21 @@ template <typename F, typename FTraits, typename FPolicies>
 class FunctionCallerImpl : public FunctionCaller
 {
 public:
-    
+
     FunctionCallerImpl(IdRef name, F function)
     :   FunctionCaller(name, &call)
     ,   m_function(function)
     {}
-    
+
 private:
-    
+
     using ThisType = FunctionCallerImpl<F, FTraits, FPolicies>;
-    
+
     using CallTypes = typename FTraits::Details::FunctionCallTypes;
     using DispatchType = FunctionWrapper<typename FTraits::ExposedType, CallTypes>;
-    
+
     typename DispatchType::Type m_function; // Object containing the actual function to call
-    
+
     static int call(lua_State *L)
     {
         lua_pushvalue(L, lua_upvalueindex(1));
@@ -476,7 +476,7 @@ private:
             call<decltype(m_function), FTraits, FPolicies>(self->m_function, L);
     }
 };
-    
+
 } // namespace detail
 } // namespace lua
 } // namespace ponder

@@ -74,6 +74,8 @@ public:
      *
      * \param id Identifier of the C++ class bound to the metaclass (unique)
      *
+     * \param name Name of the C++ class bound to the metaclass
+     *
      * \return Reference to the new metaclass
      *
      * \throw ClassAlreadyCreated \a name or \a id already exists
@@ -97,7 +99,7 @@ public:
      *
      * \return Number of metaclasses that have been registered
      */
-    size_t count() const;
+    [[nodiscard]] size_t count() const;
 
     /**
      * \brief Get a metaclass from a C++ type
@@ -108,7 +110,7 @@ public:
      *
      * \throw ClassNotFound id is not the name of an existing metaclass
      */
-    const Class& getById(TypeId const& id) const;
+    [[nodiscard]] const Class& getById(TypeId const& id) const;
 
     /**
      * \brief Get a metaclass from a C++ type
@@ -120,7 +122,7 @@ public:
      *
      * \return Pointer to the requested metaclass, or null pointer if not found
      */
-    const Class* getByIdSafe(TypeId const& id) const;
+    [[nodiscard]] const Class* getByIdSafe(TypeId const& id) const;
 
     /**
      * \brief Get a metaclass by name
@@ -131,7 +133,7 @@ public:
      *
      * \throw ClassNotFound id is not the name of an existing metaclass
      */
-    const Class& getByName(const IdRef name) const;
+    [[nodiscard]] const Class& getByName(IdRef name) const;
 
     /**
      * \brief Get a metaclass by name
@@ -143,7 +145,7 @@ public:
      *
      * \return Pointer to the requested metaclass, or null pointer if not found
      */
-    const Class* getByNameSafe(const IdRef name) const;
+    [[nodiscard]] const Class* getByNameSafe(IdRef name) const;
 
     /**
      * \brief Check if a given type has a metaclass
@@ -152,7 +154,7 @@ public:
      *
      * \return True if the class exists, false otherwise
      */
-    bool classExists(TypeId const& id) const;
+    [[nodiscard]] bool classExists(TypeId const& id) const;
 
     /**
      * \brief Default constructor
@@ -166,7 +168,7 @@ public:
      */
     ~ClassManager();
 
-    ClassView getClasses() const;
+    [[nodiscard]] ClassView getClasses() const;
 
 private:
 

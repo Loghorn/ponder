@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,11 +34,8 @@
 #define PONDER_CLASSGET_HPP
 
 #include <ponder/config.hpp>
-#include <ponder/error.hpp>
 #include <ponder/detail/typeid.hpp>
 #include <ponder/detail/classmanager.hpp>
-#include <ponder/detail/util.hpp>
-#include <string>
 
 namespace ponder {
 
@@ -50,7 +47,7 @@ namespace ponder {
  * \return Global metaclass count
  */
 size_t classCount();
-    
+
 /**
  * \brief Get an iterator that can be used to iterate over all registered classes
  *

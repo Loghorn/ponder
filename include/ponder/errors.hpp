@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,7 @@
 #include <ponder/type.hpp>
 
 namespace ponder {
-    
+
 class Class;
 
 /**
@@ -69,14 +69,14 @@ protected:
      *
      * \return Name of the provided type
      */
-    static ponder::String typeName(ValueKind type);
+    static String typeName(ValueKind type);
 };
 
 /**
- * \brief Error thrown when providing a function argument which is incompatible with 
+ * \brief Error thrown when providing a function argument which is incompatible with
  *        what the function expects
  */
-class PONDER_API BadArgument : public BadType
+class PONDER_API BadArgument final : public BadType
 {
 public:
 
@@ -95,7 +95,7 @@ public:
 /**
  * \brief Error thrown when a declaring a metaclass that already exists
  */
-class PONDER_API ClassAlreadyCreated : public Error
+class PONDER_API ClassAlreadyCreated final : public Error
 {
 public:
 
@@ -110,7 +110,7 @@ public:
 /**
  * \brief Error thrown when a metaclass couldn't be found (either by its name or its id)
  */
-class PONDER_API ClassNotFound : public Error
+class PONDER_API ClassNotFound final : public Error
 {
 public:
 
@@ -123,10 +123,10 @@ public:
 };
 
 /**
- * \brief Error thrown when trying to convert an object to a class that is not a 
+ * \brief Error thrown when trying to convert an object to a class that is not a
  *        base nor a derived
  */
-class PONDER_API ClassUnrelated : public Error
+class PONDER_API ClassUnrelated final : public Error
 {
 public:
 
@@ -142,7 +142,7 @@ public:
 /**
  * \brief Error thrown when a declaring a metaenum that already exists
  */
-class PONDER_API EnumAlreadyCreated : public Error
+class PONDER_API EnumAlreadyCreated final : public Error
 {
 public:
 
@@ -157,7 +157,7 @@ public:
 /**
  * \brief Error thrown when the value of a metaenum couldn't be found by its name
  */
-class PONDER_API EnumNameNotFound : public Error
+class PONDER_API EnumNameNotFound final : public Error
 {
 public:
 
@@ -173,7 +173,7 @@ public:
 /**
  * \brief Error thrown when a metaenum couldn't be found (either by its name or its id)
  */
-class PONDER_API EnumNotFound : public Error
+class PONDER_API EnumNotFound final : public Error
 {
 public:
 
@@ -188,7 +188,7 @@ public:
 /**
  * \brief Error thrown when a value in a metaenum couldn't be found
  */
-class PONDER_API EnumValueNotFound : public Error
+class PONDER_API EnumValueNotFound final : public Error
 {
 public:
 
@@ -204,7 +204,7 @@ public:
 /**
  * \brief Error thrown when calling a function that is not callable
  */
-class PONDER_API ForbiddenCall : public Error
+class PONDER_API ForbiddenCall final : public Error
 {
 public:
 
@@ -219,7 +219,7 @@ public:
 /**
  * \brief Error thrown when trying to read a property that is not readable
  */
-class PONDER_API ForbiddenRead : public Error
+class PONDER_API ForbiddenRead final : public Error
 {
 public:
 
@@ -234,7 +234,7 @@ public:
 /**
  * \brief Error thrown when trying to write a function that is not writable
  */
-class PONDER_API ForbiddenWrite : public Error
+class PONDER_API ForbiddenWrite final : public Error
 {
 public:
 
@@ -249,7 +249,7 @@ public:
 /**
  * \brief Error thrown when a function can't be found in a metaclass (by its name)
  */
-class PONDER_API FunctionNotFound : public Error
+class PONDER_API FunctionNotFound final : public Error
 {
 public:
 
@@ -261,11 +261,11 @@ public:
      */
     FunctionNotFound(IdRef name, IdRef className);
 };
-    
+
 /**
  * \brief Error thrown when a declaring a metaclass that already exists
  */
-class PONDER_API NotEnoughArguments : public Error
+class PONDER_API NotEnoughArguments final : public Error
 {
 public:
 
@@ -284,7 +284,7 @@ public:
 /**
  * \brief Error thrown when trying to use an empty metaobject
  */
-class PONDER_API NullObject : public Error
+class PONDER_API NullObject final : public Error
 {
 public:
 
@@ -299,7 +299,7 @@ public:
 /**
  * \brief Error thrown when using an index which is out of bounds
  */
-class PONDER_API OutOfRange : public Error
+class PONDER_API OutOfRange final : public Error
 {
 public:
 
@@ -315,7 +315,7 @@ public:
 /**
  * \brief Error thrown when a property can't be found in a metaclass (by its name)
  */
-class PONDER_API PropertyNotFound : public Error
+class PONDER_API PropertyNotFound final : public Error
 {
 public:
 
@@ -331,10 +331,10 @@ public:
 /**
  * \brief Error thrown when cannot distinguish between multiple type instance
  */
-class PONDER_API TypeAmbiguity : public Error
+class PONDER_API TypeAmbiguity final : public Error
 {
 public:
-    
+
     /**
      * \brief Constructor
      *

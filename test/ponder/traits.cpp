@@ -49,7 +49,7 @@ namespace TraitsTest
 
     struct Class
     {
-        float method(float x) const { return x*3; }
+        [[nodiscard]] float method(float x) const { return x*3; }
         static int staticFunc() { return 77; }
     };
 
@@ -61,11 +61,11 @@ namespace TraitsTest
         std::array<int, 6> arrv;
 
         int v;
-        const int& getV() const {return v;}
+        [[nodiscard]] const int& getV() const {return v;}
     };
 
     struct Callable {
-        void operator () (void) {}
+        void operator () () const {}
     };
 
     struct NonCallable {
@@ -89,18 +89,18 @@ namespace TraitsTest
         int m_i;
         Callable m_c;
 
-        int i() const {return 0;}
+        [[nodiscard]] int i() const {return 0;}
         float f() {return 2.4f;}
 
         int* ip() {return &m_i;}
 
         std::shared_ptr<Callable> sp() {return std::make_shared<Callable>(m_c);}
 
-        std::vector<int> ai() {return std::vector<int>{1,2,3};}
+        std::vector<int> ai() {return std::vector{1,2,3};}
 
         std::vector<std::shared_ptr<Callable>> as()
         {
-            return std::vector<std::shared_ptr<Callable>>();
+            return {};
         }
     };
 
@@ -127,21 +127,21 @@ TEST_CASE("C++11 features and syntax")
     {
         func(); funcArgReturn(0.f); // to stop unused warning
 
-        static_assert(std::is_function<decltype(func)>::value, "std::is_function failed");
-        static_assert(std::is_function<void(void)>::value, "std::is_function failed");
-        static_assert(std::is_function<
-                        std::remove_pointer<decltype(&Class::staticFunc)>::type>::value,
+        static_assert(std::is_function_v<decltype(func)>, "std::is_function failed");
+        static_assert(std::is_function_v<void()>, "std::is_function failed");
+        static_assert(std::is_function_v<
+                        std::remove_pointer_t<decltype(&Class::staticFunc)>>,
                       "std::is_function failed");
-        static_assert(std::is_function< std::function<void()>() >::value,
+        static_assert(std::is_function_v< std::function<void()>() >,
                       "std::is_function failed");
 
-        static_assert( ! std::is_function<Callable>::value, "std::is_function failed");
-        static_assert( ! std::is_function<NonCallable>::value, "std::is_function failed");
-        static_assert( ! std::is_function<decltype(&Class::method)>::value,
+        static_assert( ! std::is_function_v<Callable>, "std::is_function failed");
+        static_assert( ! std::is_function_v<NonCallable>, "std::is_function failed");
+        static_assert( ! std::is_function_v<decltype(&Class::method)>,
                       "std::is_function failed");
-        static_assert( ! std::is_function<void(Methods::*)()>::value, "std::is_function failed");
-        static_assert( ! std::is_function<
-                            std::remove_pointer<decltype(&Methods::foo)>::type>::value,
+        static_assert( ! std::is_function_v<void(Methods::*)()>, "std::is_function failed");
+        static_assert( ! std::is_function_v<
+                            std::remove_pointer_t<decltype(&Methods::foo)>>,
                       "std::is_function failed");
     }
 
@@ -161,18 +161,18 @@ TEST_CASE("C++11 features and syntax")
 
     SECTION("arrays")
     {
-        static_assert( ! std::is_array<int>::value, "std::is_array failed");
-        static_assert(   std::is_array<int[10]>::value, "std::is_array failed");
-        static_assert( ! std::is_array<int*>::value, "std::is_array failed");
-        static_assert( ! std::is_array<int*>::value, "std::is_array failed");
+        static_assert( ! std::is_array_v<int>, "std::is_array failed");
+        static_assert(   std::is_array_v<int[10]>, "std::is_array failed");
+        static_assert( ! std::is_array_v<int*>, "std::is_array failed");
+        static_assert( ! std::is_array_v<int*>, "std::is_array failed");
     }
 
     SECTION("other")
     {
-        static_assert(std::is_const<const int>::value, "std::is_array failed");
-        static_assert(std::is_const<std::remove_reference<const int&>::type>::value, "std::is_array failed");
+        static_assert(std::is_const_v<const int>, "std::is_array failed");
+        static_assert(std::is_const_v<std::remove_reference_t<const int&>>, "std::is_array failed");
 
-        static_assert(std::is_enum<Enum>::value, "");
+        static_assert(std::is_enum_v<Enum>);
     }
 }
 
@@ -200,19 +200,19 @@ TEST_CASE("Ponder supports different function types")
         using ponder::PropertyKind;
         using ponder::FunctionKind;
 
-        STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, void(void)>::kind == PropertyKind::Function));
-        STATIC_ASSERT(FunctionTraits<void(void)>::kind == FunctionKind::Function);
+        STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, void()>::kind == PropertyKind::Function));
+        STATIC_ASSERT(FunctionTraits<void()>::kind == FunctionKind::Function);
 
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, void(int)>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<void(int)>::kind == FunctionKind::Function);
 
-        STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, int(void)>::kind == PropertyKind::Function));
-        STATIC_ASSERT(FunctionTraits<int(void)>::kind == FunctionKind::Function);
+        STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, int()>::kind == PropertyKind::Function));
+        STATIC_ASSERT(FunctionTraits<int()>::kind == FunctionKind::Function);
 
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, int(char*)>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<int(char*)>::kind == FunctionKind::Function);
 
-        // non-class void(void)
+        // non-class void()
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, decltype(func)>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<decltype(func)>::kind == FunctionKind::Function);
 
@@ -220,7 +220,7 @@ TEST_CASE("Ponder supports different function types")
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, decltype(funcArgReturn)>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<decltype(funcArgReturn)>::kind == FunctionKind::Function);
 
-        // class static R(void)
+        // class static R()
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, decltype(&Class::staticFunc)>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<decltype(&Class::staticFunc)>::kind == FunctionKind::Function);
     }
@@ -232,7 +232,7 @@ TEST_CASE("Ponder supports different function types")
         using ponder::PropertyKind;
         using ponder::FunctionKind;
 
-        STATIC_ASSERT(std::is_member_function_pointer<void (TraitsTest::Methods::*)()>::value);
+        STATIC_ASSERT(std::is_member_function_pointer_v<void (TraitsTest::Methods::*)()>);
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Methods, void(Methods::*)()>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<void(Methods::*)()>::kind == FunctionKind::MemberFunction);
 
@@ -288,7 +288,7 @@ TEST_CASE("Ponder supports different function types")
         auto l2 = [=] (int&) { return "hello"; };
         auto l3 = [] (float a, float b) -> float { return a*b; };
 
-        std::function<void()> f1(l1);
+        std::function f1(l1);
 
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, decltype(l1)>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<decltype(l1)>::kind == FunctionKind::Lambda);
@@ -315,29 +315,29 @@ TEST_CASE("Functions have access types")
         STATIC_ASSERT((ponder::detail::PropertyFactory1<Dummy, fn>::kind == PropertyKind::Function));
         STATIC_ASSERT(FunctionTraits<fn>::kind == FunctionKind::MemberFunction);
 
-        STATIC_ASSERT((std::is_same<
+        STATIC_ASSERT((std::is_same_v<
                          FunctionTraits<decltype(&FuncReturn::i)>::ExposedType, int
-                       >::value));
-        STATIC_ASSERT((std::is_same<
+                       >));
+        STATIC_ASSERT((std::is_same_v<
                          FunctionTraits<decltype(&FuncReturn::f)>::ExposedType, float
-                       >::value));
-        STATIC_ASSERT((std::is_same<
+                       >));
+        STATIC_ASSERT((std::is_same_v<
                          FunctionTraits<decltype(&FuncReturn::ip)>::ExposedType, int*
-                       >::value));
+                       >));
 
-        STATIC_ASSERT((std::is_same<
+        STATIC_ASSERT((std::is_same_v<
                          FunctionTraits<decltype(&FuncReturn::sp)>::ExposedType, \
                          std::shared_ptr<Callable> \
-                       >::value));
+                       >));
 
-//        STATIC_ASSERT(std::is_same<
+//        STATIC_ASSERT(std::is_same_v<
 //                        FunctionTraits<decltype(&FuncReturn::ai)>::ExposedType,
 //                        std::vector<int>
-//                      >::value, "");
-//        STATIC_ASSERT(std::is_same<
+//                      >, "");
+//        STATIC_ASSERT(std::is_same_v<
 //                        FunctionTraits<decltype(&FuncReturn::as)>::ExposedType,
 //                        std::vector<std::shared_ptr<Callable>>
-//                      >::value, "");
+//                      >, "");
     }
 }
 
@@ -490,12 +490,12 @@ TEST_CASE("Referenced objects have traits")
     {
         using ponder::detail::TypeTraits;
 
-        STATIC_ASSERT((std::is_same<int&, TypeTraits<int>::ReferenceType>::value));
-        STATIC_ASSERT((std::is_same<const float&, TypeTraits<const float>::ReferenceType>::value));
+        STATIC_ASSERT((std::is_same_v<int&, TypeTraits<int>::ReferenceType>));
+        STATIC_ASSERT((std::is_same_v<const float&, TypeTraits<const float>::ReferenceType>));
 
         // ref return
-        STATIC_ASSERT((std::is_same<int*, TypeTraits<int*>::ReferenceType>::value));
-        STATIC_ASSERT((std::is_same<const int*, TypeTraits<const int*>::ReferenceType>::value));
+        STATIC_ASSERT((std::is_same_v<int*, TypeTraits<int*>::ReferenceType>));
+        STATIC_ASSERT((std::is_same_v<const int*, TypeTraits<const int*>::ReferenceType>));
     }
 
     SECTION("types can be pointers")
@@ -503,8 +503,8 @@ TEST_CASE("Referenced objects have traits")
         using ponder::detail::TypeTraits;
 
         // pointer type
-        STATIC_ASSERT((std::is_same<int*, TypeTraits<int*>::PointerType>::value));
-        STATIC_ASSERT((std::is_same<const int*, TypeTraits<const int*>::PointerType>::value));
+        STATIC_ASSERT((std::is_same_v<int*, TypeTraits<int*>::PointerType>));
+        STATIC_ASSERT((std::is_same_v<const int*, TypeTraits<const int*>::PointerType>));
     }
 
     SECTION("is a smart pointer")
@@ -528,13 +528,13 @@ TEST_CASE("Referenced objects have traits")
     {
         using ponder::detail::TypeTraits;
 
-        STATIC_ASSERT((std::is_same<int, TypeTraits<int>::DataType>::value));
-        STATIC_ASSERT((std::is_same<int, TypeTraits<int*>::DataType>::value));
-        STATIC_ASSERT((std::is_same<int, TypeTraits<const int>::DataType>::value));
-        STATIC_ASSERT((std::is_same<int, TypeTraits<const int*>::DataType>::value));
-        STATIC_ASSERT((std::is_same<int, TypeTraits<int **>::DataType>::value));
+        STATIC_ASSERT((std::is_same_v<int, TypeTraits<int>::DataType>));
+        STATIC_ASSERT((std::is_same_v<int, TypeTraits<int*>::DataType>));
+        STATIC_ASSERT((std::is_same_v<int, TypeTraits<const int>::DataType>));
+        STATIC_ASSERT((std::is_same_v<int, TypeTraits<const int*>::DataType>));
+        STATIC_ASSERT((std::is_same_v<int, TypeTraits<int **>::DataType>));
         //        STATIC_ASSERT(
-        //            std::is_same<int, TypeTraits<int[10]>::DataType>::value,
+        //            std::is_same_v<int, TypeTraits<int[10]>::DataType>,
         //            "TypeTraits<>::DataType failed");
     }
 }
@@ -591,24 +591,24 @@ TEST_CASE("Type testing")
     {
         using ponder::detail::DataType;
 
-        STATIC_ASSERT((std::is_same<int, DataType<int>::Type>::value));
-        STATIC_ASSERT((std::is_same<int, DataType<int*>::Type>::value));
-        STATIC_ASSERT((std::is_same<int, DataType<int**>::Type>::value));
-        STATIC_ASSERT((std::is_same<int, DataType<int***>::Type>::value));
-        STATIC_ASSERT((std::is_same<int, DataType<int&>::Type>::value));
+        STATIC_ASSERT((std::is_same_v<int, DataType<int>::Type>));
+        STATIC_ASSERT((std::is_same_v<int, DataType<int*>::Type>));
+        STATIC_ASSERT((std::is_same_v<int, DataType<int**>::Type>));
+        STATIC_ASSERT((std::is_same_v<int, DataType<int***>::Type>));
+        STATIC_ASSERT((std::is_same_v<int, DataType<int&>::Type>));
 
-        STATIC_ASSERT((std::is_same<char, DataType<char>::Type>::value));
-        STATIC_ASSERT((std::is_same<float, DataType<float*>::Type>::value));
+        STATIC_ASSERT((std::is_same_v<char, DataType<char>::Type>));
+        STATIC_ASSERT((std::is_same_v<float, DataType<float*>::Type>));
 
-        STATIC_ASSERT((std::is_same<std::string, DataType<std::string>::Type>::value));
-        STATIC_ASSERT((std::is_same<std::string, DataType<std::string&>::Type>::value));
-        STATIC_ASSERT((std::is_same<std::string, DataType<const std::string&>::Type>::value));
-        STATIC_ASSERT((std::is_same<std::string, DataType<std::string*>::Type>::value));
-        STATIC_ASSERT((std::is_same<std::string, DataType<const std::string*>::Type>::value));
+        STATIC_ASSERT((std::is_same_v<std::string, DataType<std::string>::Type>));
+        STATIC_ASSERT((std::is_same_v<std::string, DataType<std::string&>::Type>));
+        STATIC_ASSERT((std::is_same_v<std::string, DataType<const std::string&>::Type>));
+        STATIC_ASSERT((std::is_same_v<std::string, DataType<std::string*>::Type>));
+        STATIC_ASSERT((std::is_same_v<std::string, DataType<const std::string*>::Type>));
 
-        STATIC_ASSERT((std::is_same<Callable, DataType<Callable>::Type>::value));
-        STATIC_ASSERT((std::is_same<Callable, DataType<Callable*>::Type>::value));
-        STATIC_ASSERT((std::is_same<Callable, DataType<Callable&>::Type>::value));
+        STATIC_ASSERT((std::is_same_v<Callable, DataType<Callable>::Type>));
+        STATIC_ASSERT((std::is_same_v<Callable, DataType<Callable*>::Type>));
+        STATIC_ASSERT((std::is_same_v<Callable, DataType<Callable&>::Type>));
     }
 
     SECTION("which are user types")
@@ -653,25 +653,25 @@ TEST_CASE("Types supporting array interface are supported")
     SECTION("C arrays")
     {
         STATIC_ASSERT((ponder_ext::ArrayMapper<int[10]>::isArray));
-        STATIC_ASSERT((std::is_same<int, ponder_ext::ArrayMapper<int[10]>::ElementType>::value));
+        STATIC_ASSERT((std::is_same_v<int, ponder_ext::ArrayMapper<int[10]>::ElementType>));
     }
 
     SECTION("std::array")
     {
         STATIC_ASSERT((ponder_ext::ArrayMapper<std::array<int, 10>>::isArray));
-        STATIC_ASSERT((std::is_same<int, ponder_ext::ArrayMapper<std::array<int, 10>>::ElementType>::value));
+        STATIC_ASSERT((std::is_same_v<int, ponder_ext::ArrayMapper<std::array<int, 10>>::ElementType>));
     }
 
     SECTION("std::vector")
     {
         STATIC_ASSERT((ponder_ext::ArrayMapper<std::vector<int>>::isArray));
-        static_assert(std::is_same<int, ponder_ext::ArrayMapper<std::vector<int>>::ElementType>::value);
+        static_assert(std::is_same_v<int, ponder_ext::ArrayMapper<std::vector<int>>::ElementType>);
     }
 
     SECTION("std::list")
     {
         STATIC_ASSERT(ponder_ext::ArrayMapper<std::list<int>>::isArray);
-        STATIC_ASSERT((std::is_same<int, ponder_ext::ArrayMapper<std::list<int>>::ElementType>::value));
+        STATIC_ASSERT((std::is_same_v<int, ponder_ext::ArrayMapper<std::list<int>>::ElementType>));
     }
 }
 
@@ -681,19 +681,19 @@ TEST_CASE("Lexical cast is used")
 {
     SECTION("lexical_cast_to_string")
     {
-        const unsigned int ui = 234;
+        constexpr unsigned int ui = 234;
         REQUIRE(ponder::detail::convert<ponder::String>(ui) == std::to_string(ui));
 
-        const int i = -17;
+        constexpr int i = -17;
         REQUIRE(ponder::detail::convert<ponder::String>(i) == std::to_string(i));
 
-        const float f = 108.75f;
+        constexpr float f = 108.75f;
         REQUIRE(ponder::detail::convert<ponder::String>(f) == "108.750000");
 
-        const double d = 108.125;
+        constexpr double d = 108.125;
         REQUIRE(ponder::detail::convert<ponder::String>(d) == "108.125000");
 
-        const bool bt = true, bf = false;
+        constexpr bool bt = true, bf = false;
         REQUIRE(ponder::detail::convert<ponder::String>(bt) == "1");
         REQUIRE(ponder::detail::convert<ponder::String>(bf) == "0");
     }
@@ -791,7 +791,7 @@ TEST_CASE("Lexical cast is used")
 // From: http://en.cppreference.com/w/cpp/utility/integer_sequence
 
 template<typename R, typename Array, size_t... I>
-R a2t_impl(const Array& a, PONDER__SEQNS::index_sequence<I...>)
+R a2t_impl(const Array& a, std::index_sequence<I...>)
 {
     return std::make_tuple(a[I]...);
 }
@@ -799,7 +799,7 @@ R a2t_impl(const Array& a, PONDER__SEQNS::index_sequence<I...>)
 template< typename R,
           typename T,
           size_t N,
-          typename Indices = PONDER__SEQNS::make_index_sequence<N> >
+          typename Indices = std::make_index_sequence<N> >
 R a2t(const std::array<T, N>& a)
 {
     return a2t_impl<R>(a, Indices());
@@ -809,14 +809,14 @@ TEST_CASE("Check Ponder utilities work correctly")
 {
     SECTION("integer_sequence")
     {
-        auto is = PONDER__SEQNS::make_index_sequence<3>();
+        auto is = std::make_index_sequence<3>();
         REQUIRE(is.size() == 3);
 
         std::array<int, 4> array {{1,2,3,4}};
 
         // convert an array into a tuple
         auto tuple = a2t<std::tuple<int, int, int, int>>(array);
-        static_assert(std::is_same<decltype(tuple), std::tuple<int, int, int, int>>::value, "");
+        static_assert(std::is_same_v<decltype(tuple), std::tuple<int, int, int, int>>);
     }
 
     SECTION("allTrue")
@@ -856,8 +856,8 @@ TEST_CASE("Check IdTraits")
     SECTION("cstr")
     {
         const char *t1 = "flibaddydib";
-        ponder::Id id(t1);
-        ponder::IdRef ir(id);
+        const ponder::Id id(t1);
+        const ponder::IdRef ir(id);
 
         REQUIRE(strcmp(ponder::id::c_str(ir), t1) == 0);
     }
@@ -872,22 +872,22 @@ TEST_CASE("Check functionality same as Boost")
 {
     SECTION("check traits same as Boost")
     {
-        using fn1_t = void(*)(void);
+        using fn1_t = void(*)();
 
-        static_assert(std::is_same<void(),
-                      boost::function_types::function_type<fn1_t>::type>::value,
+        static_assert(std::is_same_v<void(),
+                      boost::function_types::function_type<fn1_t>::type>,
                       "boost::function_types problem");
 
-        static_assert(std::is_same<void(), ponder::detail::FunctionTraits<fn1_t>::type>::value,
+        static_assert(std::is_same_v<void(), ponder::detail::FunctionTraits<fn1_t>::type>,
                       "ponder::detail::FunctionTraits problem");
 
         using fn2_t = int(*)(int,const char*,float&);
 
-        static_assert(std::is_same<int(int,const char*,float&),
-                      boost::function_types::function_type<fn2_t>::type>::value,
+        static_assert(std::is_same_v<int(int,const char*,float&),
+                      boost::function_types::function_type<fn2_t>::type>,
                       "boost::function_types problem");
-        static_assert(std::is_same<int(int,const char*,float&),
-                      ponder::detail::FunctionTraits<fn2_t>::type>::value,
+        static_assert(std::is_same_v<int(int,const char*,float&),
+                      ponder::detail::FunctionTraits<fn2_t>::type>,
                       "ponder::detail::FunctionTraits problem");
 
         struct TestClass {
@@ -896,29 +896,29 @@ TEST_CASE("Check functionality same as Boost")
 
         using fn3_t = int(TestClass::*)(float);
 
-        static_assert(std::is_same<int(TestClass&,float),
-                      boost::function_types::function_type<fn3_t>::type>::value,
+        static_assert(std::is_same_v<int(TestClass&,float),
+                      boost::function_types::function_type<fn3_t>::type>,
                       "boost::function_types problem");
 
-        static_assert(std::is_same<int(TestClass&,float),
-                      ponder::detail::MethodDetails<fn3_t>::FunctionKind>::value,
+        static_assert(std::is_same_v<int(TestClass&,float),
+                      ponder::detail::MethodDetails<fn3_t>::FunctionKind>,
                       "ponder::detail::MethodDetails problem");
 
-        static_assert(std::is_same<int(TestClass&,float),
-                      ponder::detail::FunctionTraits<fn3_t>::type>::value,
+        static_assert(std::is_same_v<int(TestClass&,float),
+                      ponder::detail::FunctionTraits<fn3_t>::type>,
                       "ponder::detail::FunctionTraits problem");
     }
 
     SECTION("boost_function")
     {
-        using fn1_t = void(*)(void);
+        using fn1_t = void(*)();
         static_assert(
-            std::is_same<void(), boost::function_types::function_type<fn1_t>::type>::value,
+            std::is_same_v<void(), boost::function_types::function_type<fn1_t>::type>,
             "boost::function_types problem");
 
         using fn2_t = int(*)(int,const char*,float&);
-        static_assert(std::is_same<int(int,const char*,float&),
-             boost::function_types::function_type<fn2_t>::type>::value,
+        static_assert(std::is_same_v<int(int,const char*,float&),
+             boost::function_types::function_type<fn2_t>::type>,
              "boost::function_types problem");
 
         struct TestClass {
@@ -926,8 +926,8 @@ TEST_CASE("Check functionality same as Boost")
         };
 
         using fn3_t = int(TestClass::*)(float);
-        static_assert(std::is_same<int(TestClass&,float),
-             boost::function_types::function_type<fn3_t>::type>::value,
+        static_assert(std::is_same_v<int(TestClass&,float),
+             boost::function_types::function_type<fn3_t>::type>,
              "boost::function_types problem");
     }
 
@@ -962,17 +962,17 @@ TEST_CASE("Check functionality same as Boost")
             int foo(float) {return 0;}
         };
         static_assert(
-                  std::is_same<int, boost::function_types::result_type<int()>::type>::value,
+                  std::is_same_v<int, boost::function_types::result_type<int()>::type>,
                   "boost::ret result_type");
 
         static_assert(
-            std::is_same<int,
-                         boost::function_types::result_type<int(TestClass::*)(void)>::type>::value,
+            std::is_same_v<int,
+                         boost::function_types::result_type<int(TestClass::*)()>::type>,
                       "boost::ret result_type");
 
         static_assert(
-            std::is_same<float,
-                    boost::function_types::result_type<float(TestClass::*)(void)>::type>::value,
+            std::is_same_v<float,
+                    boost::function_types::result_type<float(TestClass::*)()>::type>,
                     "boost::ret result_type");
     }
 }

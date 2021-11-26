@@ -31,9 +31,6 @@
 #ifndef PONDER_USES_SERIALISE_HPP
 #define PONDER_USES_SERIALISE_HPP
 
-#include <ponder/class.hpp>
-#include <ponder/arrayproperty.hpp>
-
 namespace ponder {
 namespace archive {
     

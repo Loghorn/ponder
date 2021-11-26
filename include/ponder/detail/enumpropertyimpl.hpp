@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 /**
  * \brief Typed implementation of EnumProperty
  *
@@ -47,7 +47,7 @@ namespace detail {
  * \sa EnumProperty
  */
 template <typename A>
-class EnumPropertyImpl : public EnumProperty
+class EnumPropertyImpl final : public EnumProperty
 {
 public:
 
@@ -64,22 +64,22 @@ protected:
     /**
      * \see Property::isReadable
      */
-    bool isReadable() const final;
+    [[nodiscard]] bool isReadable() const;
 
     /**
      * \see Property::isWritable
      */
-    bool isWritable() const final;
+    [[nodiscard]] bool isWritable() const;
 
     /**
      * \see Property::getValue
      */
-    Value getValue(const UserObject& object) const final;
+    [[nodiscard]] Value getValue(const UserObject& object) const;
 
     /**
      * \see Property::setValue
      */
-    void setValue(const UserObject& object, const Value& value) const final;
+    void setValue(const UserObject& object, const Value& value) const;
 
 private:
 

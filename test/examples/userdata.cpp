@@ -12,10 +12,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,7 +36,7 @@ class Vec2D
 {
 public:
     Vec2D(float x_, float y_) : x(x_), y(y_) {}
-    Vec2D operator+(const Vec2D& o) const { return Vec2D(x+o.x, y+o.y); }
+    Vec2D operator+(const Vec2D& o) const { return {x+o.x, y+o.y}; }
     float x,y;
 };
 
@@ -45,7 +45,7 @@ PONDER_TYPE(Vec2D)
 static void declare()
 {
     using namespace ponder;
-    
+
     Class::declare<Vec2D>("Vec2D")
             ( UserData("help", "2D vector") )
         .constructor<float,float>()
@@ -61,14 +61,14 @@ static void declare()
 
 static void test()
 {
-    //! [get_user_data]    
+    //! [get_user_data]
     auto const& cls = ponder::classByType<Vec2D>();
-    
+
     // print help about the class
     const ponder::Value* help = ponder::userDataStore()->getValue(cls, "help");
     std::cout << "Class " << cls.name() << ": ";
     std::cout << (help ? help->to<ponder::Id>() : "no help") << std::endl;
-    
+
     // print functions and any help
     for (auto const& fn : cls.functions())
     {
@@ -76,7 +76,7 @@ static void test()
         help = ponder::userDataStore()->getValue(fn, "help");
         if (help)
             std::cout << (help ? help->to<ponder::Id>() : "no help") << std::endl;
-    }    
+    }
     //! [get_user_data]
 }
 

@@ -29,11 +29,11 @@
 
 // Tags are deprecated. TODO: reimplement using UserData?
 
-#include <ponder/classbuilder.hpp>
-#include "test.hpp"
-#include <string>
+//#include <ponder/classbuilder.hpp>
+//#include "test.hpp"
+//#include <string>
 
-// TODO: We may readd tags at a later date. We'll leave this here as a reference for now.
+// TODO: We may read tags at a later date. We'll leave this here as a reference for now.
 
 //namespace TagHolderTest
 //{

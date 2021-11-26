@@ -38,10 +38,6 @@ UserProperty::UserProperty(IdRef name, const Class& propClass)
 {
 }
 
-UserProperty::~UserProperty()
-{
-}
-
 const Class& UserProperty::getClass() const
 {
     return *m_class;

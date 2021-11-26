@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -57,11 +57,11 @@ namespace detail
  * \thrown BadArgument conversion triggered a BadType error
  */
 template <typename T>
-inline typename std::remove_reference<T>::type convertArg(const Args& args, size_t index)
+std::remove_reference_t<T> convertArg(const Args& args, size_t index)
 {
     try
     {
-        return args[index].to<typename std::remove_reference<T>::type>();
+        return args[index].to<std::remove_reference_t<T>>();
     }
     catch (const BadType&)
     {
@@ -86,16 +86,16 @@ bool checkArg(const Value& value);
  * \brief Implementation of metaconstructors with variable parameters
  */
 template <typename T, typename... A>
-class ConstructorImpl : public Constructor
+class ConstructorImpl final : public Constructor
 {
     template <typename... As, size_t... Is>
-    static inline bool checkArgs(const Args& args, PONDER__SEQNS::index_sequence<Is...>)
+    static bool checkArgs(const Args& args, std::index_sequence<Is...>)
     {
         return allTrue(checkArg<As>(args[Is])...);
     }
 
     template <typename... As, size_t... Is>
-    static inline UserObject createWithArgs(void* ptr, const Args& args, PONDER__SEQNS::index_sequence<Is...>)
+    static UserObject createWithArgs(void* ptr, const Args& args, std::index_sequence<Is...>)
     {
         if (ptr)
             return UserObject::makeRef(new(ptr) T(convertArg<As>(args, Is)...)); // placement new
@@ -108,9 +108,9 @@ public:
     /**
      * \see Constructor::matches
      */
-    bool matches(const Args& args) const override
+    [[nodiscard]] bool matches(const Args& args) const override
     {
-        return args.count() == sizeof...(A) && checkArgs<A...>(args, PONDER__SEQNS::make_index_sequence<sizeof...(A)>());
+        return args.count() == sizeof...(A) && checkArgs<A...>(args, std::make_index_sequence<sizeof...(A)>());
     }
 
     /**
@@ -118,7 +118,7 @@ public:
      */
     UserObject create(void* ptr, const Args& args) const override
     {
-        return createWithArgs<A...>(ptr, args, PONDER__SEQNS::make_index_sequence<sizeof...(A)>());
+        return createWithArgs<A...>(ptr, args, std::make_index_sequence<sizeof...(A)>());
     }
 };
 
@@ -126,7 +126,7 @@ public:
  * \brief Value visitor which checks the type of the visited value against the C++ type T
  */
 template <typename T>
-struct CheckTypeVisitor : public ValueVisitor<bool>
+struct CheckTypeVisitor : ValueVisitor<bool>
 {
     /**
      * \brief Common case: check mapping
@@ -140,7 +140,7 @@ struct CheckTypeVisitor : public ValueVisitor<bool>
     /**
      * \brief Special case of enum objects: check metaenum and bound type
      */
-    bool operator()(const EnumObject& obj)
+    bool operator()(const EnumObject& obj) const
     {
         const Enum* targetEnum = enumByTypeSafe<T>();
         return targetEnum && (*targetEnum == obj.getEnum());
@@ -149,7 +149,7 @@ struct CheckTypeVisitor : public ValueVisitor<bool>
     /**
      * \brief Special case of user objects: check metaclass and bound type
      */
-    bool operator()(const UserObject& obj)
+    bool operator()(const UserObject& obj) const
     {
         const Class* targetClass = classByTypeSafe<T>();
         return targetClass && (*targetClass == obj.getClass());

@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +32,7 @@
 #define PONDER_CONSTRUCTOR_HPP
 
 namespace ponder {
-    
+
 class Args;
 class UserObject;
 
@@ -48,18 +48,13 @@ class Constructor : public Type
 public:
 
     /**
-     * \brief Destructor
-     */
-    virtual ~Constructor() {}
-    
-    /**
      * \brief Check if the constructor matches the given set of arguments
      *
      * \param args Set of arguments to check
      *
      * \return True if the constructor is compatible with the given arguments
      */
-    virtual bool matches(const Args& args) const = 0;
+    [[nodiscard]] virtual bool matches(const Args& args) const = 0;
 
     /**
      * \brief Use the constructor to create a new object

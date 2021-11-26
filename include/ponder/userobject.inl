@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,8 +27,12 @@
 **
 ****************************************************************************/
 
+#include "classget.hpp"
+#include "error.hpp"
+#include "errors.hpp"
+
 namespace ponder {
-    
+
 template <typename T>
 UserObject::UserObject(const T& object)
     :   m_class(&classByType<T>())
@@ -45,9 +49,9 @@ UserObject::UserObject(T* object)
     using PropTraits = detail::TypeTraits<T>;
     static_assert(!PropTraits::isRef, "Cannot make reference to reference");
 
-    using Holder = typename std::conditional<std::is_const<T>::value,
-                                             detail::ObjectHolderByConstRef<typename PropTraits::DataType>,
-                                             detail::ObjectHolderByRef<typename PropTraits::DataType>>::type;    
+    using Holder = std::conditional_t<std::is_const_v<T>,
+                                    detail::ObjectHolderByConstRef<typename PropTraits::DataType>,
+                                    detail::ObjectHolderByRef<typename PropTraits::DataType>>;
     m_holder.reset(new Holder(object));
 }
 
@@ -71,26 +75,26 @@ typename detail::TypeTraits<T>::ReferenceType UserObject::get() const
 }
 
 template <typename T>
-inline UserObject UserObject::makeRef(T& object)
+UserObject UserObject::makeRef(T& object)
 {
     using TypeTraits = detail::TypeTraits<T>;
     static_assert(!TypeTraits::isRef, "Cannot make reference to reference");
 
-    using Holder = typename std::conditional<std::is_const<T>::value,
-                                             detail::ObjectHolderByConstRef<typename TypeTraits::DataType>,
-                                             detail::ObjectHolderByRef<typename TypeTraits::DataType>>::type;
+    using Holder = std::conditional_t<std::is_const_v<T>,
+                                    detail::ObjectHolderByConstRef<typename TypeTraits::DataType>,
+                                    detail::ObjectHolderByRef<typename TypeTraits::DataType>>;
 
     return UserObject(&classByObject(object), new Holder(TypeTraits::getPointer(object)));
 }
 
 template <typename T>
-inline UserObject UserObject::makeRef(T* object)
+UserObject UserObject::makeRef(T* object)
 {
     return makeRef(*object);
 }
 
 template <typename T>
-inline UserObject UserObject::makeCopy(const T& object)
+UserObject UserObject::makeCopy(const T& object)
 {
     using PropTraits = detail::TypeTraits<const T>;
     using Holder = detail::ObjectHolderByCopy<typename PropTraits::DataType>;
@@ -98,7 +102,7 @@ inline UserObject UserObject::makeCopy(const T& object)
 }
 
 template <typename T>
-inline UserObject UserObject::makeOwned(T&& object)
+UserObject UserObject::makeOwned(T&& object)
 {
     using PropTraits = detail::TypeTraits<const T>;
     using Holder = detail::ObjectHolderByCopy<typename PropTraits::DataType>;
@@ -106,15 +110,15 @@ inline UserObject UserObject::makeOwned(T&& object)
 }
 
 template <typename T>
-inline T& UserObject::ref() const
+T& UserObject::ref() const
 {
-    return *reinterpret_cast<T*>(m_holder->object());
+    return *static_cast<T*>(m_holder->object());
 }
 
 template <typename T>
-inline const T& UserObject::cref() const
+const T& UserObject::cref() const
 {
-    return *reinterpret_cast<T*>(m_holder->object());
+    return *static_cast<T*>(m_holder->object());
 }
 
 } // namespace ponder

@@ -30,13 +30,13 @@
 namespace ponder {
 
 template <typename T>
-inline EnumObject::EnumObject(T value, typename std::enable_if<std::is_enum<T>::value >::type*)
+EnumObject::EnumObject(T value, std::enable_if_t<std::is_enum_v<T> >*)
     : m_value(static_cast<long>(value))
     , m_enum(&enumByType<T>())
 {}
 
 template <typename E>
-inline E EnumObject::value() const
+E EnumObject::value() const
 {
     return static_cast<E>(value());
 }

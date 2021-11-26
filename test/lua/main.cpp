@@ -27,13 +27,10 @@
  ****************************************************************************/
 
 #define PONDER_USES_LUA_IMPL
-#define PONDER_USES_RUNTIME_IMPL
 #include <ponder/class.hpp>
 #include <ponder/classbuilder.hpp>
 #include <ponder/value.hpp>             // TODO: should this be in lua.hpp?
-#include <ponder/detail/rawtype.hpp>    // TODO: should this be in lua.hpp?
 #include <ponder/uses/lua.hpp>
-#include <list>
 #include <cstdio>
 #include <cmath>
 
@@ -43,108 +40,105 @@ extern "C" {
 
 static_assert(LUA_VERSION_NUM==503, "Expecting Lua 5.3");
 
-#define PLDB(X) X
-#define PASSERT(X) if(!(X)) __builtin_trap()
-
 namespace lib
 {
     static constexpr float FLOAT_EPSILON = 1e-5f;
-    
+
     struct Vec
     {
         float   x,y;
         static int instanceCount;
-        
+
         Vec()                       : x(0), y(0) { ++instanceCount; }
         Vec(float x_, float y_)     : x(x_), y(y_) { ++instanceCount; }
         Vec(const Vec& o)           : x(o.x), y(o.y) { ++instanceCount; }
-        Vec(Vec&& o)                : x(o.x), y(o.y) { ++instanceCount; }
+        Vec(Vec&& o) noexcept       : x(o.x), y(o.y) { ++instanceCount; }
         ~Vec() { --instanceCount; }
-        Vec& operator=(const Vec& o) { x = o.x; y = o.y; return *this; }
+        Vec& operator=(const Vec& o) = default;
 
         bool operator == (const Vec& o) const {
             const float dx = x - o.x, dy = y - o.y;
             return std::abs(dx) < FLOAT_EPSILON && std::abs(dy) < FLOAT_EPSILON;
         }
-        
-        std::tuple<float,float> get() const { return std::make_tuple(x,y); }
 
-        void set(float x_, float y_) { x = x_, y = y_; }
-        
-        Vec operator + (const Vec& o) const { return Vec(x + o.x, y + o.y); }
-        const Vec& operator += (const Vec& o) { x += o.x, y += o.y; return *this; }
-        
-        float length() const        { return std::sqrt(x*x + y*y); }
-        
-        float dot(const Vec &o) const {
+        [[nodiscard]] std::tuple<float,float> get() const { return std::make_tuple(x,y); }
+
+        void set(float x_, float y_) { x = x_; y = y_; }
+
+        Vec operator + (const Vec& o) const { return {x + o.x, y + o.y}; }
+        const Vec& operator += (const Vec& o) { x += o.x; y += o.y; return *this; }
+
+        [[nodiscard]] float length() const        { return std::sqrt(x*x + y*y); }
+
+        [[nodiscard]] float dot(const Vec &o) const {
             return x*o.x + y*o.y;
         }
-        
-        static Vec up() { return Vec(0, 1.f); }     // static function
-        
+
+        static Vec up() { return {0, 1.f}; }     // static function
+
         Vec& ref() { return *this; }                // return ref
     };
 
     int Vec::instanceCount = 0;
-    
+
     struct Holder
     {
         Holder() = default;
-        Holder(const Holder&) = delete;              
+        Holder(const Holder&) = delete;
         Holder(Holder&&) = default;
 
         Vec vec;
-        
+
         Holder* ptrRef() { return this; }
         Holder& refRef() { return *this; }
     };
-    
+
     struct Types
     {
         struct Obj {
             Obj(const Obj&) = delete;
         } o;
-        
-        static int len(const ponder::string_view str) { return (int) str.length(); }
-        
+
+        static int len(const ponder::string_view str) { return static_cast<int>(str.length()); }
+
         Obj* retPtr() { return &o; }
         void passPtr(Obj *po) {}
-        
+
         static const char* getString() { return "blah"; }
     };
-    
+
     struct Static
     {
         static int halve(int x) { return x/2; }
     };
     int twice(int x) { return 2*x; }
-    
+
     enum class Colour { Red, Green, Blue };
-    
+
     struct Parsing
     {
-        int a;
+        int a{0};
         std::string b;
-        
+
         void init(ponder_ext::LuaTable lt)
         {
             assert(lua_istable(lt.L, -1)); // should be guaranteed by conversion
-            
+
             lua_getfield(lt.L, -1, "a");
-            a = (int) luaL_checknumber(lt.L, -1);
+            a = static_cast<int>(luaL_checknumber(lt.L, -1));
             lua_pop(lt.L, 1);
-            
+
             lua_getfield(lt.L, -1, "b");
             b = luaL_checkstring(lt.L, -1);
             lua_pop(lt.L, 1);
         }
     };
-    
+
     void declare()
     {
         using namespace ponder;
-    
-        ponder::Class::declare<Vec>()
+
+        Class::declare<Vec>()
             .constructor()
             .constructor<float, float>()
             .constructor<const Vec&>()
@@ -156,48 +150,48 @@ namespace lib
             .function("add2", &Vec::operator+) //.tag("+")
             .function("length", &Vec::length)
             .function("dot", &Vec::dot)
-        
+
             .function("up", &Vec::up)   // static
-        
+
             .function("funcRef", &Vec::ref, policy::ReturnInternalRef())  // ref function
             .property("propRef", &Vec::ref)     // ref property
             ;
 
-        ponder::Class::declare<std::tuple<float,float>>();
+        Class::declare<std::tuple<float,float>>();
 
-        ponder::Class::declare<Holder>()
+        Class::declare<Holder>()
             .constructor()
             //  .property("pref", &Holder::ptrRef) // TODO - fix for self ref pointers
             .function("rref", &Holder::refRef, policy::ReturnInternalRef())
             .property("vec", &Holder::vec)
             ;
 
-        ponder::Class::declare<Types>()
+        Class::declare<Types>()
             .function("len", &Types::len)
             .function("retp", &Types::retPtr, policy::ReturnInternalRef())
             .function("passp", &Types::passPtr)
             .function("getStr", &Types::getString)
             ;
 
-        ponder::Class::declare<Static>()
+        Class::declare<Static>()
             .function("halve", &Static::halve)
             .function("twice", &twice)
             ;
 
-        ponder::Enum::declare<Colour>()
+        Enum::declare<Colour>()
             .value("red", Colour::Red)
             .value("green", Colour::Green)
             .value("blue", Colour::Blue)
             ;
-        
-        ponder::Class::declare<Parsing>()
+
+        Class::declare<Parsing>()
             .constructor()
             .function("init", &Parsing::init)
             .property("a", &Parsing::a)
             .property("b", &Parsing::b)
             ;
     }
-    
+
 } // namespace lib
 
 PONDER_TYPE(lib::Vec)
@@ -218,7 +212,6 @@ static bool luaTest(lua_State *L, const char *source, int lineNb, bool success =
     {
         std::printf("FAILED");
         exit(EXIT_FAILURE);
-        return false;
     }
     std::printf("\n");
     return true;
@@ -238,10 +231,10 @@ static bool Test(bool test, const char msg[])
 int main()
 {
     std::printf("Lua version %s\n", LUA_VERSION);
-    
+
     lua_State *L = luaL_newstate();
     luaopen_base(L);
-    
+
     lib::declare();
     ponder::lua::expose<lib::Vec>(L, "Vec2");
     ponder::lua::expose<lib::Holder>(L, "Holder");
@@ -249,7 +242,7 @@ int main()
     ponder::lua::expose<lib::Static>(L, "Static");
     ponder::lua::expose<lib::Colour>(L, "Colour");
     ponder::lua::expose<lib::Parsing>(L, "Parsing");
-    
+
     //------------------------------------------------------------------
 
     TEST(lib::Vec::instanceCount == 0);
@@ -307,7 +300,7 @@ int main()
     LUA_PASS("r = Vec2(17,8); assert(r.x == 17)");
     LUA_PASS("r.x = 9; assert(r.x == 9)");
     LUA_PASS("r.propRef.x = 19; assert(r.x == 19)");
-    
+
     // Vec return tuple or multiple values.
     LUA_PASS("t = Vec2(11,22); x,y = t:get(); print(x,y); assert(x == 11); assert(y == 22)");
 
@@ -315,14 +308,14 @@ int main()
     // Non-copyable return ref
     LUA_PASS("h = Holder()");
     LUA_PASS("h:rref().vec.x = 9; assert(h:rref().vec.x == 9)");
-    
+
     //------------------------------------------------------------------
-    
+
     // Types
     LUA_PASS("assert(type(Types) == 'userdata')");
     LUA_PASS("x = Types.len('two'); assert(type(x) == 'number' and x == 3)");
     LUA_PASS("assert(Types.len('1234567890') ~= 11)");
-    
+
     LUA_PASS("assert(Types.getStr() == 'blah')");
 
     //------------------------------------------------------------------
@@ -338,7 +331,7 @@ int main()
     LUA_PASS("x = Static.twice(7); assert(x == 14)");
 
     //------------------------------------------------------------------
-    
+
     // Enum
     LUA_PASS("assert(type(Colour) == 'table')");
     LUA_PASS("assert(Colour.red == 0)");
@@ -346,7 +339,7 @@ int main()
     LUA_PASS("assert(Colour.blue == 2)");
 
     //------------------------------------------------------------------
-    
+
     // Parsing
     LUA_PASS("p = Parsing(); assert(type(p)=='userdata')");
     LUA_PASS("p:init{a=77, b='w00t'}; assert(p.a == 77 and p.b == 'w00t')");

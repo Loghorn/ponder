@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,7 +40,7 @@
 #include <string>
 
 namespace ponder {
-    
+
 /**
  * \brief ponder::Enum represents a metaenum composed of <name, value> pairs
  *
@@ -76,7 +76,7 @@ namespace ponder {
  */
 class PONDER_API Enum : public Type
 {
-    PONDER__NON_COPYABLE(Enum);
+    PONDER_NON_COPYABLE(Enum);
 public:
     using EnumValue = long;  //!< Type used to hold the enum value.
 
@@ -86,15 +86,15 @@ public:
     struct Pair {
         Id name;            //!< Enum name
         EnumValue value;    //!< Enum value
-        
+
         /**
          * \brief Constructor.
-         * 
+         *
          * \param name_ Name of the enum item.
          * \param value_ Value of the enum item.
          */
         Pair(IdRef name_, EnumValue value_) : name(name_), value(value_) {}
-        
+
         /**
          * \brief Helper to return value as require enum class type.
          *
@@ -105,7 +105,7 @@ public:
         template <typename E>
         E valueAs() const {return static_cast<E>(value);}
     };
-    
+
     /**
      * \brief Declare a new metaenum
      *
@@ -126,15 +126,13 @@ public:
      *
      * Call this to undeclare an Enum that you no longer require.
      *
-     * \param name Name of the existing metaenum in Ponder.
-     *
      * \note See notes for Class::undeclare about registration.
      *
      * \see Class::undeclare
      */
     template <typename T>
     static void undeclare();
-    
+
 public:
 
     /**
@@ -142,14 +140,14 @@ public:
      *
      * \return String containing the name of the metaenum
      */
-    IdReturn name() const;
-        
+    [[nodiscard]] IdReturn name() const;
+
     /**
      * \brief Return the size of the metaenum
      *
      * \return Total number of values contained in the metaenum
      */
-    size_t size() const;
+    [[nodiscard]] size_t size() const;
 
     /**
      * \brief Get a pair by its index
@@ -160,7 +158,7 @@ public:
      *
      * \throw OutOfRange index is out of range
      */
-    Pair pair(size_t index) const;
+    [[nodiscard]] Pair pair(size_t index) const;
 
     /**
      * \brief Check if the enum contains a name
@@ -169,7 +167,7 @@ public:
      *
      * \return True if the metaenum contains a pair whose name is \a name
      */
-    bool hasName(IdRef name) const;
+    [[nodiscard]] bool hasName(IdRef name) const;
 
     /**
      * \brief Check if the enum contains a value
@@ -178,7 +176,7 @@ public:
      *
      * \return True if the metaenum contains a pair whose value is \a value
      */
-    bool hasValue(EnumValue value) const;
+    [[nodiscard]] bool hasValue(EnumValue value) const;
 
     /**
      * \brief Check if the enum contains a value
@@ -190,7 +188,7 @@ public:
      * \return True if the metaenum contains a pair whose value is \a value
      */
     template <typename E>
-    bool hasValue(E value) const
+    [[nodiscard]] [[nodiscard]] [[nodiscard]] bool hasValue(E value) const
     {
         return hasValue(static_cast<EnumValue>(value));
     }
@@ -204,11 +202,11 @@ public:
      *
      * \throw InvalidEnumValue value doesn't exist in the metaenum
      */
-    IdReturn name(EnumValue value) const;
+    [[nodiscard]] IdReturn name(EnumValue value) const;
 
     /**
      * \brief Return the name corresponding to given a value for enum class
-     * 
+     *
      * \param value Value to get
      *
      * \return Name of the requested value
@@ -216,7 +214,7 @@ public:
      * \throw InvalidEnumValue value doesn't exist in the metaenum
      */
     template <typename E>
-    IdReturn name(E value) const {return name(static_cast<EnumValue>(value));}
+    [[nodiscard]] [[nodiscard]] [[nodiscard]] IdReturn name(E value) const {return name(static_cast<EnumValue>(value));}
 
     /**
      * \brief Return the value corresponding to given a name
@@ -227,7 +225,7 @@ public:
      *
      * \throw InvalidEnumName name doesn't exist in the metaenum
      */
-    EnumValue value(IdRef name) const;
+    [[nodiscard]] EnumValue value(IdRef name) const;
 
     /**
      * \brief Return the value corresponding to given a name for enum class
@@ -277,7 +275,7 @@ private:
     Enum(IdRef name);
 
     using EnumTable = detail::Dictionary<Id, IdRef, EnumValue>;
-    
+
     Id m_name;              // Name of the metaenum
     EnumTable m_enums;      // Table of enums
 };

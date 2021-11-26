@@ -12,10 +12,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,51 +39,51 @@ namespace detail {
 
 //-----------------------------------------------------------------------------
 // Handle returning copies
-    
+
 template <typename R, typename U = void> struct CallReturnCopy;
 
 template <typename R>
-struct CallReturnCopy<R, typename std::enable_if<!ponder::detail::IsUserType<R>::value>::type>
+struct CallReturnCopy<R, std::enable_if_t<!ponder::detail::IsUserType<R>::value>>
 {
-    static inline Value value(R&& o) {return Value(o);}
+    static Value value(R&& o) {return Value(o);}
 };
 
 template <typename R>
-struct CallReturnCopy<R, typename std::enable_if<ponder::detail::IsUserType<R>::value>::type>
+struct CallReturnCopy<R, std::enable_if_t<ponder::detail::IsUserType<R>::value>>
 {
-    static_assert(!std::is_pointer<R>::value, "Cannot return unowned pointer. Use ponder::policy::ReturnInternalRef?");
-    static inline Value value(R&& o) {return Value(UserObject::makeCopy(std::forward<R>(o)));}
+    static_assert(!std::is_pointer_v<R>, "Cannot return unowned pointer. Use ponder::policy::ReturnInternalRef?");
+    static Value value(R&& o) {return Value(UserObject::makeCopy(std::forward<R>(o)));}
 };
 
 //-----------------------------------------------------------------------------
 // Handle returning internal references
-    
+
 template <typename R, typename U = void> struct CallReturnInternalRef;
 
 template <typename R>
 struct CallReturnInternalRef<R,
-    typename std::enable_if<
+                             std::enable_if_t<
         !ponder::detail::IsUserType<R>::value
-        && !std::is_same<typename ponder::detail::DataType<R>::Type, UserObject>::value
-    >::type>
+        && !std::is_same_v<typename ponder::detail::DataType<R>::Type, UserObject>
+    >>
 {
-    static inline Value value(R&& o) {return Value(o);}
+    static Value value(R&& o) {return Value(o);}
 };
 
 template <typename R>
 struct CallReturnInternalRef<R,
-    typename std::enable_if<
+                             std::enable_if_t<
         ponder::detail::IsUserType<R>::value
-        || std::is_same<typename ponder::detail::DataType<R>::Type, UserObject>::value
-    >::type>
+        || std::is_same_v<typename ponder::detail::DataType<R>::Type, UserObject>
+    >>
 {
-    static inline Value value(R&& o) {return Value(UserObject::makeRef(std::forward<R>(o)));}
+    static Value value(R&& o) {return Value(UserObject::makeRef(std::forward<R>(o)));}
 };
 
 //-----------------------------------------------------------------------------
 // Choose which returner to use, based on policy
 //  - map policy kind to actionable policy type
-    
+
 template <typename Policies_t, typename R> struct ChooseCallReturner;
 
 template <typename... Ps, typename R>
@@ -111,7 +111,7 @@ struct ChooseCallReturner<std::tuple<P, Ps...>, R> // recurse
 };
 
 //-----------------------------------------------------------------------------
-    
+
 /*
  * Helper function which converts an argument to a C++ type
  *
@@ -121,12 +121,12 @@ struct ChooseCallReturner<std::tuple<P, Ps...>, R> // recurse
 template <int TFrom, typename TTo>
 struct ConvertArg
 {
-    using ReturnType = typename std::remove_reference<TTo>::type;
+    using ReturnType = std::remove_reference_t<TTo>;
     static ReturnType
     convert(const Args& args, size_t index)
     {
         try {
-            return args[index].to<typename std::remove_reference<TTo>::type>();
+            return args[index].to<std::remove_reference_t<TTo>>();
         }
         catch (const BadType&) {
             PONDER_ERROR(BadArgument(args[index].kind(), mapType<TTo>(), index, "?"));
@@ -136,7 +136,7 @@ struct ConvertArg
 
 // Specialisation for returning references.
 template <typename TTo>
-struct ConvertArg<(int)ValueKind::User, TTo&>
+struct ConvertArg<static_cast<int>(ValueKind::User), TTo&>
 {
     using ReturnType = TTo&;
     static ReturnType
@@ -151,7 +151,7 @@ struct ConvertArg<(int)ValueKind::User, TTo&>
 
 // Specialisation for returning const references.
 template <typename TTo>
-struct ConvertArg<(int)ValueKind::User, const TTo&>
+struct ConvertArg<static_cast<int>(ValueKind::User), const TTo&>
 {
     using ReturnType = const TTo&;
     static ReturnType
@@ -172,8 +172,8 @@ struct ConvertArgs
 {
     using Raw = typename ponder::detail::DataType<A>::Type;
     static constexpr ValueKind kind = ponder_ext::ValueMapper<Raw>::kind;
-    using Convertor = ConvertArg<(int)kind, A>;
-    
+    using Convertor = ConvertArg<static_cast<int>(kind), A>;
+
     static typename Convertor::ReturnType convert(const Args& args, size_t index)
     {
         return Convertor::convert(args, index);
@@ -186,7 +186,7 @@ class CallHelper
 public:
 
     template<typename F, typename... A, size_t... Is>
-    static Value call(F func, const Args& args, PONDER__SEQNS::index_sequence<Is...>)
+    static Value call(F func, const Args& args, std::index_sequence<Is...>)
     {
         using CallReturner = typename ChooseCallReturner<FPolicies, R>::type;
         return CallReturner::value(func(ConvertArgs<A>::convert(args, Is)...));
@@ -200,7 +200,7 @@ class CallHelper<void, FTraits, FPolicies>
 public:
 
     template<typename F, typename... A, size_t... Is>
-    static Value call(F func, const Args& args, PONDER__SEQNS::index_sequence<Is...>)
+    static Value call(F func, const Args& args, std::index_sequence<Is...>)
     {
         func(ConvertArgs<A>::convert(args,Is)...);
         return Value::nothing;
@@ -214,17 +214,17 @@ template <typename R, typename A> struct FunctionWrapper;
 
 template <typename R, typename... A> struct FunctionWrapper<R, std::tuple<A...>>
 {
-    using Type = typename std::function<R(A...)>;
-    
+    using Type = std::function<R(A...)>;
+
     template <typename F, typename FTraits, typename FPolicies>
     static Value call(F func, const Args& args)
     {
-        using ArgEnumerator = PONDER__SEQNS::make_index_sequence<sizeof...(A)>;
+        using ArgEnumerator = std::make_index_sequence<sizeof...(A)>;
         return CallHelper<R, FTraits, FPolicies>::template
             call<F, A...>(func, args, ArgEnumerator());
     }
 };
-    
+
 //-----------------------------------------------------------------------------
 // Base for runtime function caller
 
@@ -232,14 +232,14 @@ class FunctionCaller
 {
 public:
     FunctionCaller(const IdRef name) : m_name(name) {}
-    virtual ~FunctionCaller() {}
+    virtual ~FunctionCaller() = default;
 
     FunctionCaller(const FunctionCaller&) = delete; // no copying
-    
-    const IdRef name() const { return m_name; }
-    
-    virtual Value execute(const Args& args) const = 0;
-    
+
+    [[nodiscard]] IdRef name() const { return m_name; }
+
+    [[nodiscard]] virtual Value execute(const Args& args) const = 0;
+
 private:
     const IdRef m_name;
 };
@@ -255,15 +255,15 @@ public:
     :   FunctionCaller(name)
     ,   m_function(function)
     {}
-    
+
 private:
 
     using CallTypes = typename FTraits::Details::FunctionCallTypes;
     using DispatchType = FunctionWrapper<typename FTraits::ExposedType, CallTypes>;
-    
+
     typename DispatchType::Type m_function; // Object containing the actual function to call
-    
-    Value execute(const Args& args) const final
+
+    [[nodiscard]] Value execute(const Args& args) const override
     {
         return DispatchType::template
             call<decltype(m_function), FTraits, FPolicies>(m_function, args);

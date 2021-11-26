@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,35 +28,20 @@
 ****************************************************************************/
 
 #include <ponder/value.hpp>
+#include <ponder/detail/valueimpl.hpp>
 
 namespace ponder {
-    
+
 const Value Value::nothing;
 
-Value::Value()
-    : m_value(NoType())
-    , m_type(ValueKind::None)
-{
-}
+Value::Value() = default;
 
-Value::Value(const Value& other)
-    : m_value(other.m_value)
-    , m_type(other.m_type)
-{
-}
+Value::Value(const Value& other) = default;
 
-Value::Value(Value&& other)
-{
-    std::swap(m_value, other.m_value);
-    std::swap(m_type, other.m_type);
-}
+Value::Value(Value&& other) noexcept = default;
 
-void Value::operator = (const Value& other)
-{
-    m_value = other.m_value;
-    m_type = other.m_type;
-}
-    
+Value& Value::operator = (const Value& other) = default;
+
 ValueKind Value::kind() const
 {
     return m_type;

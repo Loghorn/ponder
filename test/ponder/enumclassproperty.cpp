@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,8 +31,6 @@
 
 #include <ponder/classbuilder.hpp>
 #include "test.hpp"
-#include <list>
-#include <vector>
 
 namespace EnumClassPropertyTest
 {
@@ -41,20 +39,20 @@ namespace EnumClassPropertyTest
         Zero = 0,
         One  = 1
     };
-    
+
     struct MyClass
     {
         MyClass(MyEnum x_) : x(x_)
-        {            
+        {
         }
-        
+
         MyEnum x;
     };
-    
+
     void declare()
     {
         ponder::Enum::declare<MyEnum>("EnumClassPropertyTest::MyEnum");
-        
+
         ponder::Class::declare<MyClass>("EnumClassPropertyTest::MyClass")
             .property("x", &MyClass::x);
     }
@@ -73,10 +71,10 @@ using namespace EnumClassPropertyTest;
 TEST_CASE("Enum class properties")
 {
     const ponder::Class& metaclass = ponder::classByType<MyClass>();
-    
+
     const ponder::EnumProperty* property =
         &static_cast<const ponder::EnumProperty&>(metaclass.property("x"));
-    
+
     SECTION("have enum type")
     {
         IS_TRUE(property->kind() == ponder::ValueKind::Enum);
@@ -99,6 +97,6 @@ TEST_CASE("Enum class properties")
         property->set(&object, MyEnum::One);
 
         IS_TRUE( property->get(object) == ponder::Value(MyEnum::One) );
-    }    
+    }
 }
 

@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,26 +40,26 @@ namespace EnumObjectTest
         One  = 1,
         Two  = 2
     };
-    
+
     enum MyEnum2
     {
         Zero2 = 0,
         One2  = 1,
         Two2  = 2
     };
-    
+
     enum MyUndeclaredEnum
     {
         Undeclared
     };
-    
+
     void declare()
     {
         ponder::Enum::declare<MyEnum>("EnumObjectTest::MyEnum")
             .value("Zero", Zero)
             .value("One",  One)
             .value("Two",  Two);
-        
+
         ponder::Enum::declare<MyEnum2>("EnumObjectTest::MyEnum2")
             .value("Zero", Zero2)
             .value("One",  One2)
@@ -96,14 +96,14 @@ TEST_CASE("Enum objects")
         REQUIRE(one.value() == One);
         REQUIRE(two.value() == Two);
     }
-    
+
     SECTION("wrap an Enum type")
     {
         IS_TRUE(zero.getEnum() == ponder::enumByType<MyEnum>());
         IS_TRUE(one.getEnum()  == ponder::enumByType<MyEnum>());
         IS_TRUE(two.getEnum()  == ponder::enumByType<MyEnum>());
     }
-    
+
     SECTION("can be compared ==")
     {
         ponder::EnumObject zero2(Zero2);
@@ -122,7 +122,7 @@ TEST_CASE("Enum objects")
         REQUIRE((one  == one2) == false);
         REQUIRE((two  == two2) == false);
     }
-    
+
     SECTION("can be compared <")
     {
         REQUIRE((zero < zero) == false);
@@ -137,16 +137,16 @@ TEST_CASE("Enum objects")
         REQUIRE((two < one) == false);
         REQUIRE((two < two) == false);
     }
-    
+
     SECTION("must be declared")
     {
         // The meta-enum of MyUndeclaredEnum is *not* declared
-        REQUIRE_THROWS_AS([](){
+        REQUIRE_THROWS_AS([]{
             ponder::EnumObject obj(Undeclared);
         }(), ponder::EnumNotFound);
     }
 }
-    
+
 
 
 

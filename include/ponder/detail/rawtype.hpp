@@ -87,20 +87,20 @@ struct DataType
 
 // const
 template <typename T>
-struct DataType<const T> : public DataType<T> {};
+struct DataType<const T> : DataType<T> {};
 
 template <typename T>
-struct DataType<T&> : public DataType<T> {};
+struct DataType<T&> : DataType<T> {};
 
 template <typename T>
-struct DataType<T*> : public DataType<T> {};
+struct DataType<T*> : DataType<T> {};
 
 template <typename T, size_t N>
-struct DataType<T[N]> : public DataType<T> {};
+struct DataType<T[N]> : DataType<T> {};
 
 // smart pointer
 template <template <typename> class T, typename U>
-struct DataType<T<U>, typename std::enable_if<IsSmartPointer<T<U>, U>::value >::type>
+struct DataType<T<U>, std::enable_if_t<IsSmartPointer<T<U>, U>::value >>
 {
     using Type = typename DataType<U>::Type;
 };

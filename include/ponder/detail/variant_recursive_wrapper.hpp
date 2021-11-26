@@ -87,19 +87,19 @@ namespace util {
         recursive_wrapper(T&& operand)
             : p_(new T(std::move(operand))) {}
 
-        inline recursive_wrapper& operator=(recursive_wrapper const& rhs)
+        recursive_wrapper& operator=(recursive_wrapper const& rhs)
         {
             assign(rhs.get());
             return *this;
         }
 
-        inline recursive_wrapper& operator=(T const& rhs)
+        recursive_wrapper& operator=(T const& rhs)
         {
             assign(rhs);
             return *this;
         }
 
-        inline void swap(recursive_wrapper& operand) noexcept
+        void swap(recursive_wrapper& operand) noexcept
         {
             T* temp = operand.p_;
             operand.p_ = p_;
@@ -141,7 +141,7 @@ namespace util {
     }; // class recursive_wrapper
 
     template <typename T>
-    inline void swap(recursive_wrapper<T>& lhs, recursive_wrapper<T>& rhs) noexcept
+    void swap(recursive_wrapper<T>& lhs, recursive_wrapper<T>& rhs) noexcept
     {
         lhs.swap(rhs);
     }

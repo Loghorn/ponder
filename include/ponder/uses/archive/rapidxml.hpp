@@ -59,12 +59,11 @@ public:
     public:
 
         ArrayIterator(Node arrayNode, string_view name)
-            : m_name(name)
+            : m_node(arrayNode->first_node(name.data(), name.length())), m_name(name)
         {
-            m_node = arrayNode->first_node(name.data(), name.length());
         }
 
-        bool isEnd() const { return m_node == nullptr; }
+        [[nodiscard]] bool isEnd() const { return m_node == nullptr; }
         void next()
         {
             m_node = m_node->next_sibling(m_name.data(), m_name.length());

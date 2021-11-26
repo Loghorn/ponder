@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -54,16 +54,11 @@ public:
     ArrayProperty(IdRef name, ValueKind elementType, bool dynamic);
 
     /**
-     * \brief Destructor
-     */
-    virtual ~ArrayProperty();
-
-    /**
      * \brief Get the type of the array elements
      *
      * \return Type of elements
      */
-    ValueKind elementType() const;
+    [[nodiscard]] ValueKind elementType() const;
 
     /**
      * \brief Check if the array is dynamic
@@ -73,7 +68,7 @@ public:
      *
      * \return True if the array is dynamic, false otherwise
      */
-    bool dynamic() const;
+    [[nodiscard]] bool dynamic() const;
 
     /**
      * \brief Get the current size of the array
@@ -84,7 +79,7 @@ public:
      * \throw NullObject object is invalid
      * \throw ForbiddenRead property is not readable
      */
-    size_t size(const UserObject& object) const;
+    [[nodiscard]] size_t size(const UserObject& object) const;
 
     /**
      * \brief Resize the array
@@ -116,7 +111,7 @@ public:
      * \throw ForbiddenRead property is not readable
      * \throw OutOfRange index is out of range
      */
-    Value get(const UserObject& object, size_t index) const;
+    [[nodiscard]] Value get(const UserObject& object, size_t index) const;
 
     /**
      * \brief Set an element of the array for a given object
@@ -174,7 +169,7 @@ protected:
     /**
      * \see Property::getValue
      */
-    Value getValue(const UserObject& object) const override;
+    [[nodiscard]] Value getValue(const UserObject& object) const override;
 
     /**
      * \see Property::setValue
@@ -187,7 +182,7 @@ protected:
      * \param object Object
      * \return Size of the array
      */
-    virtual size_t getSize(const UserObject& object) const = 0;
+    [[nodiscard]] virtual size_t getSize(const UserObject& object) const = 0;
 
     /**
      * \brief Do the actual resize of the array
@@ -206,7 +201,7 @@ protected:
      * \param index Index of the element to get
      * \return Value of the index-th element
      */
-    virtual Value getElement(const UserObject& object, size_t index) const = 0;
+    [[nodiscard]] virtual Value getElement(const UserObject& object, size_t index) const = 0;
 
     /**
      * \brief Do the actual writing of an element

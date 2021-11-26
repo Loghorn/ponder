@@ -53,16 +53,11 @@ public:
     UserProperty(IdRef name, const Class& propClass);
 
     /**
-     * \brief Destructor
-     */
-    virtual ~UserProperty();
-
-    /**
      * \brief Get the owner class
      *
      * \return Class the property is bound to
      */
-    const Class& getClass() const;
+    [[nodiscard]] const Class& getClass() const;
 
     /**
      * \brief Accept the visitation of a ClassVisitor

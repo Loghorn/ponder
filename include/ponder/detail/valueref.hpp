@@ -31,7 +31,6 @@
 #ifndef PONDER_VALUE_REF_HPP
 #define PONDER_VALUE_REF_HPP
 
-#include <ponder/config.hpp>
 #include <ponder/type.hpp>
 
 namespace ponder {
@@ -74,7 +73,7 @@ public:
     }
 
     template <typename T>
-    const T* getRef() const
+    [[nodiscard]] const T* getRef() const
     {
         return static_cast<const T*>(m_ptr);
     }
@@ -83,13 +82,13 @@ private:
 
     struct IType
     {
-        virtual ~IType() {}
+        virtual ~IType() = default;
         virtual bool less(const void *a, const void *b) const = 0;
         virtual bool equal(const void *a, const void *b) const = 0;
     };
 
     template <typename T>
-    struct Type final : public IType
+    struct Type final : IType
     {
         static const IType* info()
         {
@@ -97,17 +96,17 @@ private:
             return &i;
         }
 
-        bool less(const void *a, const void *b) const final
+        bool less(const void *a, const void *b) const override
         {
             return *static_cast<const T*>(a) < *static_cast<const T*>(b);
         }
-        bool equal(const void *a, const void *b) const final
+        bool equal(const void *a, const void *b) const override
         {
             return *static_cast<const T*>(a) == *static_cast<const T*>(b);
         }
     };
 
-    ValueRef(void *p, const IType *t)
+    ValueRef(const void * const p, const IType *t)
     :   m_ptr(p)
     ,   m_type(t)
     {}

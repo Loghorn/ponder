@@ -46,8 +46,7 @@ size_t ArrayPropertyImpl<A>::getSize(const UserObject& object) const
 template <typename A>
 void ArrayPropertyImpl<A>::setSize(const UserObject& object, size_t size) const
 {
-    size_t currentSize = getSize(object);
-    if (size < currentSize)
+    if (size_t currentSize = getSize(object); size < currentSize)
     {
         while (size < currentSize)
             removeElement(object, --currentSize);

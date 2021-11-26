@@ -37,10 +37,10 @@
 
 namespace ponder {
 namespace detail {
-    
+
 // Calculate TypeId for T
 template <typename T>
-inline TypeId calcTypeId() {return TypeId(typeid(T)); }
+TypeId calcTypeId() {return TypeId(typeid(T)); }
 
 /**
  * \brief Utility class to get the Ponder identifier associated to a C++ type
@@ -74,16 +74,16 @@ template <typename T>
 constexpr bool hasStaticTypeDecl() {return StaticTypeDecl<typename DataType<T>::Type>::defined;}
 
 template <typename T>
-static inline TypeId staticTypeId() {return StaticTypeDecl<typename DataType<T>::Type>::id();}
+static TypeId staticTypeId() {return StaticTypeDecl<typename DataType<T>::Type>::id();}
 
 template <typename T>
-static inline TypeId staticTypeId(const T&) {return StaticTypeDecl<typename DataType<T>::Type>::id();}
+static TypeId staticTypeId(const T&) {return StaticTypeDecl<typename DataType<T>::Type>::id();}
 
 template <typename T>
-static inline const char* staticTypeName() {return StaticTypeDecl<typename DataType<T>::Type>::name();}
+static constexpr const char* staticTypeName() {return StaticTypeDecl<typename DataType<T>::Type>::name();}
 
 template <typename T>
-static inline const char* staticTypeName(const T&) {return StaticTypeDecl<typename DataType<T>::Type>::name();}
+static constexpr const char* staticTypeName(const T&) {return StaticTypeDecl<typename DataType<T>::Type>::name();}
 
 /* Utility class used to check at compile-time if a type T implements the Ponder RTTI
  */
@@ -94,7 +94,7 @@ struct HasPonderRtti
     template <typename U> static std::true_type check(TestForMember<U, &U::ponderClassId>*);
     template <typename U> static std::false_type check(...);
 
-    static constexpr bool value = std::is_same<decltype(check<T>(0)), std::true_type>::value;
+    static constexpr bool value = std::is_same_v<decltype(check<T>(nullptr)), std::true_type>;
 };
 
 /**
@@ -112,8 +112,8 @@ struct DynamicTypeDecl
     {
         using PropTraits = TypeTraits<const T&>;
         typename PropTraits::PointerType pointer = PropTraits::getPointer(object);
-        static_assert(PropTraits::kind != ReferenceKind::None, "");
-        static_assert(std::is_pointer<decltype(pointer)>::value, "Not pointer");
+        static_assert(PropTraits::kind != ReferenceKind::None);
+        static_assert(std::is_pointer_v<decltype(pointer)>, "Not pointer");
         return pointer != nullptr ? pointer->ponderClassId() : staticTypeId<T>();
     }
 };
@@ -121,16 +121,16 @@ struct DynamicTypeDecl
 /* Specialization of DynamicTypeDecl for types that don't implement Ponder RTTI
  */
 template <typename T>
-struct DynamicTypeDecl<T, typename std::enable_if<!HasPonderRtti<T>::value>::type>
+struct DynamicTypeDecl<T, std::enable_if_t<!HasPonderRtti<T>::value>>
 {
     static TypeId id(const T&) {return staticTypeId<T>();}
 };
 
 template <typename T>
-inline TypeId getTypeId() {return staticTypeId<T>();}
+TypeId getTypeId() {return staticTypeId<T>();}
 
 template <typename T>
-inline TypeId getTypeId(T& object) {return DynamicTypeDecl<T>::id(object);}
+TypeId getTypeId(T& object) {return DynamicTypeDecl<T>::id(object);}
 
 /* Utility class to get a valid Ponder identifier from a C++ type even if the type wasn't declared
  */
@@ -144,12 +144,12 @@ struct SafeTypeId
 /* Return the dynamic type identifier of a C++ object even if it doesn't exist (i.e. it can't fail)
  */
 template <typename T>
-inline TypeId safeTypeId() {return SafeTypeId<typename DataType<T>::Type>::id();}
+TypeId safeTypeId() {return SafeTypeId<typename DataType<T>::Type>::id();}
 
 template <typename T>
-inline TypeId safeTypeId(const T& object) {return SafeTypeId<T>::get(object);}
-    
-    
+TypeId safeTypeId(const T& object) {return SafeTypeId<T>::get(object);}
+
+
 /* Utility class to get a valid Ponder identifier from a C++ type even if the type wasn't declared
  */
 template <typename T, typename E = void>
@@ -163,7 +163,7 @@ struct SafeTypeName
  * Specialization of SafeTypeName for types that have no Ponder id
  */
 template <typename T>
-struct SafeTypeName<T, typename std::enable_if<!hasStaticTypeDecl<T>()>::type>
+struct SafeTypeName<T, std::enable_if_t<!hasStaticTypeDecl<T>()>>
 {
     static constexpr const char* name()            {return "";}
     static constexpr const char* name(const T&)    {return "";}
@@ -184,7 +184,7 @@ struct SafeTypeName<void>
  */
 template <typename T>
 const char* safeTypeName() {return SafeTypeName<typename DataType<T>::Type>::name();}
-    
+
 template <typename T>
 const char* safeTypeName(const T& object) {return SafeTypeName<T>::get(object);}
 

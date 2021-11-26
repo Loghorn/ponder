@@ -32,7 +32,6 @@
 
 #include <ponder/classbuilder.hpp>
 #include <ponder/uses/runtime.hpp>
-#include <iostream>
 
 //! [eg_declare_template1]
 

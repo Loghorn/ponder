@@ -32,27 +32,26 @@
 
 #include <ponder/classbuilder.hpp>
 #include <ponder/uses/runtime.hpp>
-#include <iostream>
 
 //! [eg_simple_class]
 class Person
 {
 public:
      // constructor
-    Person(const std::string& name)
-        : m_name(name)
+    Person(std::string name)
+        : m_name(std::move(name))
     {}
 
     // accessors for private members
-    std::string name() const { return m_name; }
+     [[nodiscard]] std::string name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
 
     // public members
-    float height;
-    unsigned int shoeSize;
+    float height = 0.f;
+    unsigned int shoeSize = 0;
 
     // member function
-    bool hasBigFeet() const { return shoeSize > 10; } // U.K.!
+     [[nodiscard]] bool hasBigFeet() const { return shoeSize > 10; } // U.K.!
 
 private:
     std::string m_name;
@@ -85,7 +84,7 @@ static void use()
 
     //! [eg_simple_create]
     // construct a new person
-    ponder::UserObject person = ponder::runtime::create(metaclass, "Bozo");
+    const ponder::UserObject person = ponder::runtime::create(metaclass, "Bozo");
     //! [eg_simple_create]
 
     // set attributes

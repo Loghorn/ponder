@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,7 +33,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 EnumManager& EnumManager::instance()
 {
     static EnumManager manager;
@@ -49,7 +49,7 @@ Enum& EnumManager::addClass(TypeId const& id, IdRef name)
     }
 
     // Create the new class
-    Enum* newEnum = new Enum(name);
+    auto newEnum = new Enum(name);
 
     // Insert it into the table
     m_enums.insert(std::make_pair(id, newEnum));
@@ -61,15 +61,15 @@ Enum& EnumManager::addClass(TypeId const& id, IdRef name)
     // Done
     return *newEnum;
 }
-    
+
 void EnumManager::removeClass(TypeId const& id)
 {
-    auto it = m_enums.find(id);
+    const auto it = m_enums.find(id);
     if (it == m_enums.end())
         return; //PONDER_ERROR(EnumNotFound(id));
-    
-    Enum *en{ it->second };
-    
+
+    const Enum *en{ it->second };
+
     // Notify observers
     notifyEnumRemoved(*en);
 
@@ -98,10 +98,10 @@ const Enum& EnumManager::getById(TypeId const& id) const
     return *e;
 }
 
-const Enum* EnumManager::getByNameSafe(const IdRef name) const 
+const Enum* EnumManager::getByNameSafe(const IdRef name) const
 {
     const auto it{ std::find_if(m_names.begin(), m_names.end(),
-        [&name](const auto& a) { return a.first.compare(name.data()) == 0; } ) };
+        [&name](const auto& a) { return a.first == name.data(); } ) };
 
     return it == m_names.end() ? nullptr : it->second;
 }
@@ -120,16 +120,13 @@ bool EnumManager::enumExists(TypeId const& id) const
     return m_enums.find(id) != m_enums.end();
 }
 
-EnumManager::EnumManager()
-{
-}
+EnumManager::EnumManager() = default;
 
 EnumManager::~EnumManager()
 {
     // Notify observers
-    for (EnumTable::const_iterator it = m_enums.begin(); it != m_enums.end(); ++it)
+    for (const auto& [fst, enumPtr] : m_enums)
     {
-        Enum* enumPtr = it->second;
         notifyEnumRemoved(*enumPtr);
         delete enumPtr;
     }

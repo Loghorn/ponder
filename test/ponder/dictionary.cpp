@@ -32,7 +32,6 @@
 #include <ponder/config.hpp>
 #include <ponder/detail/dictionary.hpp>
 #include "test.hpp"
-#include <string.h>
 
 using namespace ponder;
 
@@ -42,9 +41,9 @@ using namespace ponder;
 
 TEST_CASE("Ponder has a dictionary")
 {
-    using Dict = ponder::detail::Dictionary<Id, IdRef, int>;
+    using Dict = detail::Dictionary<Id, IdRef, int>;
     std::unique_ptr<Dict> dict(new Dict());
-    
+
     REQUIRE((dict != nullptr));
     REQUIRE(dict->size() == 0);
 
@@ -53,11 +52,11 @@ TEST_CASE("Ponder has a dictionary")
     dict->insert("zebra", 3);
     dict->insert("foxtrot", 4);
     dict->insert("echo", 5);
-    
+
     SECTION("contains items")
     {
         REQUIRE(dict->size() == 5);
-        
+
         REQUIRE(dict->containsKey("bravo") == true);
         REQUIRE(dict->containsKey("zebra") == true);
         REQUIRE(dict->containsKey("foxtrot") == true);
@@ -70,7 +69,7 @@ TEST_CASE("Ponder has a dictionary")
         REQUIRE(dict->containsKey("") == false);
         REQUIRE(dict->containsKey("monkey") == false);
     }
-    
+
     SECTION("can find keys")
     {
         REQUIRE(dict->findKey("echo") != dict->end());
@@ -101,7 +100,7 @@ TEST_CASE("Ponder has a dictionary")
         REQUIRE(dict->at(3)->first == Id("foxtrot"));
         REQUIRE(dict->at(4)->first == Id("zebra"));
     }
-    
+
     SECTION("can iterate over key,values")
     {
         int count = 0;
@@ -122,7 +121,7 @@ TEST_CASE("Ponder has a dictionary")
         REQUIRE(dict->at(2)->first == Id("echo"));
         REQUIRE(dict->at(3)->first == Id("foxtrot"));
         REQUIRE(dict->at(4)->first == Id("zebra"));
-        
+
         dict->erase("alpha");
         REQUIRE(dict->size() == 4);
         REQUIRE(dict->at(0)->first == Id("bravo"));
@@ -135,12 +134,12 @@ TEST_CASE("Ponder has a dictionary")
         REQUIRE(dict->at(0)->first == Id("bravo"));
         REQUIRE(dict->at(1)->first == Id("echo"));
         REQUIRE(dict->at(2)->first == Id("foxtrot"));
-        
+
         dict->erase("echo");
         REQUIRE(dict->size() == 2);
         REQUIRE(dict->at(0)->first == Id("bravo"));
         REQUIRE(dict->at(1)->first == Id("foxtrot"));
-        
+
         dict->erase("bravo");
         dict->erase("foxtrot");
         REQUIRE(dict->size() == 0);
@@ -155,31 +154,31 @@ TEST_CASE("Dictionary can have customised sorter")
         }
     };
 
-    using Dict = ponder::detail::Dictionary<Id, IdRef, int, ReverseKeyCmp>;
+    using Dict = detail::Dictionary<Id, IdRef, int, ReverseKeyCmp>;
     std::unique_ptr<Dict> dict(new Dict());
-    
+
     REQUIRE((dict != nullptr));
     REQUIRE(dict->size() == 0);
-    
+
     dict->insert("bravo", 1);
     dict->insert("alpha", 2);
     dict->insert("zebra", 3);
     dict->insert("foxtrot", 4);
     dict->insert("echo", 5);
-    
+
     SECTION("contains items")
     {
         REQUIRE(dict->size() == 5);
-        
+
         REQUIRE(dict->containsKey("bravo") == true);
         REQUIRE(dict->containsKey("zebra") == true);
         REQUIRE(dict->containsKey("foxtrot") == true);
         REQUIRE(dict->containsKey("bravo") == true);
         REQUIRE(dict->containsKey("echo") == true);
-        
+
         REQUIRE(dict->containsKey("monkey") == false);
     }
-    
+
     SECTION("have values")
     {
         REQUIRE(dict->containsValue(1) == true);
@@ -187,10 +186,10 @@ TEST_CASE("Dictionary can have customised sorter")
         REQUIRE(dict->containsValue(3) == true);
         REQUIRE(dict->containsValue(4) == true);
         REQUIRE(dict->containsValue(5) == true);
-        
+
         REQUIRE(dict->containsValue(9) == false);
     }
-    
+
     SECTION("keys are reverse sorted")
     {
         REQUIRE(dict->at(0)->first == Id("zebra"));

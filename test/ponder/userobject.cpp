@@ -48,16 +48,16 @@ namespace UserObjectTest
 {
     struct MyBaseWithPadding
     {
-        virtual ~MyBaseWithPadding() {}
+        virtual ~MyBaseWithPadding() = default;
         char padding[15];
     };
 
     struct MyBase
     {
         MyBase(int b_) : b(b_) {}
-        virtual ~MyBase() {}
+        virtual ~MyBase() = default;
         int b;
-        PONDER_POLYMORPHIC();
+        PONDER_POLYMORPHIC()
     };
 
     bool operator==(const MyBase& left, const MyBase& right)
@@ -74,11 +74,11 @@ namespace UserObjectTest
     {
         MyClass(int x_) : MyBase(x_ + 1), x(x_) {}
 
-        virtual ~MyClass() {}
+        ~MyClass() override = default;
 
         int x;
-        int f() const {return x;}
-        PONDER_POLYMORPHIC();
+        [[nodiscard]] int f() const {return x;}
+        PONDER_POLYMORPHIC()
     };
 
     bool operator==(const MyClass& left, const MyClass& right)
@@ -93,21 +93,21 @@ namespace UserObjectTest
 
     struct MyNonCopyableClass
     {
-        MyNonCopyableClass() {}
-        PONDER__NON_COPYABLE(MyNonCopyableClass);
+        MyNonCopyableClass() = default;
+        PONDER_NON_COPYABLE(MyNonCopyableClass);
     };
 
     struct MyAbstractClass
     {
-        virtual ~MyAbstractClass() {}
+        virtual ~MyAbstractClass() = default;
         virtual void f() = 0;
-        PONDER_POLYMORPHIC();
+        PONDER_POLYMORPHIC()
     };
 
     struct MyConcreteClass : MyAbstractClass
     {
-        virtual void f() {}
-        PONDER_POLYMORPHIC();
+        void f() override {}
+        PONDER_POLYMORPHIC()
     };
 
     struct Composed3
@@ -118,14 +118,14 @@ namespace UserObjectTest
 
     struct Composed2
     {
-        Composed3 get() const {return composed;}
+        [[nodiscard]] Composed3 get() const {return composed;}
         void set(Composed3 c) {composed = c;}
         Composed3 composed;
     };
 
     struct Composed1
     {
-        Composed2 get() const {return composed;}
+        [[nodiscard]] Composed2 get() const {return composed;}
         void set(Composed2 c) {composed = c;}
         Composed2 composed;
     };
@@ -136,8 +136,8 @@ namespace UserObjectTest
 
         Data() : x(0) { DATA_LOG("Data:construct\n"); }
         Data(int i) : x(i) { DATA_LOG("Data:construct(%d)\n", x); }
-        Data(const Data& d) : x(d.x) {}
-        int value() const { return x; }
+        Data(const Data& d) = default;
+        [[nodiscard]] int value() const { return x; }
 
         Data addCopy(const Data& o)
         {
@@ -166,8 +166,8 @@ namespace UserObjectTest
         static int construct, copy, assign, destruct;
 
         DefaultClass(int i_) : i(i_) { ++construct; }
-        DefaultClass(const DefaultClass& o) { i = o.i; ++copy; }
-        DefaultClass& operator=(const DefaultClass& o) { i = o.i; return *this; }
+        DefaultClass(const DefaultClass& o) : i(o.i) { ++copy; }
+        DefaultClass& operator=(const DefaultClass& o) = default;
         ~DefaultClass() { ++destruct; }
     };
 
@@ -184,10 +184,10 @@ namespace UserObjectTest
         static int construct, copy, move, assign, assignMove, destruct;
 
         MoveableClass(int i_) : i(i_) { ++construct; }
-        MoveableClass(const MoveableClass& o) { i = o.i; ++copy; }
+        MoveableClass(const MoveableClass& o) : i(o.i) { ++copy; }
         MoveableClass& operator=(const MoveableClass& o) { i = o.i; ++move; return *this; }
-        MoveableClass(MoveableClass&& o) { i = o.i; ++move; }
-        MoveableClass& operator=(MoveableClass&& o) { i = o.i; ++assignMove; return *this; }
+        MoveableClass(MoveableClass&& o) noexcept : i(o.i) { ++move; }
+        MoveableClass& operator=(MoveableClass&& o) noexcept { i = o.i; ++assignMove; return *this; }
         ~MoveableClass() { ++destruct; }
     };
 
@@ -463,15 +463,9 @@ TEST_CASE("User objects can be inspected and modified")
         MyClass object(3);
         ponder::UserObject userObject(&object);
 
-        int index = 0;
         for (const auto& prop : ponder::classByType<MyClass>().properties())
         {
-            switch (index) {
-            case 0:
-                REQUIRE(prop.name() == ponder::String("p"));
-                break;
-            default: ;
-            }
+            REQUIRE(prop.name() == ponder::String("p"));
         }
     }
 

@@ -29,7 +29,6 @@
 
 #include <ponder/classbuilder.hpp>
 
-#define PONDER_USES_RUNTIME_IMPL
 #include <ponder/uses/runtime.hpp>
 
 // This must be defined once in the entire project

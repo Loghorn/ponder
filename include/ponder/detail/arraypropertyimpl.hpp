@@ -32,7 +32,6 @@
 #define PONDER_DETAIL_ARRAYPROPERTYIMPL_HPP
 
 #include <ponder/arrayproperty.hpp>
-#include <ponder/arraymapper.hpp>
 #include <ponder/detail/valueprovider.hpp>
 
 namespace ponder {
@@ -69,32 +68,32 @@ protected:
     /**
      * \see ArrayProperty::getSize
      */
-    size_t getSize(const UserObject& object) const final;
+    [[nodiscard]] size_t getSize(const UserObject& object) const override;
 
     /**
      * \see ArrayProperty::setSize
      */
-    void setSize(const UserObject& object, size_t size) const final;
+    void setSize(const UserObject& object, size_t size) const override;
 
     /**
      * \see ArrayProperty::getElement
      */
-    Value getElement(const UserObject& object, size_t index) const final;
+    [[nodiscard]] Value getElement(const UserObject& object, size_t index) const override;
 
     /**
      * \see ArrayProperty::setElement
      */
-    void setElement(const UserObject& object, size_t index, const Value& value) const final;
+    void setElement(const UserObject& object, size_t index, const Value& value) const override;
 
     /**
      * \see ArrayProperty::insertElement
      */
-    void insertElement(const UserObject& object, size_t before, const Value& value) const final;
+    void insertElement(const UserObject& object, size_t before, const Value& value) const override;
 
     /**
      * \see ArrayProperty::removeElement
      */
-    void removeElement(const UserObject& object, size_t index) const final;
+    void removeElement(const UserObject& object, size_t index) const override;
 
 private:
 

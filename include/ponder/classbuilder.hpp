@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,11 +40,9 @@
 #include <ponder/detail/propertyfactory.hpp>
 #include <ponder/pondertype.hpp>
 #include <ponder/userdata.hpp>
-#include <cassert>
-#include <string>
 
 namespace ponder {
-        
+
 /**
  * \brief Proxy class which fills a metaclass with its members
  *
@@ -63,7 +61,7 @@ template <typename T>
 class ClassBuilder
 {
 public:
-    
+
     /**
      * \brief Construct the builder with a target metaclass to fill
      *
@@ -126,15 +124,15 @@ public:
      * two getters which must be composed to form a single getter.
      * If F1 is a direct pointer-to-member, it is considered both a getter and a setter.
      *
-     * Having two getters allows to expose a property which requires an extra level of 
-     * indirection to be accessed (for example, a property of a member of the class instead of 
+     * Having two getters allows to expose a property which requires an extra level of
+     * indirection to be accessed (for example, a property of a member of the class instead of
      * a property of the class itself).
      *
      * Example:
      *
      * \code
      * struct Point {float x, y;};
-     * 
+     *
      * class Entity
      * {
      * public:
@@ -148,7 +146,7 @@ public:
      *
      * \param name Name of the property (must be unique within the metaclass)
      * \param accessor1 First accessor to the C++ implementation of the property (getter)
-     * \param accessor2 Second accessor to the C++ implementation of the property (setter or 
+     * \param accessor2 Second accessor to the C++ implementation of the property (setter or
      *        getter to compose)
      * \return Reference to this, in order to chain other calls
      */
@@ -174,14 +172,14 @@ public:
 
     /**
      * \brief Declare a constructor for the metaclass.
-     * 
+     *
      * Variable number of parameters can be passed.
      *
      * \return Reference to this, in order to chain other calls
      */
     template <typename... A>
     ClassBuilder<T>& constructor();
-    
+
     /**
      * \brief Add properties and/or functions from an external source
      *

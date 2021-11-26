@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,6 +27,7 @@
 **
 ****************************************************************************/
 
+#include <ponder/detail/valueimpl.hpp>
 
 namespace ponder {
 namespace detail {
@@ -34,17 +35,17 @@ namespace detail {
 
 // Is T a user type.
 template <typename T> struct IsUserType {
-    using DataType = typename detail::DataType<T>::Type;
-    static constexpr bool value = std::is_class<DataType>::value
-        && !std::is_same<DataType, Value>::value
-        && !std::is_same<DataType, UserObject>::value
-        && !std::is_same<DataType, detail::ValueRef>::value
-        && !std::is_same<DataType, ponder::String>::value;
+    using DataType = typename DataType<T>::Type;
+    static constexpr bool value = std::is_class_v<DataType>
+        && !std::is_same_v<DataType, Value>
+        && !std::is_same_v<DataType, UserObject>
+        && !std::is_same_v<DataType, ValueRef>
+        && !std::is_same_v<DataType, String>;
 };
 
 // Decide whether the UserObject holder should be ref (true) or copy (false).
 template <typename T> struct IsUserObjRef {
-    static constexpr bool value = std::is_pointer<T>::value || std::is_reference<T>::value;
+    static constexpr bool value = std::is_pointer_v<T> || std::is_reference_v<T>;
 };
 
 
@@ -65,11 +66,11 @@ struct ValueTo<Value>
 
 // Convert Values to pointers for basic types
 template <typename T>
-struct ValueTo<T*, typename std::enable_if<!hasStaticTypeDecl<T>()>::type>
+struct ValueTo<T*, std::enable_if_t<!hasStaticTypeDecl<T>()>>
 {
     static T* convert(const Value& value)
     {
-        return value.to<detail::ValueRef>().getRef<T>();
+        return value.to<ValueRef>().getRef<T>();
     }
 };
 

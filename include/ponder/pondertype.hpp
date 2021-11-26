@@ -35,7 +35,6 @@
 
 #include <ponder/config.hpp>
 #include "type.hpp"
-#include "detail/typeid.hpp"
 
 namespace ponder {
 

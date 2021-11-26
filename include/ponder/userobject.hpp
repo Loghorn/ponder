@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,13 +33,11 @@
 
 #include <ponder/args.hpp>
 #include <ponder/classcast.hpp>
-#include <ponder/errors.hpp>
 #include <ponder/detail/objecttraits.hpp>
 #include <ponder/detail/objectholder.hpp>
-#include <ponder/detail/util.hpp>
 
 namespace ponder {
-    
+
 class Property;
 class UserProperty;
 class Value;
@@ -52,7 +50,7 @@ class ParentObject;
  * ponder::UserObject is an abstract representation of object instances, which can safely
  * be passed to and manipulated by all the entities in Ponder.
  *
- * \note UserObjects are stored interally as objects (a copy) or references (an existing 
+ * \note UserObjects are stored interally as objects (a copy) or references (an existing
  *       object). To be sure which you are constructing use UserObject::makeRef() or
  *       UserObject::makeCopy().
  *
@@ -181,8 +179,8 @@ public:
      *
      * \return Pointer to the stored object
      */
-    void* pointer() const;
-    
+    [[nodiscard]] void* pointer() const;
+
     /**
      * \brief Get a const reference to the object data contained
      *
@@ -212,7 +210,7 @@ public:
      *
      * \throw NullObject the stored object has no metaclass
      */
-    const Class& getClass() const;
+    [[nodiscard]] const Class& getClass() const;
 
     /**
      * \brief Get the value of an object's property by name
@@ -227,7 +225,7 @@ public:
      * \throw PropertyNotFound \a property is not a property of the object
      * \throw ForbiddenRead \a property is not readable
      */
-    Value get(IdRef property) const;
+    [[nodiscard]] Value get(IdRef property) const;
 
     /**
      * \brief Get the value of an object's property by index
@@ -242,7 +240,7 @@ public:
      * \throw OutOfRange index is invalid
      * \throw ForbiddenRead \a property is not readable
      */
-    Value get(size_t index) const;
+    [[nodiscard]] Value get(size_t index) const;
 
     /**
      * \brief Set the value of an object's property by name
@@ -277,7 +275,7 @@ public:
     /**
      * \brief Operator == to compare equality between two user objects
      *
-     * Two user objects are equal if their metaclasses and pointers are both equal, 
+     * Two user objects are equal if their metaclasses and pointers are both equal,
      * i.e. they point to the same object, not if the object *values* are the same.
      *
      * \param other User object to compare with this
@@ -318,10 +316,10 @@ private:
         :   m_class(cls)
         ,   m_holder(h)
     {}
- 
+
     // Metaclass of the stored object
-    const Class* m_class;
-    
+    const Class* m_class{nullptr};
+
     // Optional abstract holder storing the object
     std::shared_ptr<detail::AbstractObjectHolder> m_holder;
 };

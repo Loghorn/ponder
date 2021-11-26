@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,75 +42,75 @@ namespace ValueTest
         MyClass(int x_) : x(x_) {}
         int x;
         std::string str_ = "hello";
-        double a[10];
-        
-        const std::string& str() const {return str_;}
+        double a[10]{};
+
+        [[nodiscard]] const std::string& str() const {return str_;}
     };
-    
+
     bool operator == (const MyClass& left, const MyClass& right)
     {
         return left.x == right.x;
     }
-    
+
     bool operator < (const MyClass& left, const MyClass& right)
     {
         return left.x < right.x;
     }
-    
+
     std::ostream& operator<<(std::ostream& stream, const MyClass& object)
     {
         return stream << object.x;
     }
-    
+
     enum MyEnum
     {
         One = 1,
         Two = 2
     };
-    
-    struct Visitor : public ponder::ValueVisitor<ponder::ValueKind>
+
+    struct Visitor : ponder::ValueVisitor<ponder::ValueKind>
     {
-        ponder::ValueKind operator()(ponder::NoType)
+        ponder::ValueKind operator()(ponder::NoType) const
         {
             return ponder::ValueKind::None;
         }
-        
-        ponder::ValueKind operator()(bool)
+
+        ponder::ValueKind operator()(bool) const
         {
             return ponder::ValueKind::Boolean;
         }
-        
-        ponder::ValueKind operator()(long)
+
+        ponder::ValueKind operator()(long) const
         {
             return ponder::ValueKind::Integer;
         }
-        
-        ponder::ValueKind operator()(double)
+
+        ponder::ValueKind operator()(double) const
         {
             return ponder::ValueKind::Real;
         }
-        
-        ponder::ValueKind operator()(const ponder::String&)
+
+        ponder::ValueKind operator()(const ponder::String&) const
         {
             return ponder::ValueKind::String;
         }
-        
-        ponder::ValueKind operator()(const ponder::EnumObject&)
+
+        ponder::ValueKind operator()(const ponder::EnumObject&) const
         {
             return ponder::ValueKind::Enum;
         }
-        
-        ponder::ValueKind operator()(const ponder::UserObject&)
+
+        ponder::ValueKind operator()(const ponder::UserObject&) const
         {
             return ponder::ValueKind::User;
         }
-        
-        ponder::ValueKind operator()(const ponder::detail::ValueRef&)
+
+        ponder::ValueKind operator()(const ponder::detail::ValueRef&) const
         {
             return ponder::ValueKind::Reference;
         }
     };
-    
+
     void declare()
     {
         ponder::Enum::declare<MyEnum>("ValueTest::MyEnum")
@@ -133,7 +133,7 @@ using namespace ValueTest;
 TEST_CASE("Ponder has variant values")
 {
     MyClass object1(1);
-    MyClass object2(2);                          
+    MyClass object2(2);
     ponder::Value noValue      = ponder::Value::nothing;
     ponder::Value boolValue    = true;
     ponder::Value charValue    = static_cast<char>(1);
@@ -519,7 +519,7 @@ TEST_CASE("Ponder has variant values")
 
     SECTION("values can be compared using less than")
     {
-#define equivalent(left, right) (!(left < right) && !(right < left))
+#define equivalent(left, right) (!((left) < (right)) && !((right) < (left)))
 
         REQUIRE(equivalent(noValue, noValue) ==     true);
         REQUIRE(equivalent(noValue, boolValue) ==   false);
@@ -591,7 +591,7 @@ TEST_CASE("Ponder has variant values")
         REQUIRE((ponder::Value(1.)    < ponder::Value(2.)) ==   true);
         REQUIRE((ponder::Value("1")   < ponder::Value("2")) ==  true);
         REQUIRE((ponder::Value(One)   < ponder::Value(Two)) ==  true);
-        
+
 #undef equivalent
     }
 
@@ -631,7 +631,7 @@ TEST_CASE("We can convert values from strings")
         REQUIRE(conv("X", r) == false);
         REQUIRE(conv("", r) == false);
     }
-    
+
     SECTION("int")
     {
         int r;
@@ -647,13 +647,13 @@ TEST_CASE("We can convert values from strings")
 
         REQUIRE(conv("-87654321", r) == true);
         REQUIRE(r == -87654321);
-        
+
         REQUIRE(conv("-87654321", r) == true);
         REQUIRE(r == -87654321);
-        
+
         REQUIRE(conv("0xabc", r) == true);  // hex
         REQUIRE(r == 0xABC);
-        
+
         REQUIRE(conv("0654", r) == true);   // octal
         REQUIRE(r == 0654);
     }
@@ -666,7 +666,7 @@ TEST_CASE("We can convert values from strings")
         REQUIRE(conv("whoops", r) == false);
         REQUIRE(conv(".78", r) == false);
     }
-    
+
     SECTION("long long")
     {
         long long r;
@@ -682,16 +682,16 @@ TEST_CASE("We can convert values from strings")
 
         REQUIRE(conv("-87654321", r) == true);
         REQUIRE(r == -87654321);
-        
+
         REQUIRE(conv("-87654321", r) == true);
         REQUIRE(r == -87654321);
-        
+
         REQUIRE(conv("0xabc", r) == true);  // hex
         REQUIRE(r == 0xABC);
 
         REQUIRE(conv("0x1234567812345678", r) == true);  // hex
         REQUIRE(r == 0x1234567812345678);
-        
+
         REQUIRE(conv("0654", r) == true);   // octal
         REQUIRE(r == 0654);
     }
@@ -704,7 +704,7 @@ TEST_CASE("We can convert values from strings")
         REQUIRE(conv("whoops", r) == false);
         REQUIRE(conv(".78", r) == false);
     }
-    
+
     SECTION("float")
     {
         float r;
@@ -720,12 +720,12 @@ TEST_CASE("We can convert values from strings")
 
         REQUIRE(conv("-87654321", r) == true);
         REQUIRE(r == -87654321);
-        
+
         REQUIRE(conv("-87654321", r) == true);
         REQUIRE(r == -87654321);
-        
+
         REQUIRE(conv("0xabc", r) == true);  // hex
-        REQUIRE(r == 0xABC);        
+        REQUIRE(r == 0xABC);
     }
 
     SECTION("float fail")
@@ -750,7 +750,7 @@ TEST_CASE("Values have their type determined")
     STATIC_ASSERT(ponder_ext::ValueMapper<const MyEnum>::kind == ponder::ValueKind::Enum);
     STATIC_ASSERT(ponder_ext::ValueMapper<int[10]>::kind == ponder::ValueKind::Array);
     STATIC_ASSERT(ponder_ext::ValueMapper<MyClass>::kind == ponder::ValueKind::User);
-    
+
     STATIC_ASSERT(ponder_ext::ValueMapper<std::string>::kind == ponder::ValueKind::String);
     STATIC_ASSERT(ponder_ext::ValueMapper<const std::string>::kind == ponder::ValueKind::String);
     STATIC_ASSERT(ponder_ext::ValueMapper<const char*>::kind == ponder::ValueKind::String);
@@ -761,7 +761,7 @@ TEST_CASE("Values can be held in containers")
     SECTION("a std::map")
     {
         std::map<ponder::String, ponder::Value> testmap;
-        ponder::Value value = "Hello";
+        const ponder::Value value = "Hello";
         testmap["1"] = value;
         REQUIRE(testmap["1"] == ponder::String("Hello"));
     }
@@ -772,14 +772,14 @@ TEST_CASE("Default values can be created")
     SECTION("builtin")
     {
         ponder::detail::ValueProvider<int> pi;
-        int i(pi());
+        const int i(pi());
         UNUSED(i);
     }
 
     SECTION("string")
     {
         ponder::detail::ValueProvider<std::string> vp;
-        std::string v(vp());
+        const std::string v(vp());
         UNUSED(v);
     }
 

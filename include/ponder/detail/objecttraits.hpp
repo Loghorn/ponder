@@ -32,8 +32,7 @@
 #define PONDER_DETAIL_OBJECTTRAITS_HPP
 
 #include "rawtype.hpp"
-#include <vector>
-#include <list>
+#include <ponder/type.hpp>
 
 namespace ponder {
 namespace detail {
@@ -64,14 +63,14 @@ struct TypeTraits
     using ReferenceType = T&;
     using PointerType = T*;
     using DereferencedType = T;
-    static_assert(!std::is_void<T>::value, "Incorrect type details");
+    static_assert(!std::is_void_v<T>, "Incorrect type details");
     using DataType = typename DataType<T>::Type;
-    static constexpr bool isWritable = !std::is_const<DereferencedType>::value;
+    static constexpr bool isWritable = !std::is_const_v<DereferencedType>;
     static constexpr bool isRef = false;
 
-    static inline ReferenceType get(void* pointer) { return *static_cast<T*>(pointer); }
-    static inline PointerType getPointer(T& value) { return &value; }
-    static inline PointerType getPointer(T* value) { return value; }
+    static ReferenceType get(void* pointer) { return *static_cast<T*>(pointer); }
+    static PointerType getPointer(T& value) { return &value; }
+    static PointerType getPointer(T* value) { return value; }
 };
 
 // void
@@ -83,12 +82,12 @@ struct TypeTraits<void>
     using ReferenceType = T*;
     using PointerType = T*;
     using DereferencedType = T;
-    using DataType = typename DataType<T>::Type;
+    using DataType = DataType<T>::Type;
     static constexpr bool isWritable = false;
     static constexpr bool isRef = false;
 
-    static inline ReferenceType get(void* pointer) { return 0; }
-    static inline PointerType getPointer(T* value) { return value; }
+    static ReferenceType get(void* pointer) { return nullptr; }
+    static PointerType getPointer(T* value) { return value; }
 };
 
 // Raw pointers
@@ -101,12 +100,12 @@ struct TypeTraits<T*>
     using PointerType = T*;
     using DereferencedType = T;
     using DataType = typename DataType<T>::Type;
-    static constexpr bool isWritable = !std::is_const<DereferencedType>::value;
+    static constexpr bool isWritable = !std::is_const_v<DereferencedType>;
     static constexpr bool isRef = true;
 
-    static inline ReferenceType get(void* pointer) {return static_cast<T*>(pointer);}
-    static inline PointerType getPointer(T& value) {return &value;}
-    static inline PointerType getPointer(T* value) {return value;}
+    static ReferenceType get(void* pointer) {return static_cast<T*>(pointer);}
+    static PointerType getPointer(T& value) {return &value;}
+    static PointerType getPointer(T* value) {return value;}
 };
 
 // References
@@ -119,12 +118,12 @@ struct TypeTraits<T&>
     using PointerType = T*;
     using DereferencedType = T;
     using DataType = typename DataType<T>::Type;
-    static constexpr bool isWritable = !std::is_const<DereferencedType>::value;
+    static constexpr bool isWritable = !std::is_const_v<DereferencedType>;
     static constexpr bool isRef = true;
 
-    static inline ReferenceType get(void* pointer) {return *static_cast<T*>(pointer);}
-    static inline PointerType getPointer(T& value) {return &value;}
-    static inline PointerType getPointer(T* value) {return value;}
+    static ReferenceType get(void* pointer) {return *static_cast<T*>(pointer);}
+    static PointerType getPointer(T& value) {return &value;}
+    static PointerType getPointer(T* value) {return value;}
 };
 
 // Base class for smart pointers
@@ -137,22 +136,22 @@ struct SmartPointerReferenceTraits
     using PointerType = P;
     using DereferencedType = T;
     using DataType = typename DataType<T>::Type;
-    static constexpr bool isWritable = !std::is_const<DereferencedType>::value;
+    static constexpr bool isWritable = !std::is_const_v<DereferencedType>;
     static constexpr bool isRef = true;
 
-    static inline ReferenceType get(void* pointer)   {return *static_cast<P*>(pointer);}
-    static inline PointerType getPointer(P& value) {return get_pointer(value);}
+    static ReferenceType get(void* pointer)   {return *static_cast<P*>(pointer);}
+    static PointerType getPointer(P& value) {return get_pointer(value);}
 };
 
 // std::shared_ptr<>
 template <typename T>
 struct TypeTraits<std::shared_ptr<T>>
-    : public SmartPointerReferenceTraits<std::shared_ptr<T>,T> {};
+    : SmartPointerReferenceTraits<std::shared_ptr<T>,T> {};
 
 
 // Built-in arrays []
 template <typename T, size_t N>
-struct TypeTraits<T[N], typename std::enable_if<std::is_array<T>::value>::type>
+struct TypeTraits<T[N], std::enable_if_t<std::is_array_v<T>>>
 {
     static constexpr ReferenceKind kind = ReferenceKind::BuiltinArray;
     using Type = T[N];
@@ -161,7 +160,7 @@ struct TypeTraits<T[N], typename std::enable_if<std::is_array<T>::value>::type>
     using PointerType = T*;
     using DereferencedType = T[N];
     static constexpr size_t Size = N;
-    static constexpr bool isWritable = !std::is_const<T>::value;
+    static constexpr bool isWritable = !std::is_const_v<T>;
     static constexpr bool isRef = false;
 };
 

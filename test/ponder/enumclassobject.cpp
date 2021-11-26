@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,28 +39,28 @@ namespace EnumClassObjectTest
     {
         Undeclared
     };
-    
+
     enum class MyEnum
     {
         Zero = 0,
         One  = 1,
         Two  = 2
     };
-    
+
     enum class MyEnum2
     {
         Zero2 = 0,
         One2  = 1,
         Two2  = 2
     };
-    
+
     void declare()
     {
         ponder::Enum::declare<MyEnum>("EnumClassObjectTest::MyEnum")
             .value("Zero", MyEnum::Zero)
             .value("One",  MyEnum::One)
             .value("Two",  MyEnum::Two);
-        
+
         // same names as MyEnum
         ponder::Enum::declare<MyEnum2>("EnumClassObjectTest::MyEnum2")
             .value("Zero", MyEnum2::Zero2)
@@ -98,14 +98,14 @@ TEST_CASE("Enum class objects")
         REQUIRE(one.value<MyEnum>() == MyEnum::One);
         REQUIRE(two.value<MyEnum>() == MyEnum::Two);
     }
-    
+
     SECTION("wraps an Enum class type")
     {
         IS_TRUE(zero.getEnum() == ponder::enumByType<MyEnum>());
         IS_TRUE(one.getEnum()  == ponder::enumByType<MyEnum>());
         IS_TRUE(two.getEnum()  == ponder::enumByType<MyEnum>());
     }
-    
+
     SECTION("can be compared ==")
     {
         ponder::EnumObject zero2(MyEnum2::Zero2);
@@ -124,7 +124,7 @@ TEST_CASE("Enum class objects")
         REQUIRE((one  == one2) == false);
         REQUIRE((two  == two2) == false);
     }
-    
+
     SECTION("can be compared <")
     {
         REQUIRE((zero < zero) == false);
@@ -139,17 +139,17 @@ TEST_CASE("Enum class objects")
         REQUIRE((two < one) == false);
         REQUIRE((two < two) == false);
     }
-    
+
     SECTION("must be declared")
     {
         // The meta-enum of MyUndeclaredEnum is *not* declared
         // Note: use lambda here as Catch2 test needs to be an expression.
-        REQUIRE_THROWS_AS([](){
+        REQUIRE_THROWS_AS([]{
             ponder::EnumObject obj(MyUndeclaredEnum::Undeclared);
         }(), ponder::EnumNotFound);
-    }    
+    }
 }
-    
+
 
 
 

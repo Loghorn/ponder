@@ -12,10 +12,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -51,32 +51,32 @@ public:
      *  \param value : user Value
      */
     UserData(IdRef name, Value&& value) : m_name(name), m_value(value) {}
-    
+
     /** \brief Get the UserData name.
      *  \return Id name
      */
-    IdReturn getName() const { return m_name; }
-    
+    [[nodiscard]] IdReturn getName() const { return m_name; }
+
     /** \brief Get the Value
      *  \return const Value
-     */ 
-    const Value& getValue() const { return m_value; }
+     */
+    [[nodiscard]] const Value& getValue() const { return m_value; }
     //Value& getValue() { return m_value; }
 
 private:
     Id m_name;
     Value m_value;
 };
-    
+
 /**
  * \brief Interface to UserData store.
- */ 
+ */
 class IUserDataStore
 {
 public:
-    virtual ~IUserDataStore() {}
+    virtual ~IUserDataStore() = default;
     virtual void setValue(const Type& t, IdRef name, const Value& v) = 0;
-    virtual const Value* getValue(const Type& t, IdRef name) const = 0;
+    [[nodiscard]] virtual const Value* getValue(const Type& t, IdRef name) const = 0;
     virtual void removeValue(const Type& t, IdRef name) = 0;
 };
 

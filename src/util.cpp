@@ -36,7 +36,7 @@
 #endif
 
 #ifdef _MSC_VER
-#   include <string.h>
+#   include <cstring>
 #else
 #   include <strings.h>
 #endif
@@ -47,7 +47,7 @@
 namespace ponder {
 namespace detail {
 
-static inline int stricmp(const char* a, const char* b)
+static int stricmp(const char* a, const char* b)
 {
     // MSVC is the odd one out.
     // POSIX: http://www.unix.com/man-page/POSIX/3posix/strcasecmp/
@@ -65,7 +65,7 @@ template <typename T>
 static bool parse_integer(const String& from, T& to)
 {
     try {
-        const long p = std::stol(from.c_str(), nullptr, 0);
+        const long p = std::stol(from, nullptr, 0);
         to = static_cast<T>(p);
     } catch (std::logic_error&) {
         return false;
@@ -125,7 +125,7 @@ bool conv(const String& from, unsigned long& to)
 bool conv(const String& from, long long& to)
 {
     try {
-        to = std::stoll(from.c_str(), nullptr, 0);
+        to = std::stoll(from, nullptr, 0);
     } catch (std::logic_error&) {
         return false;
     }
@@ -135,7 +135,7 @@ bool conv(const String& from, long long& to)
 bool conv(const String& from, unsigned long long& to)
 {
     try {
-        to = std::stoull(from.c_str(), nullptr, 0);
+        to = std::stoull(from, nullptr, 0);
     } catch (std::logic_error&) {
         return false;
     }
@@ -144,8 +144,7 @@ bool conv(const String& from, unsigned long long& to)
 
 bool conv(const String& from, bool& to)
 {
-    const char *s = from.c_str();
-    if (stricmp(s, "1")==0 || stricmp(s, "true")==0)
+    if (const char *s = from.c_str(); stricmp(s, "1")==0 || stricmp(s, "true")==0)
     {
         to = true;
         return true;
@@ -161,7 +160,7 @@ bool conv(const String& from, bool& to)
 bool conv(const String& from, float& to)
 {
     try {
-        to = std::stof(from.c_str());
+        to = std::stof(from);
     } catch (std::logic_error&) {
         return false;
     }
@@ -171,7 +170,7 @@ bool conv(const String& from, float& to)
 bool conv(const String& from, double& to)
 {
     try {
-        to = std::stod(from.c_str());
+        to = std::stod(from);
     } catch (std::logic_error&) {
         return false;
     }
@@ -194,7 +193,7 @@ static const char* c_typeNames[] =
 
 const char* valueKindAsString(ValueKind t)
 {
-    const unsigned int i = static_cast<unsigned int>(t);
+    const auto i = static_cast<unsigned int>(t);
     return i <= static_cast<unsigned int>(ValueKind::User) ? c_typeNames[i] : "unknown";
 }
 

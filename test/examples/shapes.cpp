@@ -32,7 +32,6 @@
 
 #include <ponder/classbuilder.hpp>
 #include <ponder/uses/runtime.hpp>
-#include <iostream>
 
 static void declare();
 
@@ -58,9 +57,9 @@ class Shape
     PONDER_POLYMORPHIC()
 public:
     
-    virtual ~Shape() {}
+    virtual ~Shape() = default;
 
-    ShapeType getType() const { return m_type; }
+    [[nodiscard]] ShapeType getType() const { return m_type; }
 
 protected:
     Shape(ShapeType shape) : m_type(shape) {}
@@ -70,7 +69,7 @@ private:
 };
 //! [doc_class_Shape]
 
-class Circle : public Shape
+class Circle final : public Shape
 {
     PONDER_POLYMORPHIC()
 public:
@@ -81,7 +80,7 @@ public:
     ,   m_radius(radius)
     {}
 
-    float getRadius() const { return m_radius; }
+    [[nodiscard]] float getRadius() const { return m_radius; }
 private:
     Vec2 m_pos;
     float m_radius;

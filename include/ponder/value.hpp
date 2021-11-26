@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,6 @@
 #include <ponder/enumobject.hpp>
 #include <ponder/userobject.hpp>
 #include <ponder/valuemapper.hpp>
-#include <ponder/detail/valueimpl.hpp>
 #include <ponder/detail/variant.hpp>
 #include <iosfwd>
 #include <string>
@@ -98,21 +97,21 @@ public:
      *
      * \param other Value to move
      */
-    Value(Value&& other);
+    Value(Value&& other) noexcept;
 
     /**
      * \brief Assignment operator
      *
      * \param other Value to assign to this
      */
-    void operator = (const Value& other);
-    
+    Value& operator = (const Value& other);
+
     /**
      * \brief Return the Ponder runtime kind of the value
      *
      * \return Type of the value
      */
-    ValueKind kind() const;
+    [[nodiscard]] ValueKind kind() const;
 
     /**
      * \brief Convert the value to the type T
@@ -143,7 +142,7 @@ public:
     /**
      * \brief Get a const reference to the value data contained
      *
-     * Get a const reference to the contained value of type T. The user is responsible for 
+     * Get a const reference to the contained value of type T. The user is responsible for
      * ensuring that the type passed is correct. See ref() for a const reference, or to() to
      * convert the value.
      *
@@ -160,7 +159,7 @@ public:
      * \return True if conversion is possible, false otherwise
      */
     template <typename T>
-    bool isCompatible() const;
+    [[nodiscard]] bool isCompatible() const;
 
     /**
      * \brief Visit the value with a unary visitor
@@ -225,9 +224,9 @@ public:
      *
      * \return True if this > other
      */
-    bool operator > (const Value& other) const 
-    { 
-      return !(*this < other || *this == other); 
+    bool operator > (const Value& other) const
+    {
+      return !(*this < other || *this == other);
     }
 
     /**
@@ -238,8 +237,8 @@ public:
      * \return True if this <= other
      */
     bool operator <= (const Value& other) const
-    { 
-      return (*this < other || *this == other); 
+    {
+      return *this < other || *this == other;
     }
 
     /**
@@ -250,8 +249,8 @@ public:
      * \return True if this >= other
      */
     bool operator >= (const Value& other) const
-    { 
-      return !(*this < other); 
+    {
+      return !(*this < other);
     }
 
     /**
@@ -262,12 +261,12 @@ public:
 private:
 
     using Variant = mapbox::util::variant<
-        NoType, bool, long, double, ponder::String,
+        NoType, bool, long, double, String,
         EnumObject, UserObject, detail::ValueRef
     >;
 
-    Variant m_value; // Stored value
-    ValueKind m_type; // Ponder type of the value
+    Variant m_value{NoType()}; // Stored value
+    ValueKind m_type{ValueKind::None}; // Ponder type of the value
 };
 
 /**

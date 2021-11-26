@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -53,8 +53,8 @@ Enum::Pair Enum::pair(size_t index) const
     if (index >= m_enums.size())
         PONDER_ERROR(OutOfRange(index, m_enums.size()));
 
-    auto it = m_enums.at(index);
-    return Pair(it->first, it->second);
+    const auto it = m_enums.at(index);
+    return {it->first, it->second};
 }
 
 bool Enum::hasName(IdRef name) const
@@ -69,8 +69,8 @@ bool Enum::hasValue(EnumValue value) const
 
 IdReturn Enum::name(EnumValue value) const
 {
-    auto it = m_enums.findValue(value);
-    
+    const auto it = m_enums.findValue(value);
+
     if (it == m_enums.end())
         PONDER_ERROR(EnumValueNotFound(value, name()));
 
@@ -79,7 +79,7 @@ IdReturn Enum::name(EnumValue value) const
 
 Enum::EnumValue Enum::value(IdRef name) const
 {
-    auto it = m_enums.findKey(name);
+    const auto it = m_enums.findKey(name);
 
     if (it == m_enums.end())
         PONDER_ERROR(EnumNameNotFound(name, m_name));

@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,51 +40,51 @@ namespace ArrayPropertyTest
     struct MyType
     {
         MyType() : x(-1) {}
-        
+
         MyType(int x_) : x(x_) {}
-        
+
         bool operator == (const MyType& other) const
         {
             return x == other.x;
         }
-        
+
         int x;
     };
-    
+
     struct MyClass
     {
         MyClass()
         {
             bools[0] = true;
             bools[1] = false;
-            
+
             ints[0] = -10;
             ints[1] = 10;
             ints[2] = 100;
-            
-            strings.push_back("string 0");
-            strings.push_back("string 1");
-            strings.push_back("string 2");
-            strings.push_back("string 3");
-            
-            objects.push_back(MyType(0));
-            objects.push_back(MyType(1));
-            objects.push_back(MyType(2));
-            objects.push_back(MyType(3));
-            objects.push_back(MyType(4));
+
+            strings.emplace_back("string 0");
+            strings.emplace_back("string 1");
+            strings.emplace_back("string 2");
+            strings.emplace_back("string 3");
+
+            objects.emplace_back(0);
+            objects.emplace_back(1);
+            objects.emplace_back(2);
+            objects.emplace_back(3);
+            objects.emplace_back(4);
         }
-        
+
         bool bools[2];
         std::array<int, 3> ints;
         std::vector<ponder::String> strings;
         std::list<MyType> objects;
         std::vector<std::shared_ptr<MyType>> smartptrs;
     };
-    
+
     void declare()
     {
         ponder::Class::declare<MyType>("ArrayPropertyTest::MyType");
-        
+
         ponder::Class::declare<MyClass>("ArrayPropertyTest::MyClass")
             .property("bools", &MyClass::bools)
             .property("ints", &MyClass::ints)
@@ -137,7 +137,7 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Array property can be inspected")
         REQUIRE(strings->kind() == ponder::ValueKind::Array);
         REQUIRE(objects->kind() == ponder::ValueKind::Array);
     }
-    
+
      SECTION("arrays have a type")
      {
          REQUIRE(bools->elementType() == ponder::ValueKind::Boolean);
@@ -145,7 +145,7 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Array property can be inspected")
          REQUIRE(strings->elementType() == ponder::ValueKind::String);
          REQUIRE(objects->elementType() == ponder::ValueKind::User);
      }
-     
+
      SECTION("can be dynamic")
      {
          REQUIRE(bools->dynamic() == false);
@@ -153,7 +153,7 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Array property can be inspected")
          REQUIRE(strings->dynamic() == true);
          REQUIRE(objects->dynamic() == true);
      }
-     
+
     SECTION("have a size")
     {
         REQUIRE(bools->size(object) == std::extent<decltype(object.bools)>::value);
@@ -168,18 +168,18 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be read")
     REQUIRE(bools->get(object, 0) == ponder::Value(object.bools[0]));
     REQUIRE(bools->get(object, 1) == ponder::Value(object.bools[1]));
     REQUIRE_THROWS_AS(bools->get(object, 2), ponder::OutOfRange);
-    
+
     REQUIRE(ints->get(object, 0) == ponder::Value(object.ints[0]));
     REQUIRE(ints->get(object, 1) == ponder::Value(object.ints[1]));
     REQUIRE(ints->get(object, 2) == ponder::Value(object.ints[2]));
     REQUIRE_THROWS_AS(ints->get(object, 3), ponder::OutOfRange);
-    
+
     REQUIRE(strings->get(object, 0) == ponder::Value(object.strings[0]));
     REQUIRE(strings->get(object, 1) == ponder::Value(object.strings[1]));
     REQUIRE(strings->get(object, 2) == ponder::Value(object.strings[2]));
     REQUIRE(strings->get(object, 3) == ponder::Value(object.strings[3]));
     REQUIRE_THROWS_AS(strings->get(object, 4), ponder::OutOfRange);
-    
+
     // Test objects in the list. Note, these test check different things.
     std::list<MyType>::const_iterator it = object.objects.begin();
     // test values equivalent explicitly
@@ -200,12 +200,12 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be written to")
     ints->set(&object, 1, 20);
     strings->set(&object, 1, "hello");
     objects->set(&object, 1, MyType(8));
-    
+
     REQUIRE(object.bools[1] == true);
     REQUIRE(object.ints[1] == 20);
     REQUIRE(object.strings[1] == "hello");
     REQUIRE(*std::next(object.objects.begin(), 1) == MyType(8));
-    
+
     REQUIRE_THROWS_AS(bools->set(&object, 10, true),        ponder::OutOfRange);
     REQUIRE_THROWS_AS(ints->set(&object, 10, 1),            ponder::OutOfRange);
     REQUIRE_THROWS_AS(strings->set(&object, 10, "hi"),      ponder::OutOfRange);
@@ -216,16 +216,16 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be inserted into")
 {
     REQUIRE_THROWS_AS(bools->insert(&object, 0, true), ponder::ForbiddenWrite);
     REQUIRE_THROWS_AS(ints->insert(&object, 0, true),  ponder::ForbiddenWrite);
-    
+
     const size_t stringsSize = object.strings.size();
     const size_t objectsSize = object.objects.size();
-    
+
     strings->insert(&object, 1, "bonjour");
     objects->insert(&object, 1, MyType(10));
-    
+
     REQUIRE(object.strings.size() == stringsSize + 1);
     REQUIRE(object.objects.size() == objectsSize + 1);
-    
+
     REQUIRE(object.strings[1] == "bonjour");
     REQUIRE(*std::next(object.objects.begin(), 1) == MyType(10));
 }
@@ -235,19 +235,19 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be removed from")
 {
     REQUIRE_THROWS_AS(bools->remove(&object, 0), ponder::ForbiddenWrite);
     REQUIRE_THROWS_AS(ints->remove(&object, 0),  ponder::ForbiddenWrite);
-    
+
     const ponder::String string1 = object.strings[1];
     const MyType      object1 = *std::next(object.objects.begin(), 1);
-    
+
     const size_t stringsSize = object.strings.size();
     const size_t objectsSize = object.objects.size();
-    
+
     strings->remove(&object, 0);
     objects->remove(&object, 0);
-    
+
     REQUIRE(object.strings.size() == stringsSize - 1);
     REQUIRE(object.objects.size() == objectsSize - 1);
-    
+
     REQUIRE(object.strings.front() == string1);
     REQUIRE(object.objects.front() == object1);
 }

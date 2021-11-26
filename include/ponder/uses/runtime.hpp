@@ -47,7 +47,7 @@
 namespace ponder {
 namespace runtime {
 
-static inline void destroy(const UserObject &uo);
+static void destroy(const UserObject &obj);
 
 namespace detail {
 
@@ -73,7 +73,7 @@ struct ArgsBuilder<void> {
 
 
 struct UserObjectDeleter {
-    void operator () (UserObject *uo) { destroy(*uo); }
+    void operator () (const UserObject *uo) const { destroy(*uo); }
 };
 
 } // namespace detail
@@ -108,7 +108,7 @@ public:
      *
      * \return a Class reference
      */
-    const Class& getClass() const { return m_class; }
+    [[nodiscard]] const Class& getClass() const { return m_class; }
 
     /**
      * \brief Construct a new instance of the C++ class bound to the metaclass
@@ -196,7 +196,7 @@ public:
      *
      * \return a Function reference
      */
-    const Function& function() const { return m_func; }
+    [[nodiscard]] const Function& function() const { return m_func; }
 
     /**
      * \brief Call the function
@@ -222,7 +222,7 @@ public:
 private:
 
     const Function &m_func;
-    runtime::detail::FunctionCaller *m_caller;
+    detail::FunctionCaller *m_caller;
 };
 
 /**
@@ -248,7 +248,7 @@ public:
      *
      * \return a Function reference
      */
-    const Function& function() const { return m_func; }
+    [[nodiscard]] const Function& function() const { return m_func; }
 
     /**
      * \brief Call the static function
@@ -271,7 +271,7 @@ public:
 private:
 
     const Function &m_func;
-    runtime::detail::FunctionCaller *m_caller;
+    detail::FunctionCaller *m_caller;
 };
 
 //--------------------------------------------------------------------------------------
@@ -291,7 +291,7 @@ private:
  * \sa destroy()
  */
 template <typename... A>
-static inline UserObject create(const Class &cls, A... args)
+static UserObject create(const Class &cls, A... args)
 {
     return ObjectFactory(cls).create(args...);
 }
@@ -304,9 +304,9 @@ inline UniquePtr makeUniquePtr(UserObject *obj)
 }
 
 template <typename... A>
-static inline UniquePtr createUnique(const Class &cls, A... args)
+static UniquePtr createUnique(const Class &cls, A... args)
 {
-    auto p = new UserObject;
+    const auto p = new UserObject;
     *p = create(cls, args...);
     return makeUniquePtr(p);
 }
@@ -320,7 +320,7 @@ static inline UniquePtr createUnique(const Class &cls, A... args)
  *
  * \sa create()
  */
-static inline void destroy(const UserObject &obj)
+static void destroy(const UserObject &obj)
 {
     ObjectFactory(obj.getClass()).destroy(obj);
 }
@@ -338,7 +338,7 @@ static inline void destroy(const UserObject &obj)
  * \sa callStatic(), Class::function()
  */
 template <typename... A>
-static inline Value call(const Function &fn, const UserObject &obj, A&&... args)
+static Value call(const Function &fn, const UserObject &obj, A&&... args)
 {
     return ObjectCaller(fn).call(obj,
                                  detail::ArgsBuilder<A...>::makeArgs(std::forward<A>(args)...));
@@ -356,7 +356,7 @@ static inline Value call(const Function &fn, const UserObject &obj, A&&... args)
  * \sa call(), Class::function()
  */
 template <typename... A>
-static inline Value callStatic(const Function &fn, A&&... args)
+static Value callStatic(const Function &fn, A&&... args)
 {
     return FunctionCaller(fn).call(detail::ArgsBuilder<A...>::makeArgs(std::forward<A>(args)...));
 }
@@ -371,14 +371,14 @@ namespace ponder {
 namespace runtime {
 
 template <typename... A>
-inline UserObject ObjectFactory::create(A... args) const
+UserObject ObjectFactory::create(A... args) const
 {
-    Args a(args...);
+    const Args a(args...);
     return construct(a);
 }
 
 template <typename... A>
-inline Value ObjectCaller::call(const UserObject &obj, A&&... vargs)
+Value ObjectCaller::call(const UserObject &obj, A&&... vargs)
 {
     if (obj.pointer() == nullptr)
         PONDER_ERROR(NullObject(&obj.getClass()));
@@ -395,9 +395,9 @@ inline Value ObjectCaller::call(const UserObject &obj, A&&... vargs)
 }
 
 template <typename... A>
-inline Value FunctionCaller::call(A... vargs)
+Value FunctionCaller::call(A... vargs)
 {
-    Args args(detail::ArgsBuilder<A...>::makeArgs(vargs...));
+    const Args args(detail::ArgsBuilder<A...>::makeArgs(vargs...));
 
     // Check the number of arguments
     if (args.count() < m_func.paramCount())
@@ -419,8 +419,7 @@ UserObject ObjectFactory::construct(const Args& args, void* ptr) const
     // Search an arguments match among the list of available constructors
     for (size_t nb = m_class.constructorCount(), i = 0; i < nb; ++i)
     {
-        const Constructor& constructor = *m_class.constructor(i);
-        if (constructor.matches(args))
+        if (const Constructor& constructor = *m_class.constructor(i); constructor.matches(args))
         {
             // Match found: use the constructor to create the new instance
             return constructor.create(ptr, args);
@@ -447,14 +446,14 @@ void ObjectFactory::destruct(const UserObject& object) const
 ObjectCaller::ObjectCaller(const Function &f)
     :   m_func(f)
     ,   m_caller(std::get<uses::Uses::eRuntimeModule>(
-                 *reinterpret_cast<const uses::Uses::PerFunctionUserData*>(m_func.getUsesData())))
+                 *static_cast<const uses::Uses::PerFunctionUserData*>(m_func.getUsesData())))
 {
 }
 
 FunctionCaller::FunctionCaller(const Function &f)
     :   m_func(f)
     ,   m_caller(std::get<uses::Uses::eRuntimeModule>(
-                 *reinterpret_cast<const uses::Uses::PerFunctionUserData*>(m_func.getUsesData())))
+                 *static_cast<const uses::Uses::PerFunctionUserData*>(m_func.getUsesData())))
 {
 }
 

@@ -37,7 +37,7 @@
 #include <string>
 
 namespace ponder {
-    
+
 /**
  * \brief Base class for every exception thrown in Ponder.
  */
@@ -46,23 +46,18 @@ class PONDER_API Error : public std::exception
 public:
 
     /**
-     * \brief Destructor
-     */
-    virtual ~Error() throw();
-
-    /**
      * \brief Return a description of the error
      *
      * \return Pointer to a string containing the error message
      */
-    virtual const char* what() const throw();
+    [[nodiscard]] const char* what() const noexcept override;
 
     /**
      * \brief Return the error location (file + line + function)
      *
      * \return String containing the error location
      */
-    virtual const char* where() const throw();
+    [[nodiscard]] virtual const char* where() const noexcept;
 
     /**
      * \brief Prepare an error to be thrown
@@ -96,17 +91,16 @@ protected:
      * This is a convenience function provided to help derived
      * classes to easily build their full message
      *
-     * \param x Value to convert
+     * \param value Value to convert
      *
      * \return \a x converted to a string
      */
     template <typename T>
-    static ponder::String str(T x);
+    static String str(T value);
 
 private:
-
-    ponder::String m_message; ///< Error message
-    ponder::String m_location; ///< Location of the error (file, line and function)
+    String m_message; ///< Error message
+    String m_location; ///< Location of the error (file, line and function)
 };
 
 } // namespace ponder

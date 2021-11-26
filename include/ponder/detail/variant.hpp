@@ -32,12 +32,10 @@
 
 #include <cassert>
 #include <cstddef>   // size_t
-#include <new>       // operator new
 #include <stdexcept> // runtime_error
 #include <string>
 #include <tuple>
 #include <type_traits>
-#include <typeinfo>
 #include <utility>
 #include <functional>
 #include <limits>
@@ -72,9 +70,9 @@ struct visitor<Fn, Fns...> : Fn, visitor<Fns...>
 };
 
 template <typename... Fns>
-visitor<typename std::decay<Fns>::type...> make_visitor(Fns&&... fns)
+visitor<std::decay_t<Fns>...> make_visitor(Fns&&... fns)
 {
-    return visitor<typename std::decay<Fns>::type...>
+    return visitor<std::decay_t<Fns>...>
         (std::forward<Fns>(fns)...);
 }
 
@@ -152,7 +150,7 @@ namespace mapbox {
 
         namespace detail {
 
-            static constexpr type_index_t invalid_value = type_index_t(-1);
+            static constexpr type_index_t invalid_value = static_cast<type_index_t>(-1);
 
             template <typename T, typename... Types>
             struct direct_type;
@@ -160,7 +158,7 @@ namespace mapbox {
             template <typename T, typename First, typename... Types>
             struct direct_type<T, First, Types...>
             {
-                static constexpr type_index_t index = std::is_same<T, First>::value
+                static constexpr type_index_t index = std::is_same_v<T, First>
                     ? sizeof...(Types)
                     : direct_type<T, Types...>::index;
             };
@@ -210,7 +208,7 @@ namespace mapbox {
             template <typename T, typename First, typename... Types>
             struct convertible_type<T, First, Types...>
             {
-                static constexpr type_index_t index = std::is_convertible<T, First>::value
+                static constexpr type_index_t index = std::is_convertible_v<T, First>
                     ? disjunction<std::is_convertible<T, Types>...>::value ? invalid_value : sizeof...(Types)
                     : convertible_type<T, Types...>::index;
             };
@@ -224,7 +222,7 @@ namespace mapbox {
             template <typename T, typename... Types>
             struct value_traits
             {
-                using value_type = typename std::remove_const<typename std::remove_reference<T>::type>::type;
+                using value_type = std::remove_const_t<std::remove_reference_t<T>>;
                 using value_type_wrapper = recursive_wrapper<value_type>;
                 static constexpr type_index_t direct_index = direct_type<value_type, Types...>::index;
                 static constexpr bool is_direct = direct_index != invalid_value;
@@ -233,7 +231,7 @@ namespace mapbox {
                 static constexpr type_index_t index = is_direct_or_wrapper ? index_direct_or_wrapper : convertible_type<value_type, Types...>::index;
                 static constexpr bool is_valid = index != invalid_value;
                 static constexpr type_index_t tindex = is_valid ? sizeof...(Types) - index : 0;
-                using target_type = typename std::tuple_element<tindex, std::tuple<void, Types...>>::type;
+                using target_type = std::tuple_element_t<tindex, std::tuple<void, Types...>>;
             };
 
             template <typename Src, typename Dest>
@@ -276,9 +274,9 @@ namespace mapbox {
 
             // specialization for explicit result_type member in visitor class
             template <typename F, typename... Args>
-            struct visitor_result_type<F(Args...), decltype((void)std::declval<typename std::decay<F>::type::result_type>())>
+            struct visitor_result_type<F(Args...), decltype((void)std::declval<typename std::decay_t<F>::result_type>())>
             {
-                using type = typename std::decay<F>::type::result_type;
+                using type = typename std::decay_t<F>::result_type;
             };
 
             template <typename F, typename T>
@@ -359,17 +357,17 @@ namespace mapbox {
                 using value_type = T;
 
                 template <typename V>
-                static auto apply(typename std::remove_reference<V>::type& var)
-                    -> typename std::enable_if<std::is_lvalue_reference<V>::value,
-                    decltype(var.template get_unchecked<T>())>::type
+                static auto apply(std::remove_reference_t<V>& var)
+                    -> std::enable_if_t<std::is_lvalue_reference_v<V>,
+                                      decltype(var.template get_unchecked<T>())>
                 {
                     return var.template get_unchecked<T>();
                 }
 
                 template <typename V>
-                static auto apply(typename std::remove_reference<V>::type& var)
-                    -> typename std::enable_if<!std::is_lvalue_reference<V>::value,
-                    decltype(std::move(var.template get_unchecked<T>()))>::type
+                static auto apply(std::remove_reference_t<V>& var)
+                    -> std::enable_if_t<!std::is_lvalue_reference_v<V>,
+                                      decltype(std::move(var.template get_unchecked<T>()))>
                 {
                     return std::move(var.template get_unchecked<T>());
                 }
@@ -593,9 +591,9 @@ namespace mapbox {
             struct adapted_variant_tag;
             using types = std::tuple<Types...>;
         private:
-            using first_type = typename std::tuple_element<0, types>::type;
+            using first_type = std::tuple_element_t<0, types>;
             using unwrap_first_type = typename detail::unwrapper<first_type>::value_type;
-            using data_type = typename std::aligned_storage<data_size, data_align>::type;
+            using data_type = std::aligned_storage_t<data_size, data_align>;
             using helper_type = detail::variant_helper<Types...>;
 
             template <typename V, typename T = unwrap_first_type>
@@ -609,10 +607,10 @@ namespace mapbox {
 #endif
 
         public:
-            VARIANT_INLINE variant() noexcept(std::is_nothrow_default_constructible<first_type>::value)
+            VARIANT_INLINE variant() noexcept(std::is_nothrow_default_constructible_v<first_type>)
                 : type_index(sizeof...(Types) - 1)
             {
-                static_assert(std::is_default_constructible<first_type>::value, "First type in variant must be default constructible to allow default construction of variant.");
+                static_assert(std::is_default_constructible_v<first_type>, "First type in variant must be default constructible to allow default construction of variant.");
                 new (&data) first_type();
             }
 
@@ -621,8 +619,8 @@ namespace mapbox {
 
             // http://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers
             template <typename T, typename PropTraits = detail::value_traits<T, Types...>,
-                typename Enable = typename std::enable_if<PropTraits::is_valid && !std::is_same<variant<Types...>, typename PropTraits::value_type>::value>::type >
-                VARIANT_INLINE variant(T&& val) noexcept(std::is_nothrow_constructible<typename PropTraits::target_type, T&&>::value)
+                typename Enable = std::enable_if_t<PropTraits::is_valid && !std::is_same_v<variant<Types...>, typename PropTraits::value_type>> >
+                VARIANT_INLINE variant(T&& val) noexcept(std::is_nothrow_constructible_v<typename PropTraits::target_type, T&&>)
                 : type_index(PropTraits::index)
             {
                 new (&data) typename PropTraits::target_type(std::forward<T>(val));
@@ -682,12 +680,12 @@ namespace mapbox {
             // conversions
             // move-assign
             template <typename T, typename PropTraits = detail::value_traits<T, Types...>,
-                typename Enable = typename std::enable_if<PropTraits::is_valid && !std::is_same<variant<Types...>, typename PropTraits::value_type>::value>::type >
+                typename Enable = std::enable_if_t<PropTraits::is_valid && !std::is_same_v<variant<Types...>, typename PropTraits::value_type>> >
                 VARIANT_INLINE variant<Types...>& operator=(T&& rhs)
                 // not that we check is_nothrow_constructible<T>, not is_nothrow_move_assignable<T>,
                 // since we construct a temporary
-                noexcept(std::is_nothrow_constructible<typename PropTraits::target_type, T&&>::value
-                    && std::is_nothrow_move_assignable<variant<Types...>>::value)
+                noexcept(std::is_nothrow_constructible_v<typename PropTraits::target_type, T&&>
+                    && std::is_nothrow_move_assignable_v<variant<Types...>>)
             {
                 variant<Types...> temp(std::forward<T>(rhs));
                 move_assign(std::move(temp));
@@ -698,26 +696,26 @@ namespace mapbox {
             template <typename T>
             VARIANT_INLINE variant<Types...>& operator=(T const& rhs)
             {
-                variant<Types...> temp(rhs);
+                const variant<Types...> temp(rhs);
                 copy_assign(temp);
                 return *this;
             }
 
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<T, Types...>::index != detail::invalid_value)>::type* = nullptr>
-                VARIANT_INLINE bool is() const
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<T, Types...>::index != detail::invalid_value)>* = nullptr>
+                [[nodiscard]] VARIANT_INLINE bool is() const
             {
                 return type_index == detail::direct_type<T, Types...>::index;
             }
 
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>::type* = nullptr>
-                VARIANT_INLINE bool is() const
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>* = nullptr>
+                [[nodiscard]] VARIANT_INLINE bool is() const
             {
                 return type_index == detail::direct_type<recursive_wrapper<T>, Types...>::index;
             }
 
-            VARIANT_INLINE bool valid() const
+            [[nodiscard]] VARIANT_INLINE bool valid() const
             {
                 return type_index != detail::invalid_value;
             }
@@ -732,8 +730,8 @@ namespace mapbox {
             }
 
             // get_unchecked<T>()
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<T, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<T, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T& get_unchecked()
             {
                 return *reinterpret_cast<T*>(&data);
@@ -741,8 +739,8 @@ namespace mapbox {
 
 #ifdef HAS_EXCEPTIONS
             // get<T>()
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<T, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<T, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T& get()
             {
                 if (type_index == detail::direct_type<T, Types...>::index)
@@ -756,16 +754,16 @@ namespace mapbox {
             }
 #endif
 
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<T, Types...>::index != detail::invalid_value)>::type* = nullptr>
-                VARIANT_INLINE T const& get_unchecked() const
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<T, Types...>::index != detail::invalid_value)>* = nullptr>
+                [[nodiscard]] VARIANT_INLINE T const& get_unchecked() const
             {
                 return *reinterpret_cast<T const*>(&data);
             }
 
 #ifdef HAS_EXCEPTIONS
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<T, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<T, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T const& get() const
             {
                 if (type_index == detail::direct_type<T, Types...>::index)
@@ -780,8 +778,8 @@ namespace mapbox {
 #endif
 
             // get_unchecked<T>() - T stored as recursive_wrapper<T>
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T& get_unchecked()
             {
                 return (*reinterpret_cast<recursive_wrapper<T>*>(&data)).get();
@@ -789,8 +787,8 @@ namespace mapbox {
 
 #ifdef HAS_EXCEPTIONS
             // get<T>() - T stored as recursive_wrapper<T>
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T& get()
             {
                 if (type_index == detail::direct_type<recursive_wrapper<T>, Types...>::index)
@@ -804,16 +802,16 @@ namespace mapbox {
             }
 #endif
 
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T const& get_unchecked() const
             {
                 return (*reinterpret_cast<recursive_wrapper<T> const*>(&data)).get();
             }
 
 #ifdef HAS_EXCEPTIONS
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<recursive_wrapper<T>, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T const& get() const
             {
                 if (type_index == detail::direct_type<recursive_wrapper<T>, Types...>::index)
@@ -828,8 +826,8 @@ namespace mapbox {
 #endif
 
             // get_unchecked<T>() - T stored as std::reference_wrapper<T>
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<std::reference_wrapper<T>, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<std::reference_wrapper<T>, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T& get_unchecked()
             {
                 return (*reinterpret_cast<std::reference_wrapper<T>*>(&data)).get();
@@ -837,8 +835,8 @@ namespace mapbox {
 
 #ifdef HAS_EXCEPTIONS
             // get<T>() - T stored as std::reference_wrapper<T>
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<std::reference_wrapper<T>, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<std::reference_wrapper<T>, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T& get()
             {
                 if (type_index == detail::direct_type<std::reference_wrapper<T>, Types...>::index)
@@ -852,16 +850,16 @@ namespace mapbox {
             }
 #endif
 
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<std::reference_wrapper<T const>, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<std::reference_wrapper<T const>, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T const& get_unchecked() const
             {
                 return (*reinterpret_cast<std::reference_wrapper<T const> const*>(&data)).get();
             }
 
 #ifdef HAS_EXCEPTIONS
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<std::reference_wrapper<T const>, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<std::reference_wrapper<T const>, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE T const& get() const
             {
                 if (type_index == detail::direct_type<std::reference_wrapper<T const>, Types...>::index)
@@ -877,18 +875,18 @@ namespace mapbox {
 
             // This function is deprecated because it returns an internal index field.
             // Use which() instead.
-            MAPBOX_VARIANT_DEPRECATED VARIANT_INLINE type_index_t get_type_index() const
+            [[nodiscard]] MAPBOX_VARIANT_DEPRECATED VARIANT_INLINE type_index_t get_type_index() const
             {
                 return type_index;
             }
 
-            VARIANT_INLINE int which() const noexcept
+            [[nodiscard]] VARIANT_INLINE int which() const noexcept
             {
                 return static_cast<int>(sizeof...(Types) - type_index - 1);
             }
 
-            template <typename T, typename std::enable_if<
-                (detail::direct_type<T, Types...>::index != detail::invalid_value)>::type* = nullptr>
+            template <typename T, std::enable_if_t<
+                (detail::direct_type<T, Types...>::index != detail::invalid_value)>* = nullptr>
                 VARIANT_INLINE static constexpr int which() noexcept
             {
                 return static_cast<int>(sizeof...(Types) - detail::direct_type<T, Types...>::index - 1);
@@ -917,22 +915,22 @@ namespace mapbox {
             // unary
             template <typename... Fs>
             auto VARIANT_INLINE match(Fs&&... fs) const&
-                -> decltype(variant::visit(*this, ::mapbox::util::make_visitor(std::forward<Fs>(fs)...)))
+                -> decltype(variant::visit(*this, util::make_visitor(std::forward<Fs>(fs)...)))
             {
-                return variant::visit(*this, ::mapbox::util::make_visitor(std::forward<Fs>(fs)...));
+                return variant::visit(*this, util::make_visitor(std::forward<Fs>(fs)...));
             }
             // non-const
             template <typename... Fs>
             auto VARIANT_INLINE match(Fs&&... fs) &
-                -> decltype(variant::visit(*this, ::mapbox::util::make_visitor(std::forward<Fs>(fs)...)))
+                -> decltype(variant::visit(*this, util::make_visitor(std::forward<Fs>(fs)...)))
             {
-                return variant::visit(*this, ::mapbox::util::make_visitor(std::forward<Fs>(fs)...));
+                return variant::visit(*this, util::make_visitor(std::forward<Fs>(fs)...));
             }
             template <typename... Fs>
             auto VARIANT_INLINE match(Fs&&... fs) &&
-                -> decltype(variant::visit(std::move(*this), ::mapbox::util::make_visitor(std::forward<Fs>(fs)...)))
+                -> decltype(variant::visit(std::move(*this), util::make_visitor(std::forward<Fs>(fs)...)))
             {
-                return variant::visit(std::move(*this), ::mapbox::util::make_visitor(std::forward<Fs>(fs)...));
+                return variant::visit(std::move(*this), util::make_visitor(std::forward<Fs>(fs)...));
             }
 
             ~variant() noexcept // no-throw destructor
@@ -1106,10 +1104,10 @@ namespace mapbox {
 // hashable iff underlying types are hashable
 namespace std {
     template <typename... Types>
-    struct hash< ::mapbox::util::variant<Types...>> {
-        std::size_t operator()(const ::mapbox::util::variant<Types...>& v) const noexcept
+    struct hash<mapbox::util::variant<Types...>> {
+        std::size_t operator()(const mapbox::util::variant<Types...>& v) const noexcept
         {
-            return ::mapbox::util::apply_visitor(::mapbox::util::detail::hasher{}, v);
+            return mapbox::util::apply_visitor(mapbox::util::detail::hasher{}, v);
         }
     };
 

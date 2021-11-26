@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,11 +31,11 @@
 #ifndef PONDER_ENUMOBJECT_HPP
 #define PONDER_ENUMOBJECT_HPP
 
-#include <ponder/enumget.hpp>
 #include <string>
+#include "enum.hpp"
 
 namespace ponder {
-    
+
 /**
  * \brief Wrapper to manipulate enumerated values in the Ponder system
  *
@@ -54,15 +54,15 @@ public:
      * \param value Value to store in the enum object
      */
     template <typename T>
-    EnumObject(T value, typename std::enable_if<std::is_enum<T>::value >::type* = 0);
+    EnumObject(T value, std::enable_if_t<std::is_enum_v<T> >* = nullptr);
 
     /**
      * \brief Get the value of the enum object
      *
      * \return Integer value of the enum object
      */
-    long value() const;
-    
+    [[nodiscard]] long value() const;
+
     /**
      * \brief Get the value of the enum class object
      *
@@ -70,20 +70,20 @@ public:
      */
     template <typename E>
     E value() const;
-    
+
     /**
      * \brief Get the name of the enum object
      *
      * \return String containing the name of the enum object
      */
-    IdReturn name() const;
+    [[nodiscard]] IdReturn name() const;
 
     /**
      * \brief Retrieve the metaenum of the stored enum object
      *
      * \return Reference to the object's metaenum
      */
-    const Enum& getEnum() const;
+    [[nodiscard]] const Enum& getEnum() const;
 
     /**
      * \brief Operator == to compare equality between two enum objects

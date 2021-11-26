@@ -30,38 +30,37 @@
 #include <ponder/detail/dictionary.hpp>
 
 namespace ponder {
-    
-class TypeUserDataStore : public IUserDataStore
+
+class TypeUserDataStore final : public IUserDataStore
 {
     using key_t = const Type*;
     using store_t = detail::Dictionary<Id, IdRef, Value>;
     using class_store_t = std::map<key_t, store_t>;
     class_store_t m_store;
-    
+
 public:
 
-    void setValue(const Type& t, IdRef name, const Value& v) final;
-    const Value* getValue(const Type& t, IdRef name) const final;
-    void removeValue(const Type& t, IdRef name) final;
+    void setValue(const Type& t, IdRef name, const Value& v);
+    [[nodiscard]] const Value* getValue(const Type& t, IdRef name) const;
+    void removeValue(const Type& t, IdRef name);
 };
-    
+
 void TypeUserDataStore::setValue(const Type& t, IdRef name, const Value& v)
 {
     auto it = m_store.find(&t);
     if (it == m_store.end())
     {
-        auto ret = m_store.insert(class_store_t::value_type(&t, store_t()));
-        it = ret.first;
+        const auto [fst, snd] = m_store.insert(class_store_t::value_type(&t, store_t()));
+        it = fst;
     }
     it->second.insert(name, v);
 }
 
 const Value* TypeUserDataStore::getValue(const Type& t, IdRef name) const
 {
-    auto it = m_store.find(&t);
-    if (it != m_store.end())
+    if (const auto it = m_store.find(&t); it != m_store.end())
     {
-        auto vit = it->second.findKey(name);
+        const auto vit = it->second.findKey(name);
         if (vit != it->second.end())
             return &vit->second;
     }
@@ -70,8 +69,7 @@ const Value* TypeUserDataStore::getValue(const Type& t, IdRef name) const
 
 void TypeUserDataStore::removeValue(const Type& t, IdRef name)
 {
-    auto it = m_store.find(&t);
-    if (it != m_store.end())
+    if (const auto it = m_store.find(&t); it != m_store.end())
     {
         it->second.erase(name);
     }
@@ -82,16 +80,16 @@ std::unique_ptr<TypeUserDataStore> g_memberDataStore;
 IUserDataStore* userDataStore()
 {
     auto p = g_memberDataStore.get();
-    
+
     if (p == nullptr)
     {
-        g_memberDataStore = detail::make_unique<TypeUserDataStore>();
+        g_memberDataStore = std::make_unique<TypeUserDataStore>();
         p = g_memberDataStore.get();
     }
-    
+
     return p;
 }
-    
+
 } // namespace ponder
 
 

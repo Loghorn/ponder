@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -46,7 +46,7 @@
  */
 
 namespace ponder {
-    
+
 class Value;
 
 // Note: This may have issues with DLLs?
@@ -93,7 +93,7 @@ enum class ReferenceKind
     SmartPointer,       ///< smart pointer reference, e.g. `std::shared_ptr<T>`
     BuiltinArray,       ///< builtin array, e.g. `T[N]`
 };
-    
+
 /**
  * \brief Enumeration of the kinds of function recognised
  *
@@ -119,7 +119,7 @@ enum class PropertyKind
     Function,           ///< a function
     MemberObject        ///< member object in a class or struct
 };
-    
+
 /**
  * \brief Enumeration of the kinds of Property accessors use
  *
@@ -132,7 +132,7 @@ enum class PropertyAccessKind
     Container,
     User
 };
-    
+
 
 /**
  * \brief Base class for all supported types.
@@ -140,9 +140,9 @@ enum class PropertyAccessKind
 class PONDER_API Type
 {
 public:
-    virtual ~Type() {}
+    virtual ~Type() = default;
 };
-    
+
 namespace policy {
 
 /**
@@ -203,12 +203,12 @@ struct ReturnMultiple
 {
     static constexpr ReturnKind kind = ReturnKind::Multiple; ///< The policy enum kind.
 };
-    
+
 struct Parameter
 {
-    
+
 };
-    
+
 //struct PassByValue
 //{
 //    static constexpr ParameterKind kind = ParameterKind::PassByValue; ///< The policy enum kind.
@@ -218,7 +218,7 @@ struct Parameter
 //{
 //    static constexpr ParameterKind kind = ParameterKind::PassByReference; ///< The policy enum kind.
 //};
-    
+
 } // namespace policy
 
 template <typename T, typename IT>

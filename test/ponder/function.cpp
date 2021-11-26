@@ -34,22 +34,22 @@
 namespace FunctionTest
 {
     using namespace std::placeholders;
-    
+
     enum MyEnum
     {
         Zero = 0,
         One  = 1,
         Two  = 2
     };
-    
+
     struct MyType
     {
         static int instCount, copyCount;
-        
+
         MyType(int x_) : x(x_) { ++instCount; }
         MyType(const MyType& o) : x(o.x) { ++instCount; ++copyCount; }
         ~MyType() { --instCount; }
-        
+
         int x;
     };
 
@@ -60,19 +60,19 @@ namespace FunctionTest
         NonCopyable() = default;
         NonCopyable(const NonCopyable&) = delete;
     };
-    
+
     static bool operator == (const MyType& left, const MyType& right)
     {
         return left.x == right.x;
     }
-    
+
     struct MyBase
     {
-        virtual ~MyBase() {}
+        virtual ~MyBase() = default;
         void member3() {}
         char padding[10];
     };
-    
+
     struct MyClass : MyBase
     {
         MyClass()
@@ -88,30 +88,30 @@ namespace FunctionTest
         {
         }
 
-        ~MyClass()
+        ~MyClass() override
         {
             delete m_pType;
         }
-        
+
         bool p1;
         int p2;
         ponder::String p3;
-        
+
         MyType p4;
         const MyType& returnsRef() {return p4;}
-        
+
         MyType p5;
-        const MyType& returnsConstRef() const {return p5;}
+        [[nodiscard]] const MyType& returnsConstRef() const {return p5;}
 
         MyType p6;
-        const MyType& returnsConstRefNoexcept() const noexcept {return p6;}
+        [[nodiscard]] const MyType& returnsConstRefNoexcept() const noexcept {return p6;}
 
         MyType* m_pType{};
-        MyType* returnsPointer() const {return m_pType;}
+        [[nodiscard]] MyType* returnsPointer() const {return m_pType;}
 
         // member3 is inherited
         ponder::Value member4(ponder::Value v) {return v;}
-        
+
         void memberParams1() {}
         void memberParams2(bool) {}
         void memberParams3(float, double) {}
@@ -120,8 +120,8 @@ namespace FunctionTest
                            const ponder::String&, ponder::String) {}
         void memberParams6(MyEnum, MyEnum, MyEnum, MyEnum, MyEnum) {}
 
-        void ref(int& r) { r = p2; }
-        
+        void ref(int& r) const { r = p2; }
+
         struct Inner
         {
             void nested1() {}
@@ -131,87 +131,87 @@ namespace FunctionTest
             void nested5() {}
             void nested6() {}
         };
-        
+
         Inner inner;
-        const Inner& getInner() const {return inner;}
-        
+        [[nodiscard]] const Inner& getInner() const {return inner;}
+
         Inner* innerPtr;
-        const Inner* getInnerPtr() const {return innerPtr;}
-        
+        [[nodiscard]] const Inner* getInnerPtr() const {return innerPtr;}
+
         std::shared_ptr<Inner> innerSmartPtr;
         std::shared_ptr<Inner> getInnerSmartPtr() {return innerSmartPtr;}
-        
+
         int funcWrapper1(int x) {return x;}
         int funcWrapper2(int x, int y) {return x + y;}
         int funcWrapper3(int x, int y, int z) {return x + y + z;}
-        
+
         static int staticFunc()
         {
             return 77;
         }
-        
+
         static float staticFunc2(float a, float b)
         {
             return a * b;
         }
-        
+
         static NonCopyable& staticFuncRetRef()
         {
             static NonCopyable nc;
             return nc;
         }
-        
+
         static NonCopyable* staticFuncRetPtr()
         {
             static NonCopyable nc;
             return &nc;
         }
     };
-    
+
     void nonMember1(MyClass& object)  // TODO - allow non-const refs
     {
         object.p1 = true;
     }
-    
+
     int nonMember2(MyClass& object, int x)
     {
         return object.p2 + x;
     }
-    
+
     const ponder::String& nonMember3(const MyClass* object)
     {
         return object->p3;
     }
-    
-    
+
+
     class DataHolder
     {
     public:
         DataHolder() : TestMember(0) {}
         int TestMember;
     };
-    
+
     class DataModifier
     {
     public:
         void modifyData(DataHolder* obj) { obj->TestMember = 5; }
     };
-    
-    
+
+
     class Policy
     {
     public:
         Policy() : internalInst(99) {}
-        
-        const MyType& returnCopy() const { return internalInst; }
-        
-        const MyType& internalRefConst() const { return internalInst; }
+
+        [[nodiscard]] const MyType& returnCopy() const { return internalInst; }
+
+        [[nodiscard]] const MyType& internalRefConst() const { return internalInst; }
         MyType& internalRef() { return internalInst; }
-        
+
         MyType internalInst;
     };
-    
-    
+
+
     void declare()
     {
         ponder::Enum::declare<MyEnum>()
@@ -260,9 +260,9 @@ namespace FunctionTest
             // getter returning a raw pointer
             .function("lambdaFunc4", [](MyClass& self){ self.getInnerPtr()->nested4(99); })
             // smart pointer
-            .function("lambdaFunc5", [](MyClass& self){ self.innerSmartPtr.get()->nested5(); })
+            .function("lambdaFunc5", [](MyClass& self){ self.innerSmartPtr->nested5(); })
             // getter returning a smart pointer
-            .function("lambdaFunc6", [](MyClass& self){self.getInnerSmartPtr().get()->nested6();})
+            .function("lambdaFunc6", [](MyClass& self){ self.getInnerSmartPtr()->nested6(); })
 
             // ***** std::function *****
             .function("funcWrapper1",
@@ -374,8 +374,6 @@ struct FunctionTestFixture
     const ponder::Function &fn_nonClassFunc2;
     const ponder::Function &fn_nonCopyRef;
     const ponder::Function &fn_nonCopyPtr;
-
-    const ponder::Function *functions[23];
 };
 
 //-----------------------------------------------------------------------------
@@ -569,7 +567,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Functions can have policies")
             REQUIRE(MyType::instCount == 1);
             REQUIRE(MyType::copyCount == 0);
 
-            UserObject retuo = runtime::call(fn_policyCopy, puo).to<UserObject>();
+            auto retuo = runtime::call(fn_policyCopy, puo).to<UserObject>();
             REQUIRE(MyType::instCount == 2);
             REQUIRE(MyType::copyCount == 1);
 
@@ -604,7 +602,7 @@ TEST_CASE_METHOD(FunctionTestFixture, "Functions can have policies")
             REQUIRE(MyType::instCount == 1);
             REQUIRE(MyType::copyCount == 0);
 
-            const MyType& mt = ret.cref<UserObject>().cref<MyType>();
+            const auto& mt = ret.cref<UserObject>().cref<MyType>();
             REQUIRE(MyType::instCount == 1);
             REQUIRE(MyType::copyCount == 0);
 
@@ -863,9 +861,9 @@ TEST_CASE("Functions can modify objects")
     // modifyData() is called on an object of class A with the intent to modify that object:
     DataHolder objectA;
 
-    const ponder::Class& metaClassB = ponder::classByType<FunctionTest::DataModifier>();
-    ponder::runtime::ObjectFactory bfact(metaClassB);
-    ponder::UserObject wrapperB =  bfact.construct();
+    const ponder::Class& metaClassB = ponder::classByType<DataModifier>();
+    const ponder::runtime::ObjectFactory bfact(metaClassB);
+    const ponder::UserObject wrapperB =  bfact.construct();
     ponder::runtime::ObjectCaller functionB(metaClassB.function("modifyData"));
 
     REQUIRE(objectA.TestMember == 0);

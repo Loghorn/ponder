@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,7 +29,6 @@
 
 #include <ponder/class.hpp>
 #include <ponder/classget.hpp>
-#include <ponder/class.hpp>
 #include <ponder/classbuilder.hpp>
 #include "test.hpp"
 
@@ -38,50 +37,50 @@ namespace InheritanceTest
     struct MyClass1
     {
         MyClass1() : p1(10), po1(10) {}
-        virtual ~MyClass1() {}
+        virtual ~MyClass1() = default;
         int p1;
-        int f1() const {return 1;}
+        [[nodiscard]] int f1() const {return 1;}
         int po1;
         int fo1() {return 1;}
-        PONDER_POLYMORPHIC();
+        PONDER_POLYMORPHIC()
     };
-    
+
     struct MyClass2
     {
         MyClass2() : p2(20), po2(20) {}
-        virtual ~MyClass2() {}
+        virtual ~MyClass2() = default;
         int p2;
-        int f2() const {return 2;}
-        virtual int fv() const {return p2;}
+        [[nodiscard]] int f2() const {return 2;}
+        [[nodiscard]] virtual int fv() const {return p2;}
         int po2;
         int fo2() {return 2;}
-        PONDER_POLYMORPHIC();
+        PONDER_POLYMORPHIC()
     };
-    
+
     struct MyClass3 : public MyClass1, public MyClass2
     {
         MyClass3() : p3(30), po3(30) {}
-        virtual ~MyClass3() {}
+        ~MyClass3() override = default;
         int p3;
-        int f3() const {return 3;}
-        virtual int fv() const {return p3;}
+        [[nodiscard]] int f3() const {return 3;}
+        [[nodiscard]] int fv() const override {return p3;}
         int po3;
         int fo3() {return 3;}
-        PONDER_POLYMORPHIC();
+        PONDER_POLYMORPHIC()
     };
-    
+
     struct MyClass4 : public MyClass3
     {
         MyClass4() : p4(40), po4(40) {}
-        virtual ~MyClass4() {}
+        ~MyClass4() override = default;
         int p4;
-        int f4() const {return 4;}
-        virtual int fv() const {return p4;}
+        [[nodiscard]] int f4() const {return 4;}
+        [[nodiscard]] int fv() const override {return p4;}
         int po4;
         int fo4() {return 4;}
-        PONDER_POLYMORPHIC();
+        PONDER_POLYMORPHIC()
     };
-    
+
     void declare()
     {
         ponder::Class::declare<MyClass1>("InheritanceTest::MyClass1")
@@ -89,14 +88,14 @@ namespace InheritanceTest
             .property("p1", &MyClass1::p1)
             .function("overridden", &MyClass1::fo1)
             .property("overridden", &MyClass1::po1);
-        
+
         ponder::Class::declare<MyClass2>("InheritanceTest::MyClass2")
             .function("f2", &MyClass2::f2)
             .property("p2", &MyClass2::p2)
             .function("virtual", &MyClass2::fv)
             .function("overridden", &MyClass2::fo2)
             .property("overridden", &MyClass2::po2);
-        
+
         ponder::Class::declare<MyClass3>("InheritanceTest::MyClass3")
             .base<MyClass1>()
             .base<MyClass2>()
@@ -104,7 +103,7 @@ namespace InheritanceTest
             .property("p3", &MyClass3::p3)
             .function("overridden", &MyClass3::fo3)
             .property("overridden", &MyClass3::po3);
-        
+
         ponder::Class::declare<MyClass4>("InheritanceTest::MyClass4")
             .base<MyClass3>()
             .function("f4", &MyClass4::f4)
@@ -126,7 +125,7 @@ using namespace InheritanceTest;
 //-----------------------------------------------------------------------------
 
 TEST_CASE("Classes support inheritence")
-{    
+{
     const ponder::Class* class1 = &ponder::classByType<MyClass1>();
     const ponder::Class* class2 = &ponder::classByType<MyClass2>();
     const ponder::Class* class3 = &ponder::classByType<MyClass3>();
@@ -152,7 +151,7 @@ TEST_CASE("Classes support inheritence")
 //
 //        REQUIRE(class4->function("f4").call(object4) == ponder::Value(4));
 //    }
-//    
+//
 //    SECTION("have virtual functions")
 //    {
 //        MyClass1 object1;
@@ -168,7 +167,7 @@ TEST_CASE("Classes support inheritence")
 //        REQUIRE(class2->function("virtual").call(object3) == ponder::Value(30));
 //        REQUIRE(class2->function("virtual").call(object4) == ponder::Value(40));
 //    }
-    
+
     SECTION("have properties")
     {
         MyClass1 object1;
@@ -189,7 +188,7 @@ TEST_CASE("Classes support inheritence")
 
         REQUIRE(class4->property("p4").get(object4) == ponder::Value(40));
     }
-    
+
     SECTION("cast to base class")
     {
         MyClass3 object3;
@@ -245,6 +244,6 @@ TEST_CASE("Classes support inheritence")
         REQUIRE(class1->property("overridden").get(object4) == ponder::Value(10));
         REQUIRE(class2->property("overridden").get(object4) == ponder::Value(20));
         REQUIRE(class3->property("overridden").get(object4) == ponder::Value(30));
-    }    
+    }
 }
 

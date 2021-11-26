@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +32,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 ClassManager& ClassManager::instance()
 {
     static ClassManager cm;
@@ -49,7 +49,7 @@ Class& ClassManager::addClass(TypeId const& id, IdRef name)
     }
 
     // Create the new class
-    Class *newClass = new Class(id, name);
+    auto* newClass = new Class(id, name);
 
     // Insert it into the table
     m_classes.insert(std::make_pair(id, newClass));
@@ -69,9 +69,9 @@ void ClassManager::removeClass(TypeId const& id)
         PONDER_ERROR(ClassNotFound("?"));
     }
 
-    auto it = m_classes.find(id);
-    Class* classPtr{ it->second };
-    auto itName = m_names.find(classPtr->m_name);
+    const auto it = m_classes.find(id);
+    const auto* classPtr = it->second;
+    const auto itName = m_names.find(classPtr->m_name);
 
     // Notify observers
     notifyClassRemoved(*classPtr);
@@ -80,7 +80,7 @@ void ClassManager::removeClass(TypeId const& id)
     delete classPtr;
     m_classes.erase(it);
 }
-    
+
 size_t ClassManager::count() const
 {
     return m_classes.size();
@@ -88,32 +88,32 @@ size_t ClassManager::count() const
 
 ClassManager::ClassView ClassManager::getClasses() const
 {
-    return ClassView(m_classes.begin(), m_classes.end());
+    return {m_classes.begin(), m_classes.end()};
 }
 
 const Class* ClassManager::getByIdSafe(TypeId const& id) const
 {
-    ClassTable::const_iterator it{ m_classes.find(id) };
+    const auto it = m_classes.find(id);
     return (it == m_classes.end()) ? nullptr : it->second;
 }
 
 const Class& ClassManager::getById(TypeId const& id) const
 {
-    const Class* cls{ getByIdSafe(id) };
+    const Class* cls = getByIdSafe(id);
     if (!cls)
         PONDER_ERROR(ClassNotFound("?"));
 
     return *cls;
 }
 
-const Class* ClassManager::getByNameSafe(const IdRef name) const
+const Class* ClassManager::getByNameSafe(IdRef name) const
 {
-    NameTable::const_iterator it{ std::find_if(m_names.begin(), m_names.end(),
-        [=](const std::pair<Id, Class*>& a) { return a.first.compare(name) == 0; } ) };
+    const auto it = std::find_if(m_names.begin(), m_names.end(),
+                                 [=](const std::pair<Id, Class*>& a) { return a.first == name; } );
     return (it == m_names.end()) ? nullptr : it->second;
 }
 
-const Class& ClassManager::getByName(const IdRef name) const
+const Class& ClassManager::getByName(IdRef name) const
 {
     const Class* cls{ getByNameSafe(name) };
     if (!cls)
@@ -127,16 +127,13 @@ bool ClassManager::classExists(TypeId const& id) const
     return m_classes.find(id) != m_classes.end();
 }
 
-ClassManager::ClassManager()
-{
-}
+ClassManager::ClassManager() = default;
 
 ClassManager::~ClassManager()
 {
     // Notify observers
-    for (ClassTable::const_iterator it = m_classes.begin(); it != m_classes.end(); ++it)
+    for (const auto& [fst, classPtr] : m_classes)
     {
-        Class* classPtr = it->second;
         notifyClassRemoved(*classPtr);
         delete classPtr;
     }

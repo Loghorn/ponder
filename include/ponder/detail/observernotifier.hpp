@@ -31,7 +31,6 @@
 #ifndef PONDER_DETAIL_OBSERVERNOTIFIER_HPP
 #define PONDER_DETAIL_OBSERVERNOTIFIER_HPP
 
-#include <ponder/config.hpp>
 #include <set>
 
 namespace ponder {
@@ -82,28 +81,28 @@ protected:
      *
      * \param theClass Class that have been added
      */
-    void notifyClassAdded(const Class& theClass);
+    void notifyClassAdded(const Class& theClass) const;
 
     /**
      * \brief Notify all the registered observers of a class removal
      *
      * \param theClass Class that have been removed
      */
-    void notifyClassRemoved(const Class& theClass);
+    void notifyClassRemoved(const Class& theClass) const;
 
     /**
      * \brief Notify all the registered observers of an enum creation
      *
      * \param theEnum Enum that have been added
      */
-    void notifyEnumAdded(const Enum& theEnum);
+    void notifyEnumAdded(const Enum& theEnum) const;
 
     /**
      * \brief Notify all the registered observers of an enum removal
      *
      * \param theEnum Enum that have been removed
      */
-    void notifyEnumRemoved(const Enum& theEnum);
+    void notifyEnumRemoved(const Enum& theEnum) const;
 
 private:
 

@@ -31,9 +31,6 @@
 #ifndef PONDER_DETAIL_OBJECTHOLDER_HPP
 #define PONDER_DETAIL_OBJECTHOLDER_HPP
 
-#include <ponder/classget.hpp>
-#include <ponder/classcast.hpp>
-
 namespace ponder {
 namespace detail {
     
@@ -50,7 +47,7 @@ public:
     /**
      * \brief Destructor
      */
-    virtual ~AbstractObjectHolder();
+    virtual ~AbstractObjectHolder() = default;
 
     /**
      * \brief Return a typeless pointer to the stored object
@@ -71,7 +68,7 @@ public:
 
 protected:
 
-    AbstractObjectHolder();
+    AbstractObjectHolder() = default;
 };
 
 /**
@@ -94,7 +91,7 @@ public:
      *
      * \return Pointer to the object
      */
-    void* object() final;
+    void* object() override;
 
     /**
      * \brief Return a holder which is able to modify its stored object
@@ -104,7 +101,7 @@ public:
      *
      * \return Holder storing a writable object
      */
-    AbstractObjectHolder* getWritable() final;
+    AbstractObjectHolder* getWritable() override;
 
 private:
 
@@ -134,7 +131,7 @@ public:
      *
      * \return Pointer to the object
      */
-    void* object() final;
+    void* object() override;
 
     /**
      * \brief Return a holder which is able to modify its stored object
@@ -144,7 +141,7 @@ public:
      *
      * \return Holder storing a writable object
      */
-    AbstractObjectHolder* getWritable() final;
+    AbstractObjectHolder* getWritable() override;
 
 private:
 
@@ -170,13 +167,11 @@ public:
 
     ObjectHolderByCopy(T&& object);
 
-    ~ObjectHolderByCopy() {}
-
     /**
      * \brief Return a typeless pointer to the stored object
      * \return Pointer to the object
      */
-    void* object() final;
+    void* object() override;
 
     /**
      * \brief Return a holder which is able to modify its stored object
@@ -186,7 +181,7 @@ public:
      *
      * \return Holder storing a writable object
      */
-    AbstractObjectHolder* getWritable() final;
+    AbstractObjectHolder* getWritable() override;
 
 private:
 

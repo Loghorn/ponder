@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,6 +34,7 @@
 #include <ponder/function.hpp>
 #include <ponder/detail/functiontraits.hpp>
 #include <ponder/valuemapper.hpp>
+#include <ponder/uses/uses.hpp>
 
 namespace ponder {
 namespace detail {
@@ -45,20 +46,20 @@ struct FunctionParamInfo
     const std::type_info *m_typeinfo;
     ValueKind m_valueType;
 };
-    
+
 template <int SZ>
 struct FunctionMapParamsToValueKind
 {
     using ReturnType = std::array<FunctionParamInfo, SZ>;
-    
+
     template <typename T>
     static FunctionParamInfo apply() { return { &typeid(T), mapType<T>() }; }
 };
-    
-    
+
+
 // Apply B to canonical function F = R(A...)
 template <typename FuncArgTuple, typename B> struct FunctionApplyToParams;
-    
+
 template <typename B, typename... A>
 struct FunctionApplyToParams<std::tuple<A...>, B>
 {
@@ -67,7 +68,7 @@ struct FunctionApplyToParams<std::tuple<A...>, B>
         return typename B::ReturnType { {B::template apply<A>()...} };
     }
 };
-    
+
 template <typename B>
 struct FunctionApplyToParams<std::tuple<void>, B>
 {
@@ -77,7 +78,7 @@ struct FunctionApplyToParams<std::tuple<void>, B>
     }
 };
 
-//--------------------------------------------------------------------------------------    
+//--------------------------------------------------------------------------------------
 
 template <typename R, typename... P>
 struct ReturnPolicy
@@ -109,63 +110,62 @@ class FunctionImpl : public Function
 {
     using FuncTraits = T;
     using FuncPolicies = std::tuple<P...>;
-    
+
     static constexpr size_t c_nParams =
-        std::tuple_size<typename FuncTraits::Details::ParamTypes>::value;
-    
+        std::tuple_size_v<typename FuncTraits::Details::ParamTypes>;
+
     std::array<FunctionParamInfo, c_nParams> m_paramInfo;
-    
+
 public:
 
     FunctionImpl(IdRef name, F function, P... policies) : Function(name)
     {
-        m_name = name;
         m_funcType = FuncTraits::kind;
         m_returnType = mapType<typename FuncTraits::ExposedType>();
         m_returnPolicy = ReturnPolicy<typename FuncTraits::ExposedType, P...> ::kind;
         m_paramInfo = FunctionApplyToParams<typename FuncTraits::Details::ParamTypes,
                                             FunctionMapParamsToValueKind<c_nParams>>::foreach();
-        Function::m_usesData = &m_userData;
-        
+        m_usesData = &m_userData;
+
         processUses<uses::Uses::eRuntimeModule>(m_name, function);
         PONDER_IF_LUA(processUses<uses::Uses::eLuaModule>(m_name, function);)
     }
-    
-private:
-    
+
     FunctionImpl(const FunctionImpl&) = delete;
+
+private:
 
     uses::Uses::PerFunctionUserData m_userData;
 
     template <int M>
     void processUses(IdRef name, F function)
     {
-        using Processor = typename std::tuple_element<M, uses::Uses::Users>::type;
-        
+        using Processor = std::tuple_element_t<M, uses::Uses::Users>;
+
         std::get<M>(m_userData) =
             Processor::template perFunction<F, T, FuncPolicies>(name, function);
     }
-    
-    size_t paramCount() const override { return c_nParams; }
 
-    ValueKind paramType(size_t index) const override
+    [[nodiscard]] size_t paramCount() const override { return c_nParams; }
+
+    [[nodiscard]] ValueKind paramType(size_t index) const override
     {
         // Make sure that the index is not out of range
         if (index >= c_nParams)
             PONDER_ERROR(OutOfRange(index, c_nParams));
-        
+
         return m_paramInfo[index].m_valueType;
     }
 };
 
 // Used by ClassBuilder to create new function instance.
 template <typename F, typename... P>
-static inline Function* newFunction(IdRef name, F function, P... policies)
+static Function* newFunction(IdRef name, F function, P... policies)
 {
-    using FuncTraits = detail::FunctionTraits<F>;
-    
+    using FuncTraits = FunctionTraits<F>;
+
     static_assert(FuncTraits::kind != FunctionKind::None, "Type is not a function");
-    
+
     return new FunctionImpl<FuncTraits, F, P...>(name, function, policies...);
 }
 

@@ -35,8 +35,6 @@
 #include "objecttraits.hpp"
 #include <type_traits>
 #include <array>
-#include <vector>
-#include <list>
 #include <functional>
 
 namespace ponder {
@@ -149,8 +147,8 @@ struct IsCallable : std::false_type {};
 
 template<typename T>
 struct IsCallable<T,
-    typename std::enable_if< std::is_same<decltype(void(&T::operator())), void>::value
-                             && !std::is_function<T>::value >::type> : std::true_type
+                  std::enable_if_t< std::is_same_v<decltype(void(&T::operator())), void>
+                             && !std::is_function_v<T> >> : std::true_type
 {};
 
 template <typename T, typename U = void>
@@ -161,7 +159,7 @@ struct IsFunctionWrapper<std::function<T>> : std::true_type {};
 
 // T::operator() callable
 template <typename T>
-struct CallableDetails : public CallableDetails<decltype(&T::operator())>
+struct CallableDetails : CallableDetails<decltype(&T::operator())>
 {
     using FuncType = T;
 };
@@ -220,15 +218,15 @@ struct FunctionTraits
  */
 template <typename T>
 struct FunctionTraits<T,
-    typename std::enable_if<std::is_function<typename std::remove_pointer<T>::type>::value>::type>
+                      std::enable_if_t<std::is_function_v<std::remove_pointer_t<T>>>>
 {
     static constexpr FunctionKind kind = FunctionKind::Function;
-    using Details = typename function::FunctionDetails<typename std::remove_pointer<T>::type>;
+    using Details = function::FunctionDetails<std::remove_pointer_t<T>>;
     using BoundType = typename Details::FuncType;
     using ExposedType = typename Details::ReturnType;
     using ExposedTraits = TypeTraits<ExposedType>;
-    static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value
-                                       && !std::is_const<typename ExposedTraits::DereferencedType>::value;
+    static constexpr bool isWritable = std::is_lvalue_reference_v<ExposedType>
+                                       && !std::is_const_v<typename ExposedTraits::DereferencedType>;
     using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
     using DataType = typename ExposedTraits::DataType;
     using DispatchType = typename Details::DispatchType;
@@ -252,14 +250,14 @@ struct FunctionTraits<T,
  * Specialization for native callable types (member function types)
  */
 template <typename T>
-struct FunctionTraits<T, typename std::enable_if<std::is_member_function_pointer<T>::value>::type>
+struct FunctionTraits<T, std::enable_if_t<std::is_member_function_pointer_v<T>>>
 {
     static constexpr FunctionKind kind = FunctionKind::MemberFunction;
-    using Details = typename function::MethodDetails<T>;
+    using Details = function::MethodDetails<T>;
     using BoundType = typename Details::FuncType;
     using ExposedType = typename Details::ReturnType;
     using ExposedTraits = TypeTraits<ExposedType>;
-    static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value && !Details::isConst;
+    static constexpr bool isWritable = std::is_lvalue_reference_v<ExposedType> && !Details::isConst;
     using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
     using DataType = typename ExposedTraits::DataType;
     using DispatchType = typename Details::DispatchType;
@@ -283,15 +281,15 @@ struct FunctionTraits<T, typename std::enable_if<std::is_member_function_pointer
  * Specialization for functors (classes exporting a result_type type, T operator() ).
  */
 template <typename T>
-struct FunctionTraits<T, typename std::enable_if<std::is_bind_expression<T>::value>::type>
+struct FunctionTraits<T, std::enable_if_t<std::is_bind_expression_v<T>>>
 {
     static constexpr FunctionKind kind = FunctionKind::BindExpression;
     using Details = function::CallableDetails<T>;
     using BoundType = typename Details::FuncType;
     using ExposedType = typename Details::ReturnType;
     using ExposedTraits = TypeTraits<ExposedType>;
-    static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value
-                                       && !std::is_const<typename ExposedTraits::DereferencedType>::value;
+    static constexpr bool isWritable = std::is_lvalue_reference_v<ExposedType>
+                                       && !std::is_const_v<typename ExposedTraits::DereferencedType>;
     using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
     using DataType = typename ExposedTraits::DataType;
     using DispatchType = typename Details::DispatchType;
@@ -316,16 +314,16 @@ struct FunctionTraits<T, typename std::enable_if<std::is_bind_expression<T>::val
  */
 template <typename T>
 struct FunctionTraits<T,
-    typename std::enable_if<function::IsCallable<T>::value
-                            && function::IsFunctionWrapper<T>::value>::type>
+                      std::enable_if_t<function::IsCallable<T>::value
+                            && function::IsFunctionWrapper<T>::value>>
 {
     static constexpr FunctionKind kind = FunctionKind::FunctionWrapper;
     using Details = function::CallableDetails<T>;
     using BoundType = typename Details::FuncType;
     using ExposedType = typename Details::ReturnType;
     using ExposedTraits = TypeTraits<ExposedType>;
-    static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value
-                                       && !std::is_const<typename ExposedTraits::DereferencedType>::value;
+    static constexpr bool isWritable = std::is_lvalue_reference_v<ExposedType>
+                                       && !std::is_const_v<typename ExposedTraits::DereferencedType>;
     using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
     using DataType = typename ExposedTraits::DataType;
     using DispatchType = typename Details::DispatchType;
@@ -350,16 +348,16 @@ struct FunctionTraits<T,
  */
 template <typename T>
 struct FunctionTraits<T,
-    typename std::enable_if<function::IsCallable<T>::value
-                            && !function::IsFunctionWrapper<T>::value>::type>
+                      std::enable_if_t<function::IsCallable<T>::value
+                            && !function::IsFunctionWrapper<T>::value>>
 {
     static constexpr FunctionKind kind = FunctionKind::Lambda;
     using Details = function::CallableDetails<T>;
     using BoundType = T;
     using ExposedType = typename Details::ReturnType;
     using ExposedTraits = TypeTraits<ExposedType>;
-    static constexpr bool isWritable = std::is_lvalue_reference<ExposedType>::value
-                                       && !std::is_const<typename ExposedTraits::DereferencedType>::value;
+    static constexpr bool isWritable = std::is_lvalue_reference_v<ExposedType>
+                                       && !std::is_const_v<typename ExposedTraits::DereferencedType>;
     using AccessType = typename function::ReturnType<typename ExposedTraits::DereferencedType, isWritable>::Type;
     using DataType = typename ExposedTraits::DataType;
     using DispatchType = typename Details::DispatchType;
@@ -386,13 +384,13 @@ template <typename T>
 struct MemberTraits;
 
 template <typename C, typename T>
-struct MemberTraits<T(C::*)>
+struct MemberTraits<T C::*>
 {
-    using BoundType = T(C::*);                               // full type inc ref
+    using BoundType = T C::*;                               // full type inc ref
     using ExposedType = T;                                   // the type exposed inc refs
     using ExposedTraits = TypeTraits<ExposedType>;
     using DataType = typename ExposedTraits::DataType;       // raw type or container
-    static constexpr bool isWritable = !std::is_const<typename ExposedTraits::DereferencedType>::value;
+    static constexpr bool isWritable = !std::is_const_v<typename ExposedTraits::DereferencedType>;
     using AccessType = typename ExposedTraits::DereferencedType;
 
     template <typename BC, typename A>

@@ -32,7 +32,6 @@
 #define PONDER_ENUMBUILDER_HPP
 
 #include <ponder/config.hpp>
-#include <string>
 
 namespace ponder {
     

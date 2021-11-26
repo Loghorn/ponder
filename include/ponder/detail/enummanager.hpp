@@ -52,7 +52,7 @@ namespace detail
  */
 class PONDER_API EnumManager : public ObserverNotifier
 {
-    PONDER__NON_COPYABLE(EnumManager);
+    PONDER_NON_COPYABLE(EnumManager);
 public:
 
     /**
@@ -69,6 +69,8 @@ public:
      * function also notifies registered observers after successful creations.
      *
      * \param id Identifier of the C++ enum bound to the metaenum (unique).
+     *
+     * \param name Name of the C++ enum bound to the metaenum.
      *
      * \return Reference to the new metaenum
      */
@@ -88,7 +90,7 @@ public:
      *
      * \return Number of metaenums that have been registered
      */
-    size_t count() const;
+    [[nodiscard]] size_t count() const;
 
     /**
      * \brief Get a metaenum from a C++ type
@@ -99,7 +101,7 @@ public:
      *
      * \throw EnumNotFound id is not the name of an existing metaenum
      */
-    const Enum& getById(TypeId const& id) const;
+    [[nodiscard]] const Enum& getById(TypeId const& id) const;
 
     /**
      * \brief Get a metaenum from a C++ type
@@ -111,7 +113,7 @@ public:
      *
      * \return Pointer to the requested metaenum, or null pointer if not found
      */
-    const Enum* getByIdSafe(TypeId const& id) const;
+    [[nodiscard]] const Enum* getByIdSafe(TypeId const& id) const;
 
     /**
      * \brief Get a metaenum by name
@@ -122,7 +124,7 @@ public:
      *
      * \throw EnumNotFound id is not the name of an existing metaenum
      */
-    const Enum& getByName(const IdRef id) const;
+    [[nodiscard]] const Enum& getByName(IdRef name) const;
 
     /**
      * \brief Get a metaenum by name
@@ -134,7 +136,7 @@ public:
      *
      * \return Pointer to the requested metaenum, or null pointer if not found
      */
-    const Enum* getByNameSafe(const IdRef id) const;
+    [[nodiscard]] const Enum* getByNameSafe(IdRef name) const;
 
     /**
      * \brief Check if a given type has a metaenum
@@ -143,7 +145,7 @@ public:
      *
      * \return True if the enum exists, false otherwise
      */
-    bool enumExists(TypeId const& id) const;
+    [[nodiscard]] bool enumExists(TypeId const& id) const;
 
 private:
 

@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,7 +33,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 void ObserverNotifier::addObserver(Observer* observer)
 {
     assert(observer != nullptr);
@@ -46,39 +46,37 @@ void ObserverNotifier::removeObserver(Observer* observer)
     m_observers.erase(observer);
 }
 
-ObserverNotifier::ObserverNotifier()
-{
-}
+ObserverNotifier::ObserverNotifier() = default;
 
-void ObserverNotifier::notifyClassAdded(const Class& theClass)
+void ObserverNotifier::notifyClassAdded(const Class& theClass) const
 {
-    for (ObserverSet::iterator it = m_observers.begin(); it != m_observers.end(); ++it)
+    for (const auto m_observer : m_observers)
     {
-        (*it)->classAdded(theClass);
+        m_observer->classAdded(theClass);
     }
 }
 
-void ObserverNotifier::notifyClassRemoved(const Class& theClass)
+void ObserverNotifier::notifyClassRemoved(const Class& theClass) const
 {
-    for (ObserverSet::iterator it = m_observers.begin(); it != m_observers.end(); ++it)
+    for (const auto m_observer : m_observers)
     {
-        (*it)->classRemoved(theClass);
+        m_observer->classRemoved(theClass);
     }
 }
 
-void ObserverNotifier::notifyEnumAdded(const Enum& theEnum)
+void ObserverNotifier::notifyEnumAdded(const Enum& theEnum) const
 {
-    for (ObserverSet::iterator it = m_observers.begin(); it != m_observers.end(); ++it)
+    for (const auto m_observer : m_observers)
     {
-        (*it)->enumAdded(theEnum);
+        m_observer->enumAdded(theEnum);
     }
 }
 
-void ObserverNotifier::notifyEnumRemoved(const Enum& theEnum)
+void ObserverNotifier::notifyEnumRemoved(const Enum& theEnum) const
 {
-    for (ObserverSet::iterator it = m_observers.begin(); it != m_observers.end(); ++it)
+    for (const auto m_observer : m_observers)
     {
-        (*it)->enumRemoved(theEnum);
+        m_observer->enumRemoved(theEnum);
     }
 }
 

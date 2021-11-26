@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,21 +40,21 @@ namespace PropertyAccessTest
         : m_b(b)
         {
         }
-        
+
         void set(int x) {p = x;}
-        int get() const {return p;}
+        [[nodiscard]] int get() const {return p;}
         int& ref() {return p;}
-        int p;
-        
+        int p = 0;
+
         bool m_b;
         bool b1() {return true;}
-        bool b2() const {return false;}
+        [[nodiscard]] bool b2() const {return false;}
     };
-    
+
     void declare()
     {
         using namespace std::placeholders;
-        
+
         ponder::Class::declare<MyClass>("PropertyAccessTest::MyClass")
             .property("p8",  &MyClass::get)
             .property("p9",  &MyClass::ref)
@@ -75,9 +75,9 @@ TEST_CASE("Properties can be accessed")
 {
     MyClass object_t(true);
     MyClass object_f(false);
-    
+
     const ponder::Class* metaclass = &ponder::classByType<MyClass>();
-    
+
     SECTION("readableImplicit")
     {
         REQUIRE(metaclass->property("p8").isReadable() == true);

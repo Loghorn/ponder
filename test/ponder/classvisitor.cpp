@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,10 +36,10 @@
 
 namespace ClassVisitorTest
 {
-    class MyClassVisitor : public ponder::ClassVisitor
+    class MyClassVisitor final : public ponder::ClassVisitor
     {
     public:
-        
+
         MyClassVisitor()
         : simpleVisited(false)
         , arrayVisited(false)
@@ -47,47 +47,47 @@ namespace ClassVisitorTest
         , userVisited(false)
         , functionVisited(false)
         {}
-        
+
         void visit(const ponder::SimpleProperty& property) override
         {
             simpleVisited = true;
         }
-        
+
         void visit(const ponder::ArrayProperty& property) override
         {
             arrayVisited = true;
         }
-        
+
         void visit(const ponder::EnumProperty& property) override
         {
             enumVisited = true;
         }
-        
+
         void visit(const ponder::UserProperty& property) override
         {
             userVisited = true;
         }
-        
+
         void visit(const ponder::Function& function) override
         {
             functionVisited = true;
         }
-        
+
         bool simpleVisited;
         bool arrayVisited;
         bool enumVisited;
         bool userVisited;
         bool functionVisited;
     };
-    
+
     enum MyEnum
     {
     };
-    
+
     struct MyType
     {
     };
-    
+
     struct MyClass
     {
         int simpleProp;
@@ -96,13 +96,13 @@ namespace ClassVisitorTest
         MyType userProp;
         void function() {}
     };
-    
+
     void declare()
     {
         ponder::Enum::declare<MyEnum>();
-        
+
         ponder::Class::declare<MyType>();
-        
+
         ponder::Class::declare<MyClass>()
             .property("simple", &MyClass::simpleProp)
             .property("array", &MyClass::arrayProp)

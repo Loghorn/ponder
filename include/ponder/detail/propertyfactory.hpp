@@ -47,13 +47,13 @@ class ValueBinder
 {
 public:
     using ClassType = C;
-    using AccessType = typename std::conditional<PropTraits::isWritable,
-                                                 typename PropTraits::AccessType&, typename PropTraits::AccessType>::type;
-    using SetType = typename std::remove_reference<AccessType>::type;
+    using AccessType = std::conditional_t<PropTraits::isWritable,
+                                        typename PropTraits::AccessType&, typename PropTraits::AccessType>;
+    using SetType = std::remove_reference_t<AccessType>;
 
     using Binding = typename PropTraits::template Binding<ClassType, AccessType>;
 
-    static_assert(!std::is_pointer<AccessType>::value, "Error: Pointers not handled here");
+    static_assert(!std::is_pointer_v<AccessType>, "Error: Pointers not handled here");
 
     ValueBinder(const Binding& b) : m_bound(b) {}
 
@@ -112,15 +112,15 @@ public:
 
     using Binding = typename PropTraits::template Binding<ClassType, AccessType>;
 
-    static_assert(std::is_pointer<AccessType>::value, "Error: Only pointers handled here");
+    static_assert(std::is_pointer_v<AccessType>, "Error: Only pointers handled here");
 
     InternalRefBinder(const Binding& b) : m_bound(b) {}
 
     AccessType getter(ClassType& c) const {
-        if constexpr (std::is_const<AccessType>::value)
+        if constexpr (std::is_const_v<AccessType>)
             return m_bound.access(c);
         else
-            return m_bound.access(const_cast<typename std::remove_const<ClassType>::type&>(c));
+            return m_bound.access(const_cast<std::remove_const_t<ClassType>&>(c));
     }
 
     Value getValue(ClassType& c) const {return UserObject::makeRef(getter(c));}
@@ -179,7 +179,7 @@ struct AccessTraits
  */
 template <typename PT>
 struct AccessTraits<PT,
-    typename std::enable_if<std::is_enum<typename PT::ExposedTraits::DereferencedType>::value>::type>
+                    std::enable_if_t<std::is_enum_v<typename PT::ExposedTraits::DereferencedType>>>
 {
     static constexpr PropertyAccessKind kind = PropertyAccessKind::Enum;
 
@@ -198,7 +198,7 @@ struct AccessTraits<PT,
  */
 template <typename PT>
 struct AccessTraits<PT,
-    typename std::enable_if<ponder_ext::ArrayMapper<typename PT::ExposedTraits::DereferencedType>::isArray>::type>
+                    std::enable_if_t<ponder_ext::ArrayMapper<typename PT::ExposedTraits::DereferencedType>::isArray>>
 {
     static constexpr PropertyAccessKind kind = PropertyAccessKind::Container;
 
@@ -238,23 +238,23 @@ struct AccessTraits<PT,
  */
 template <typename PT>
 struct AccessTraits<PT,
-    typename std::enable_if<hasStaticTypeDecl<typename PT::ExposedTraits::DereferencedType>()
-                        && !std::is_same<typename PT::ExposedTraits::DereferencedType, std::string>::value
-                        && !std::is_integral<typename PT::ExposedTraits::DereferencedType>::value
-                        && !std::is_floating_point<typename PT::ExposedTraits::DereferencedType>::value
-                        && !std::is_enum<typename PT::ExposedTraits::DereferencedType>::value>::type>
+                    std::enable_if_t<hasStaticTypeDecl<typename PT::ExposedTraits::DereferencedType>()
+                        && !std::is_same_v<typename PT::ExposedTraits::DereferencedType, std::string>
+                        && !std::is_integral_v<typename PT::ExposedTraits::DereferencedType>
+                        && !std::is_floating_point_v<typename PT::ExposedTraits::DereferencedType>
+                        && !std::is_enum_v<typename PT::ExposedTraits::DereferencedType>>>
 {
     static constexpr PropertyAccessKind kind = PropertyAccessKind::User;
 
     template <class C>
-    using ValueBinder = typename std::conditional<
-        std::is_pointer<typename PT::ExposedType>::value, InternalRefBinder<C, PT>, ValueBinder<C, PT>
-    >::type;
+    using ValueBinder = std::conditional_t<
+        std::is_pointer_v<typename PT::ExposedType>, InternalRefBinder<C, PT>, ValueBinder<C, PT>
+    >;
 
     template <class C>
-    using ValueBinder2 = typename std::conditional<
-        std::is_pointer<typename PT::ExposedType>::value, InternalRefBinder2<C, PT>, ValueBinder2<C, PT>
-    >::type;
+    using ValueBinder2 = std::conditional_t<
+        std::is_pointer_v<typename PT::ExposedType>, InternalRefBinder2<C, PT>, ValueBinder2<C, PT>
+    >;
 
     template <typename A>
     using Impl = UserPropertyImpl<A>;
@@ -332,7 +332,7 @@ struct PropertyFactory1
 };
 
 template <typename C, typename T>
-struct PropertyFactory1<C, T, typename std::enable_if<std::is_member_object_pointer<T>::value>::type>
+struct PropertyFactory1<C, T, std::enable_if_t<std::is_member_object_pointer_v<T>>>
 {
     static constexpr PropertyKind kind = PropertyKind::MemberObject;
 

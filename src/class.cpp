@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,14 +28,15 @@
 ****************************************************************************/
 
 #include <ponder/class.hpp>
-#include <ponder/constructor.hpp>
 
 namespace ponder {
 
 Class::Class(TypeId const& id, IdRef name)
-: m_sizeof(0)
-, m_id(id)
-, m_name(name)
+    : m_sizeof(0)
+    , m_id(id)
+    , m_name(name)
+    , m_destructor(nullptr)
+    , m_userObjectCreator(nullptr)
 {
 }
 
@@ -83,9 +84,9 @@ size_t Class::functionCount() const
     return m_functions.size();
 }
 
-bool Class::hasFunction(IdRef id) const
+bool Class::hasFunction(IdRef name) const
 {
-    return m_functions.containsKey(id);
+    return m_functions.containsKey(name);
 }
 
 const Function& Class::function(size_t index) const
@@ -94,18 +95,18 @@ const Function& Class::function(size_t index) const
     if (index >= m_functions.size())
         PONDER_ERROR(OutOfRange(index, m_functions.size()));
 
-    FunctionTable::const_iterator it = m_functions.begin();
+    auto it = m_functions.begin();
     std::advance(it, index);
 
     return *it->second;
 }
 
-const Function& Class::function(IdRef id) const
+const Function& Class::function(IdRef name) const
 {
     FunctionTable::const_iterator it;
-    if (!m_functions.tryFind(id, it))
+    if (!m_functions.tryFind(name, it))
     {
-        PONDER_ERROR(FunctionNotFound(id, name()));
+        PONDER_ERROR(FunctionNotFound(name, this->name()));
     }
 
     return *it->second;
@@ -116,9 +117,9 @@ size_t Class::propertyCount() const
     return m_properties.size();
 }
 
-bool Class::hasProperty(IdRef id) const
+bool Class::hasProperty(IdRef name) const
 {
-    return m_properties.containsKey(id);
+    return m_properties.containsKey(name);
 }
 
 const Property& Class::property(size_t index) const
@@ -127,18 +128,18 @@ const Property& Class::property(size_t index) const
     if (index >= m_properties.size())
         PONDER_ERROR(OutOfRange(index, m_properties.size()));
 
-    PropertyTable::const_iterator it = m_properties.begin();
+    auto it = m_properties.begin();
     std::advance(it, index);
 
     return *it->second;
 }
 
-const Property& Class::property(IdRef id) const
+const Property& Class::property(IdRef name) const
 {
     PropertyTable::const_iterator it;
-    if (!m_properties.tryFind(id, it))
+    if (!m_properties.tryFind(name, it))
     {
-        PONDER_ERROR(PropertyNotFound(id, name()));
+        PONDER_ERROR(PropertyNotFound(name, this->name()));
     }
 
     return *it->second;
@@ -168,12 +169,12 @@ void* Class::applyOffset(void* pointer, const Class& target) const
     // Check target as a base class of this
     int offset = baseOffset(target);
     if (offset != -1)
-        return static_cast<void*>(static_cast<char*>(pointer) + offset);
+        return static_cast<char*>(pointer) + offset;
 
     // Check target as a derived class of this
     offset = target.baseOffset(*this);
     if (offset != -1)
-        return static_cast<void*>(static_cast<char*>(pointer) - offset);
+        return static_cast<char*>(pointer) - offset;
 
     // No match found, target is not a base class nor a derived class of this
     PONDER_ERROR(ClassUnrelated(name(), target.name()));
@@ -196,11 +197,10 @@ int Class::baseOffset(const Class& base) const
         return 0;
 
     // Search base in the base classes
-    for (auto const& b : m_bases)
+    for (const auto& [b, offset] : m_bases)
     {
-        const int offset = b.base->baseOffset(base);
-        if (offset != -1)
-            return offset + b.offset;
+        if (const int baseOffset = b->baseOffset(base); baseOffset != -1)
+            return baseOffset + offset;
     }
 
     return -1;

@@ -65,7 +65,7 @@ namespace lua {
  * \param cls Metaclass instance in Ponder.
  * \param exposeName The name of the class in the Lua state.
  */
-PONDER_API void expose(lua_State *L, const Class& cls, const IdRef exposeName);
+PONDER_API void expose(lua_State *L, const Class& cls, IdRef exposeName);
 
 /**
  * \brief Expose a single Ponder enumeration to a Lua state
@@ -74,25 +74,25 @@ PONDER_API void expose(lua_State *L, const Class& cls, const IdRef exposeName);
  * \param e Enum instance in Ponder.
  * \param exposeName The name of the class in the Lua state.
  */
-PONDER_API void expose(lua_State *L, const Enum& e, const IdRef exposeName);
+PONDER_API void expose(lua_State *L, const Enum& e, IdRef exposeName);
 
 namespace detail {
 
 template <typename T, typename U = void> struct Exposer {};
 
 template <typename T>
-struct Exposer<T, typename std::enable_if<std::is_class<T>::value>::type>
+struct Exposer<T, std::enable_if_t<std::is_class_v<T>>>
 {
-    static inline void exposeType(lua_State *L, const IdRef exposeName)
+    static void exposeType(lua_State *L, const IdRef exposeName)
     {
         expose(L, classByType<T>(), exposeName);
     }
 };
 
 template <typename T>
-struct Exposer<T, typename std::enable_if<std::is_enum<T>::value>::type>
+struct Exposer<T, std::enable_if_t<std::is_enum_v<T>>>
 {
-    static inline void exposeType(lua_State *L, const IdRef exposeName)
+    static void exposeType(lua_State *L, const IdRef exposeName)
     {
         expose(L, enumByType<T>(), exposeName);
     }
@@ -132,6 +132,8 @@ PONDER_API int pushUserObject(lua_State *L, const UserObject& uobj);
  * \brief Expose all existing Ponder registered objects to a Lua state
  *
  * \param L Lua state in which to expose the objects.
+ *
+ * \param luaCode Lua code to run.
  */
 // void exposeAll(lua_State *L);
 
@@ -148,15 +150,15 @@ PONDER_API bool runString(lua_State *L, const char *luaCode);
 #include <ponder/uses/runtime.hpp>
 #include <ponder/uses/detail/lua.hpp>
 
-#define PONDER__LUA_METATBLS "_ponder_meta"
-#define PONDER__LUA_INSTTBLS "_instmt"
+#define PONDER_LUA_METATBLS "_ponder_meta"
+#define PONDER_LUA_INSTTBLS "_instmt"
 
 namespace ponder {
 namespace lua {
 namespace detail {
 
 // push a Ponder value onto the Lua state stack
-static int pushValue(lua_State *L, const ponder::Value& val,
+static int pushValue(lua_State *L, const Value& val,
                      policy::ReturnKind retPolicy = policy::ReturnKind::Copy)
 {
     switch (val.kind())
@@ -196,7 +198,7 @@ static Value getValue(lua_State *L, int index,
                       ValueKind typeExpected = ValueKind::None, int argIndex = -1)
 {
     if (index > lua_gettop(L))
-        return Value();
+        return {};
 
     const int typei = lua_type(L, index);
 
@@ -239,21 +241,21 @@ static Value getValue(lua_State *L, int index,
     switch (typei)
     {
         case LUA_TNIL:
-            return Value();
+            return {};
 
         case LUA_TBOOLEAN:
-            return Value(lua_toboolean(L, index));
+            return { lua_toboolean(L, index) };
 
         case LUA_TNUMBER:
-            return Value(lua_tonumber(L, index));
+            return { lua_tonumber(L, index) };
 
         case LUA_TSTRING:
-            return Value(lua_tostring(L, index));
+            return { lua_tostring(L, index) };
 
         case LUA_TUSERDATA:
             {
                 void *ud = lua_touserdata(L, index);
-                ponder::UserObject *uobj = (ponder::UserObject*) ud;
+                auto *uobj = static_cast<UserObject*>(ud);
                 return *uobj;
             }
 
@@ -261,14 +263,14 @@ static Value getValue(lua_State *L, int index,
             luaL_error(L, "Cannot convert %s to Ponder value", lua_typename(L, typei));
     }
 
-    return Value(); // no value
+    return {}; // no value
 }
 
 // obj[key]
 static int l_inst_index(lua_State *L)
 {
     lua_pushvalue(L, lua_upvalueindex(1));
-    const Class *cls = (const Class *) lua_touserdata(L, -1);
+    const auto *cls = static_cast<const Class*>(lua_touserdata(L, -1));
 
     void *ud = lua_touserdata(L, 1);                // userobj - (obj, key) -> obj[key]
     const IdRef key(lua_tostring(L, 2));
@@ -277,17 +279,16 @@ static int l_inst_index(lua_State *L)
     const Property *pp = nullptr;
     if (cls->tryProperty(key, pp))
     {
-        ponder::UserObject *uobj = (ponder::UserObject*) ud;
+        const auto *uobj = static_cast<UserObject*>(ud);
         return pushValue(L, pp->get(*uobj));
     }
 
     // check if calling function object
-    const Function *fp = nullptr;
-    if (cls->tryFunction(key, fp))
+    if (const Function *fp = nullptr; cls->tryFunction(key, fp))
     {
-        lua::detail::FunctionCaller *caller =
+        FunctionCaller*caller =
             std::get<uses::Uses::eLuaModule>(
-                *reinterpret_cast<const uses::Uses::PerFunctionUserData*>(fp->getUsesData()));
+                *static_cast<const uses::Uses::PerFunctionUserData*>(fp->getUsesData()));
 
         caller->pushFunction(L);
         return 1;
@@ -300,16 +301,15 @@ static int l_inst_index(lua_State *L)
 static int l_inst_newindex(lua_State *L)   // (obj, key, value) obj[key] = value
 {
     lua_pushvalue(L, lua_upvalueindex(1));
-    const Class *cls = (const Class *) lua_touserdata(L, -1);
+    const auto *cls = static_cast<const Class*>(lua_touserdata(L, -1));
 
     void *ud = lua_touserdata(L, 1);                // userobj
     const std::string key(lua_tostring(L, 2));
 
     // check if assigning to a property
-    const Property *pp = nullptr;
-    if (cls->tryProperty(key, pp))
+    if (const Property *pp = nullptr; cls->tryProperty(key, pp))
     {
-        ponder::UserObject *uobj = (ponder::UserObject*) ud;
+        const auto *uobj = static_cast<UserObject*>(ud);
         pp->set(*uobj, getValue(L, 3, pp->kind()));
     }
 
@@ -319,9 +319,9 @@ static int l_inst_newindex(lua_State *L)   // (obj, key, value) obj[key] = value
 static int l_instance_create(lua_State *L)
 {
     // get Class* from class object
-    const ponder::Class *cls = *(const ponder::Class**) lua_touserdata(L, 1);
+    const Class*cls = *static_cast<const Class**>(lua_touserdata(L, 1));
 
-    ponder::Args args;
+    Args args;
     constexpr int c_argOffset = 2;  // 1st arg is userdata object
     const int nargs = lua_gettop(L) - (c_argOffset-1);
     for (int i = c_argOffset; i < c_argOffset + nargs; ++i)
@@ -330,9 +330,9 @@ static int l_instance_create(lua_State *L)
         args += getValue(L, i);
     }
 
-    ponder::runtime::ObjectFactory fact(*cls);
-    ponder::UserObject obj(fact.construct(args));
-    if (obj == ponder::UserObject::nothing)
+    const runtime::ObjectFactory fact(*cls);
+    const UserObject obj(fact.construct(args));
+    if (obj == UserObject::nothing)
     {
         lua_pop(L, 1);  // pop new user data
         luaL_error(L, "Matching constructor not found");
@@ -343,7 +343,7 @@ static int l_instance_create(lua_State *L)
 
     // set instance metatable
     lua_getmetatable(L, 1);             // +1
-    lua_pushliteral(L, PONDER__LUA_INSTTBLS); // +1
+    lua_pushliteral(L, PONDER_LUA_INSTTBLS); // +1
     lua_rawget(L, -2);                  // -1+1 -> mt
     lua_setmetatable(L, -3);            // -1
     lua_pop(L, 1);
@@ -353,7 +353,7 @@ static int l_instance_create(lua_State *L)
 
 static int l_finalise(lua_State* L)
 {
-    ponder::UserObject * const uo = (ponder::UserObject*) lua_touserdata(L, 1); // userobj
+    auto *uo = static_cast<UserObject*>(lua_touserdata(L, 1)); // userobj
     *uo = UserObject::nothing;
 
     return 0;
@@ -363,16 +363,15 @@ static int l_finalise(lua_State* L)
 static int l_get_class_static(lua_State *L)
 {
     // get Class* from class object
-    const ponder::Class *cls = *(const ponder::Class**) lua_touserdata(L, 1);
+    const Class*cls = *static_cast<const Class**>(lua_touserdata(L, 1));
 
     const IdRef key(lua_tostring(L, 2));
 
-    const Function *func = nullptr;
-    if (cls->tryFunction(key, func))
+    if (const Function *func = nullptr; cls->tryFunction(key, func))
     {
-        lua::detail::FunctionCaller *caller =
+        FunctionCaller*caller =
             std::get<uses::Uses::eLuaModule>(
-                *reinterpret_cast<const uses::Uses::PerFunctionUserData*>(func->getUsesData()));
+                *static_cast<const uses::Uses::PerFunctionUserData*>(func->getUsesData()));
 
         caller->pushFunction(L);
         return 1;
@@ -403,7 +402,7 @@ static void createInstanceMetatable(lua_State *L, const Class& cls)
     lua_rawset(L, -3);                          // -2
 
     lua_pushglobaltable(L);                     // +1
-    lua_pushliteral(L, PONDER__LUA_METATBLS);    // +1
+    lua_pushliteral(L, PONDER_LUA_METATBLS);    // +1
     lua_rawget(L, -2);                          // 0 -+
     lua_pushstring(L, cls.name().data());       // +1 k
     lua_pushvalue(L, -4);                       // +1 v
@@ -413,19 +412,19 @@ static void createInstanceMetatable(lua_State *L, const Class& cls)
 
 } // namespace detail
 
-void expose(lua_State *L, const Class& cls, const IdRef name)
+inline void expose(lua_State *L, const Class& cls, const IdRef name)
 {
     using namespace detail;
 
     // ensure _G.META
     lua_pushglobaltable(L);                     // +1
-    lua_pushliteral(L, PONDER__LUA_METATBLS);   // +1
+    lua_pushliteral(L, PONDER_LUA_METATBLS);   // +1
     lua_rawget(L, -2);                          // 0 -+
     if (lua_isnil(L, -1))
     {
         // first time
         lua_pop(L, 1);                              // -1 pop nil
-        lua_pushliteral(L, PONDER__LUA_METATBLS);   // +1
+        lua_pushliteral(L, PONDER_LUA_METATBLS);   // +1
         lua_createtable(L, 0, 20);                  // +1
         lua_rawset(L, -3);                          // -2 _G[META] = {}
     }
@@ -444,7 +443,7 @@ void expose(lua_State *L, const Class& cls, const IdRef name)
     lua_rawset(L, -3);                          // -2 meta.__index = get_class_statics
 
     // create instance metatable. store ref in the class metatable
-    lua_pushliteral(L, PONDER__LUA_INSTTBLS);   // +1 k
+    lua_pushliteral(L, PONDER_LUA_INSTTBLS);   // +1 k
     createInstanceMetatable(L, cls);            // +1
     lua_rawset(L, -3);                          // -2 meta._inst_ = inst_mt
 
@@ -453,8 +452,8 @@ void expose(lua_State *L, const Class& cls, const IdRef name)
     lua_pushstring(L, id::c_str(name));         // +1 k
 
     // class proxy
-    void *ud = lua_newuserdata(L, sizeof(ponder::Class*)); // +1 v
-    *(const ponder::Class**)ud = &cls;
+    void *ud = lua_newuserdata(L, sizeof(Class*)); // +1 v
+    *static_cast<const Class**>(ud) = &cls;
     lua_pushvalue(L, clsmt);                    // +1 metatable
     lua_setmetatable(L, -2);                    // -1
 
@@ -462,10 +461,10 @@ void expose(lua_State *L, const Class& cls, const IdRef name)
     lua_pop(L, 2);                              // -2 global,meta
 }
 
-void expose(lua_State *L, const Enum& enm, const IdRef name)
+inline void expose(lua_State *L, const Enum& enm, const IdRef name)
 {
     const auto nb = enm.size();
-    lua_createtable(L, 0, (int) nb);
+    lua_createtable(L, 0, static_cast<int>(nb));
     for (size_t i=0; i < nb; ++i)
     {
         auto const& p = enm.pair(i);
@@ -476,7 +475,7 @@ void expose(lua_State *L, const Enum& enm, const IdRef name)
     lua_setglobal(L, id::c_str(name));
 }
 
-int pushUserObject(lua_State *L, const UserObject& uobj)
+inline int pushUserObject(lua_State *L, const UserObject& uobj)
 {
     Class const& cls = uobj.getClass();
     void *ud = lua_newuserdata(L, sizeof(UserObject));  // +1
@@ -484,7 +483,7 @@ int pushUserObject(lua_State *L, const UserObject& uobj)
 
     // set instance metatable
     lua_pushglobaltable(L);                     // +1   _G
-    lua_pushliteral(L, PONDER__LUA_METATBLS);   // +1
+    lua_pushliteral(L, PONDER_LUA_METATBLS);   // +1
     lua_rawget(L, -2);                          // 0 -+ _G.META
     lua_pushstring(L, cls.name().data());       // +1
     lua_rawget(L, -2);                          // 0 -+ _G_META.MT
@@ -493,10 +492,9 @@ int pushUserObject(lua_State *L, const UserObject& uobj)
     return 1;
 }
 
-bool runString(lua_State *L, const char *luaCode)
+inline bool runString(lua_State *L, const char *luaCode)
 {
-    const int ret = luaL_dostring(L, luaCode);
-    if (ret == LUA_OK)
+    if (const int ret = luaL_dostring(L, luaCode); ret == LUA_OK)
         return true;
 
     std::printf("Error: %s\n", lua_tostring(L, -1));

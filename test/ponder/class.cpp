@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,64 +45,64 @@ namespace ClassTest
     struct MyExplicityDeclaredClass
     {
     };
-    
+
     struct MyUndeclaredClass
     {
     };
-    
+
     struct MyClass
     {
         void func() {}
         int prop;
     };
-    
+
     struct MyClass2
     {
     };
-    
+
     struct Base
     {
-        virtual ~Base() {}
-        PONDER_POLYMORPHIC();
+        virtual ~Base() = default;
+        PONDER_POLYMORPHIC()
     };
-    
+
     struct Derived : Base
     {
-        PONDER_POLYMORPHIC();
+        PONDER_POLYMORPHIC()
     };
-    
-    struct DerivedNoRtti : Base
+
+    struct DerivedNoRtti final : Base
     {
     };
-    
-    struct Derived2NoRtti : Derived
+
+    struct Derived2NoRtti final : Derived
     {
     };
-    
-    struct TemporaryRegistration : Base
+
+    struct TemporaryRegistration final : Base
     {
         int a, b;
     };
-    
+
     struct DifferentName
     {
     };
     static constexpr char c_differentName[] = "HatstandEscalator";
-    
+
     template <class T>
     class TemplateClass
     {
     public:
         T testMember_;
     };
-    
+
     // multi-argument template
     template <typename T, int X, int Y>
     struct DataTemplate
     {
         T data[Y][X];
-        
-        T get(int x, int y) const { return data[y][x]; }
+
+        [[nodiscard]] T get(int x, int y) const { return data[y][x]; }
         void set(int x, int y, T value) { data[y][x] = value; }
     };
 
@@ -112,7 +112,7 @@ namespace ClassTest
     public:
         int a;
     };
-    
+
     class VirtualX : public virtual VirtualBase
     {
     };
@@ -124,30 +124,30 @@ namespace ClassTest
     class VirtualZ : public VirtualBase
     {
     };
-    
+
     class VirtualUser : public VirtualX, public VirtualY, public VirtualZ
     {
     };
-    
+
     void declare()
     {
         ponder::Class::declare<MyClass>()
             .property("prop", &MyClass::prop)
             .function("func", &MyClass::func);
-        
+
         ponder::Class::declare<MyClass2>();
-        
+
         ponder::Class::declare<Base>();
-        
+
         ponder::Class::declare<Derived>()
             .base<Base>();
-        
+
         ponder::Class::declare<DerivedNoRtti>()
             .base<Base>();
-        
+
         ponder::Class::declare<Derived2NoRtti>()
             .base<Derived>();
-        
+
         ponder::Class::declare<TemplateClass<int>>()
             .constructor()
             .property("TestMember", &TemplateClass<int>::testMember_);
@@ -173,7 +173,7 @@ namespace ClassTest
         ponder::Class::declare< VirtualZ >()
             .base< VirtualBase >()
             ;
-        
+
         ponder::Class::declare< VirtualUser >()
             .base< VirtualX >()
             .base< VirtualY >()
@@ -181,7 +181,7 @@ namespace ClassTest
             ;
 #endif
     }
-    
+
     void declare_temp()
     {
         ponder::Class::declare<TemporaryRegistration>()
@@ -194,7 +194,7 @@ namespace ClassTest
     {
         ponder::Class::undeclare<TemporaryRegistration>();
     }
-    
+
 } // namespace ClassTest
 
 PONDER_TYPE(ClassTest::MyExplicityDeclaredClass /* never declared */)
@@ -233,22 +233,22 @@ TEST_CASE("Classes need to be declared")
 {
     SECTION("explicit declaration")
     {
-        const size_t count = ponder::classCount();    
+        const size_t count = ponder::classCount();
         ponder::Class::declare<MyExplicityDeclaredClass>();
         REQUIRE(ponder::classCount() == count + 1);
         REQUIRE(ponder::classByTypeSafe<MyExplicityDeclaredClass>() != nullptr);
     }
-    
+
     SECTION("duplicates are errors")
     {
         ponder::classByType<MyClass>(); // to make sure it is declared
-    
+
         // duplicate by type
         REQUIRE_THROWS_AS(ponder::Class::declare<MyClass>(), ponder::ClassAlreadyCreated);
-        
+
         // duplicate by name
         REQUIRE_THROWS_AS(ponder::Class::declare<MyUndeclaredClass>("ClassTest::MyClass"),
-                          ponder::ClassAlreadyCreated);        
+                          ponder::ClassAlreadyCreated);
     }
 }
 
@@ -256,7 +256,7 @@ TEST_CASE("Classes need to be declared")
 TEST_CASE("Class metadata can be retrieved")
 {
     MyClass object;
-    MyUndeclaredClass object2;    
+    MyUndeclaredClass object2;
 
     SECTION("by name that matches type")
     {
@@ -282,9 +282,9 @@ TEST_CASE("Class metadata can be retrieved")
     SECTION("by type")
     {
         REQUIRE(ponder::classByType<MyClass>().name() == "ClassTest::MyClass");
-        
+
         REQUIRE(ponder::classByTypeSafe<MyUndeclaredClass>() == nullptr);
-        
+
         REQUIRE_THROWS_AS(ponder::classByType<MyUndeclaredClass>(), ponder::ClassNotFound);
     }
 
@@ -292,11 +292,11 @@ TEST_CASE("Class metadata can be retrieved")
     {
         REQUIRE(ponder::classByObject(object).name() == "ClassTest::MyClass");
         REQUIRE(ponder::classByObject(&object).name() == "ClassTest::MyClass");
-        
+
         REQUIRE_THROWS_AS(ponder::classByObject(object2), ponder::ClassNotFound);
         REQUIRE_THROWS_AS(ponder::classByObject(&object2), ponder::ClassNotFound);
     }
-    
+
     SECTION("iteration")
     {
         size_t count = 0;
@@ -307,17 +307,17 @@ TEST_CASE("Class metadata can be retrieved")
         }
         REQUIRE(count == ponder::classCount());
     }
-    
+
     SECTION("metadata can be compared")
     {
         const ponder::Class& class1 = ponder::classByType<MyClass>();
         const ponder::Class& class2 = ponder::classByType<MyClass2>();
-        
+
         REQUIRE( (class1 == class1) );
         REQUIRE( (class1 != class2) );
         REQUIRE( (class2 != class1) );
     }
-    
+
     SECTION("can retrieve memory size")
     {
         REQUIRE(ponder::classByType<MyClass>().sizeOf() == sizeof(MyClass));
@@ -333,7 +333,7 @@ TEST_CASE("Class members can be inspected")
     {
         REQUIRE(metaclass.propertyCount() == 1U);
         REQUIRE(metaclass.hasProperty("prop") == true);
-        REQUIRE(metaclass.hasProperty("xxxx") == false);        
+        REQUIRE(metaclass.hasProperty("xxxx") == false);
     }
 
     SECTION("can tryFind properties")
@@ -350,7 +350,7 @@ TEST_CASE("Class members can be inspected")
         REQUIRE(metaclass.hasFunction("func") == true);
         REQUIRE(metaclass.hasFunction("xxxx") == false);
     }
-    
+
     SECTION("can tryFind functions")
     {
         const ponder::Function *fp = nullptr;
@@ -358,7 +358,7 @@ TEST_CASE("Class members can be inspected")
         REQUIRE(metaclass.tryFunction("func", fp) == true);
         REQUIRE(fp->name() == "func");
     }
-    
+
     SECTION("can iterate over properties")
     {
         int index = 0;
@@ -403,19 +403,19 @@ TEST_CASE("Classes can use inheritance")
 
 TEST_CASE("Classes can have hierarchies")
 {
-    Base* base    = new Base;
-    Base* derived = new Derived;
-    Base* nortti  = new DerivedNoRtti;
-    Base* nortti2 = new Derived2NoRtti;
+    const Base* base    = new Base;
+    const Base* derived = new Derived;
+    const Base* nortti  = new DerivedNoRtti;
+    const Base* nortti2 = new Derived2NoRtti;
 
     REQUIRE(ponder::classByObject(*base).name() == "ClassTest::Base");
-    
+
     SECTION("with rtti")
     {
         // Ponder finds its real type thanks to PONDER_POLYMORPHIC
         REQUIRE(ponder::classByObject(*derived).name() == "ClassTest::Derived");
     }
-    
+
     SECTION("without rtti")
     {
         // Ponder fails to find its derived type without PONDER_POLYMORPHIC
@@ -424,13 +424,13 @@ TEST_CASE("Classes can have hierarchies")
 
    SECTION("allows polymorphism")
    {
-       Base* genericBase = derived;
+       const Base* genericBase = derived;
        REQUIRE(ponder::classByObject(*genericBase).name() == "ClassTest::Derived");
    }
-    
+
     SECTION("without rtti, no polymorphism")
     {
-        Base* nonGenericBase = nortti;
+        const Base* nonGenericBase = nortti;
         // Ponder fails to find its derived type without PONDER_POLYMORPHIC
         REQUIRE(ponder::classByObject(*nonGenericBase).name() == "ClassTest::Base");
     }
@@ -458,11 +458,11 @@ TEST_CASE("Classes can by undeclared")
         declare_temp();
 
         const ponder::Class& tempClass = ponder::classByType<TemporaryRegistration>();
-    
+
         REQUIRE(tempClass.baseCount() == 1u);
         REQUIRE(tempClass.base(0).name() == "ClassTest::Base");
     }
-    
+
     SECTION("do undeclare")
     {
         undeclare_temp();
@@ -478,7 +478,7 @@ TEST_CASE("Classes can be templates")
 
     REQUIRE(metaclass.constructorCount() > 0);
     REQUIRE(metaclass.propertyCount() > 0);
-    
+
 //    auto const& obj = metaclass.construct();
 }
 
@@ -490,11 +490,11 @@ TEST_CASE("Classes can be templates")
 TEST_CASE("Classes can have virtual inhertitance")
 {
     auto const& metaclass = ponder::classByType< VirtualUser >();
-    
+
     auto const& baseX = metaclass.base(0);
 
     auto vuobj = metaclass.construct();
-    
+
     auto vx = ponder::classCast(vuobj.pointer(), metaclass, baseX);
 }
 #endif

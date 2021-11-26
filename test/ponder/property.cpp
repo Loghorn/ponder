@@ -52,7 +52,7 @@ namespace PropertyTest
 
     bool operator == (const MyType& left, const MyType& right) {return left.x == right.x;}
     bool operator < (const MyType& left, const MyType& right) {return left.x < right.x;}
-    
+
     std::ostream& operator << (std::ostream& stream, const MyType& object)
     {
         return stream << object.x;
@@ -80,7 +80,7 @@ namespace PropertyTest
 #define MEMBER_ACCESSORS(T,N) \
         T& rw_##N() {return N;} \
         const T& r_##N() const {return N;} \
-        void w_##N(const T& v) {N = v;}
+        void w_##N(const T& v) {(N) = v;}
 
         MEMBER_ACCESSORS(bool,b)
         MEMBER_ACCESSORS(int,i)
@@ -89,7 +89,7 @@ namespace PropertyTest
         MEMBER_ACCESSORS(MyEnum,e)
         MEMBER_ACCESSORS(MyType, mt)
 
-        const MyType* getCT() const {return &mt;}
+        [[nodiscard]] const MyType* getCT() const {return &mt;}
         MyType* getT() { return &mt; }
         void setT(const MyType * t) { mt = *t; }
     };
@@ -177,16 +177,16 @@ TEST_CASE("Classes can have properties")
     SECTION("type")
     {
 #define CHECK_PROP_TYPE(N,T) \
-        REQUIRE(metaclass.property("m_" #N).kind() == T); \
-        REQUIRE(metaclass.property("mf_r_" #N).kind() == T); \
-        REQUIRE(metaclass.property("mf_rw_" #N).kind() == T); \
-        REQUIRE(metaclass.property("mf_gs_" #N).kind() == T); \
-        REQUIRE(metaclass.property("f_r_" #N).kind() == T); \
-        REQUIRE(metaclass.property("f_rw_" #N).kind() == T); \
-        REQUIRE(metaclass.property("f_gs_" #N).kind() == T); \
-        REQUIRE(metaclass.property("l_r_" #N).kind() == T); \
-        REQUIRE(metaclass.property("l_rw_" #N).kind() == T); \
-        REQUIRE(metaclass.property("l_gs_" #N).kind() == T)
+        REQUIRE(metaclass.property("m_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("mf_r_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("mf_rw_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("mf_gs_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("f_r_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("f_rw_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("f_gs_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("l_r_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("l_rw_" #N).kind() == (T)); \
+        REQUIRE(metaclass.property("l_gs_" #N).kind() == (T))
 
         CHECK_PROP_TYPE(b, ponder::ValueKind::Boolean);
         CHECK_PROP_TYPE(i, ponder::ValueKind::Integer);
@@ -210,11 +210,11 @@ TEST_CASE("Classes can have properties")
         REQUIRE(metaclass.property("l_rw_" #N).isReadable() == true); \
         REQUIRE(metaclass.property("l_gs_" #N).isReadable() == true);
 
-        CHECK_PROP_READABLE(b);
-        CHECK_PROP_READABLE(i);
-        CHECK_PROP_READABLE(f);
-        CHECK_PROP_READABLE(s);
-        CHECK_PROP_READABLE(e);
+        CHECK_PROP_READABLE(b)
+        CHECK_PROP_READABLE(i)
+        CHECK_PROP_READABLE(f)
+        CHECK_PROP_READABLE(s)
+        CHECK_PROP_READABLE(e)
     }
 
     SECTION("writable")
@@ -231,11 +231,11 @@ TEST_CASE("Classes can have properties")
         REQUIRE(metaclass.property("l_rw_" #N).isWritable() == true); \
         REQUIRE(metaclass.property("l_gs_" #N).isWritable() == true);
 
-        CHECK_PROP_WRITABLE(b);
-        CHECK_PROP_WRITABLE(i);
-        CHECK_PROP_WRITABLE(f);
-        CHECK_PROP_WRITABLE(s);
-        CHECK_PROP_WRITABLE(e);
+        CHECK_PROP_WRITABLE(b)
+        CHECK_PROP_WRITABLE(i)
+        CHECK_PROP_WRITABLE(f)
+        CHECK_PROP_WRITABLE(s)
+        CHECK_PROP_WRITABLE(e)
     }
 
     SECTION("get")
@@ -261,11 +261,11 @@ TEST_CASE("Classes can have properties")
         c.s = "Woo!";
         c.e = One;
 
-        CHECK_PROP_GET(bool,b);
-        CHECK_PROP_GET(int,i);
-        CHECK_PROP_GET(float,f);
-        CHECK_PROP_GET(std::string,s);
-        CHECK_PROP_GET(MyEnum,e);
+        CHECK_PROP_GET(bool,b)
+        CHECK_PROP_GET(int,i)
+        CHECK_PROP_GET(float,f)
+        CHECK_PROP_GET(std::string,s)
+        CHECK_PROP_GET(MyEnum,e)
 
         //ponder::Value ret{ metaclass.property("getT").get(object) };
         //REQUIRE(ret != ponder::Value::nothing);
@@ -276,9 +276,9 @@ TEST_CASE("Classes can have properties")
 #define CHECK_PROP_SET_PASS(NAME,N,V) \
     {   MyClass object; \
         auto const& prop = metaclass.property(NAME); \
-        REQUIRE(object.N != V); \
+        REQUIRE(object.N != (V)); \
         prop.set(&object, V); \
-        REQUIRE(object.N == V); \
+        REQUIRE(object.N == (V)); \
     }
 
 #define CHECK_PROP_SET_FAIL(NAME,N,V) \
@@ -298,11 +298,11 @@ TEST_CASE("Classes can have properties")
         CHECK_PROP_SET_PASS("l_rw_" #N, N, V); \
         CHECK_PROP_SET_PASS("l_gs_" #N, N, V)
 
-        CHECK_PROP_SET(b,true);
-        CHECK_PROP_SET(i,789);
-        CHECK_PROP_SET(f,345.75f);
-        CHECK_PROP_SET(s,std::string("The Reverend Black Grape"));
-        CHECK_PROP_SET(e,Two);
+        CHECK_PROP_SET(b,true)
+        CHECK_PROP_SET(i,789)
+        CHECK_PROP_SET(f,345.75f)
+        CHECK_PROP_SET(s,std::string("The Reverend Black Grape"))
+        CHECK_PROP_SET(e,Two)
     }
 }
 

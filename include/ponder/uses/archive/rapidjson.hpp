@@ -33,8 +33,6 @@
 #include <ponder/class.hpp>
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/rapidjson.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 #include <rapidjson/document.h>
 
 namespace ponder {
@@ -52,12 +50,12 @@ class RapidJsonArchiveWriter
     int m_arrayLevel{ 0 };
 
 public:
-    
-    struct JsonNode {};    
+
+    struct JsonNode {};
     using Node = JsonNode*;
 
     RapidJsonArchiveWriter(ARCHIVE& archive) : m_archive(archive) {}
-    
+
     Node beginChild(Node parent, const std::string& name)
     {
         m_archive.Key(name);
@@ -125,9 +123,9 @@ public:
         const rapidjson::Value& m_value;
         rapidjson::Value::ConstValueIterator m_iter;
 
-        bool isEnd() const { return m_iter == m_value.End(); }
+        [[nodiscard]] bool isEnd() const { return m_iter == m_value.End(); }
         void next() { ++m_iter; }
-        Node getItem() { return Node(*m_iter); }
+        Node getItem() const { return *m_iter; }
     };
 
     RapidJsonArchiveReader(rapidjson::Document& archive) : m_archive(archive) {}
@@ -135,7 +133,7 @@ public:
     Node findProperty(Node node, const std::string& name)
     {
         const rapidjson::Value& val{ node.m_value[name] };
-        return Node(val);
+        return val;
     }
 
     ArrayIterator createArrayIterator(Node node, const std::string& name)
@@ -145,7 +143,7 @@ public:
 
     string_view getValue(Node node)
     {
-        return string_view(node.m_value.GetString(), node.m_value.GetStringLength());
+        return { node.m_value.GetString(), node.m_value.GetStringLength() };
     }
 
     bool isValid(Node node)

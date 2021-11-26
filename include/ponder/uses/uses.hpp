@@ -120,8 +120,8 @@ struct Uses
     //  PerFunc_t* std::get<I>(getUsesData());
 };
     
-static_assert(Uses::eUseCount==std::tuple_size<Uses::Users>::value, "Size mismatch");
-static_assert(Uses::eUseCount==std::tuple_size<Uses::PerFunctionUserData>::value, "Size mismatch");
+static_assert(Uses::eUseCount==std::tuple_size_v<Uses::Users>, "Size mismatch");
+static_assert(Uses::eUseCount==std::tuple_size_v<Uses::PerFunctionUserData>, "Size mismatch");
 
 } // namespace uses
 } // namespace ponder

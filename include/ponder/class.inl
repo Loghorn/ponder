@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,15 +41,15 @@ void destroy(const UserObject& object, bool destruct)
 }
 
 template <typename T>
-static inline UserObject userObjectCreator(void* ptr)
+static UserObject userObjectCreator(void* ptr)
 {
     return UserObject::makeRef(*static_cast<T*>(ptr));
 }
-    
+
 } // namespace detail
 
 template <typename T>
-inline ClassBuilder<T> Class::declare(IdRef name)
+ClassBuilder<T> Class::declare(IdRef name)
 {
     using typeDecl = detail::StaticTypeDecl<T>;
     Class& newClass =
@@ -62,20 +62,19 @@ inline ClassBuilder<T> Class::declare(IdRef name)
 }
 
 template <typename T>
-inline void Class::undeclare()
+void Class::undeclare()
 {
     detail::ClassManager::instance().removeClass(detail::getTypeId<T>());
 }
 
 inline Class::FunctionView Class::functions() const
 {
-    return FunctionView(m_functions.begin(), m_functions.end());
+    return {m_functions.begin(), m_functions.end()};
 }
 
 inline bool Class::tryFunction(const IdRef name, const Function *& funcRet) const
 {
-    FunctionTable::const_iterator it;
-    if (m_functions.tryFind(name, it))
+    if (FunctionTable::const_iterator it; m_functions.tryFind(name, it))
     {
         funcRet = it->value().get();
         return true;
@@ -85,13 +84,12 @@ inline bool Class::tryFunction(const IdRef name, const Function *& funcRet) cons
 
 inline Class::PropertyView Class::properties() const
 {
-    return PropertyView(m_properties.begin(), m_properties.end());
+    return {m_properties.begin(), m_properties.end()};
 }
 
 inline bool Class::tryProperty(const IdRef name, const Property *& propRet) const
 {
-    PropertyTable::const_iterator it;
-    if (m_properties.tryFind(name, it))
+    if (PropertyTable::const_iterator it; m_properties.tryFind(name, it))
     {
         propRet = it->value().get();
         return true;

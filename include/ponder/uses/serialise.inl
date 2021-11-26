@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include "ponder/arrayproperty.hpp"
+
 namespace ponder {
 namespace archive {
 
@@ -37,11 +39,11 @@ void ArchiveWriter<ARCHIVE>::write(NodeType parent, const UserObject& object)
     for (size_t i = 0; i < metaclass.propertyCount(); ++i)
     {
         const Property& property = metaclass.property(i);
-        
+
         // If the property has the exclude tag, ignore it
         //                if ((exclude != Value::nothing) && property.hasTag(exclude))
         //                    continue;
-        
+
         if (property.kind() == ValueKind::User)
         {
             NodeType child = m_archive.beginChild(parent, property.name());
@@ -89,16 +91,16 @@ void ArchiveReader<ARCHIVE>::read(NodeType node, const UserObject& object)
     for (size_t i = 0; i < metaclass.propertyCount(); ++i)
     {
         const Property& property = metaclass.property(i);
-        
+
         // If the property has the exclude tag, ignore it
         //                if ((exclude != Value::nothing) && property.hasTag(exclude))
         //                    continue;
-        
+
         // Find the child node corresponding to the new property
         NodeType child = m_archive.findProperty(node, property.name());
         if (!m_archive.isValid(child))
             continue;
-        
+
         if (property.kind() == ValueKind::User)
         {
             // The current property is a composed type: deserialize it recursively
@@ -113,14 +115,13 @@ void ArchiveReader<ARCHIVE>::read(NodeType node, const UserObject& object)
             for (ArrayIterator it{ m_archive.createArrayIterator(child, itemName) }; !it.isEnd(); it.next())
             {
                 // Make sure that there are enough elements in the array
-                size_t count = arrayProperty.size(object);
-                if (index >= count)
+                if (const size_t count = arrayProperty.size(object); index >= count)
                 {
                     if (!arrayProperty.dynamic())
                         break;
                     arrayProperty.resize(object, index + 1);
                 }
-                
+
                 if (arrayProperty.elementType() == ValueKind::User)
                 {
                     read(it.getItem(), arrayProperty.get(object, index).to<UserObject>());
@@ -129,7 +130,7 @@ void ArchiveReader<ARCHIVE>::read(NodeType node, const UserObject& object)
                 {
                     arrayProperty.set(object, index, m_archive.getValue(it.getItem()));
                 }
-                
+
                 ++index;
             }
         }
@@ -140,6 +141,5 @@ void ArchiveReader<ARCHIVE>::read(NodeType node, const UserObject& object)
     }
 }
 
-    
 } // namespace archive
 } // namespace ponder

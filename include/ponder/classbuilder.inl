@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 namespace ponder {
-    
+
 template <typename T>
 ClassBuilder<T>::ClassBuilder(Class& target)
     : m_target(&target)
@@ -45,10 +45,10 @@ ClassBuilder<T>& ClassBuilder<T>::base()
     IdReturn baseName = baseClass.name();
 
     // First make sure that the base class is not already a base of the current class
-    for (Class::BaseInfo const& bi : m_target->m_bases)
+    for (const auto& [base, offset] : m_target->m_bases)
     {
-        if (bi.base->name() == baseName)
-            PONDER_ERROR(TypeAmbiguity(bi.base->name()));
+        if (base->name() == baseName)
+            PONDER_ERROR(TypeAmbiguity(base->name()));
     }
 
     // Compute the offset to apply for pointer conversions
@@ -62,11 +62,9 @@ ClassBuilder<T>& ClassBuilder<T>::base()
     U* asBase = static_cast<U*>(asDerived);
     const int offset = static_cast<int>(reinterpret_cast<char*>(asBase) -
                                         reinterpret_cast<char*>(asDerived));
-    
+
     // Add the base metaclass to the bases of the current class
-    Class::BaseInfo baseInfos;
-    baseInfos.base = &baseClass;
-    baseInfos.offset = offset;
+    const Class::BaseInfo baseInfos{ &baseClass, offset };
     m_target->m_bases.push_back(baseInfos);
 
     // Copy all properties of the base class into the current class
@@ -123,12 +121,12 @@ ClassBuilder<T>& ClassBuilder<T>::external()
     U<T> mapper;
 
     // Retrieve the properties
-    size_t propertyCount = mapper.propertyCount();
+    const size_t propertyCount = mapper.propertyCount();
     for (size_t i = 0; i < propertyCount; ++i)
         addProperty(mapper.property(i));
 
     // Retrieve the functions
-    size_t functionCount = mapper.functionCount();
+    const size_t functionCount = mapper.functionCount();
     for (size_t i = 0; i < functionCount; ++i)
         addFunction(mapper.function(i));
 

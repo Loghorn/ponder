@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,15 +31,11 @@
 #include <ponder/classvisitor.hpp>
 
 namespace ponder {
-    
+
 ArrayProperty::ArrayProperty(IdRef name, ValueKind elementType, bool dynamic)
     : Property(name, ValueKind::Array)
     , m_elementType(elementType)
     , m_dynamic(dynamic)
-{
-}
-
-ArrayProperty::~ArrayProperty()
 {
 }
 
@@ -82,8 +78,7 @@ Value ArrayProperty::get(const UserObject& object, size_t index) const
         PONDER_ERROR(ForbiddenRead(name()));
 
     // Make sure that the index is not out of range
-    const size_t range = size(object);
-    if (index >= range)
+    if (const size_t range = size(object); index >= range)
         PONDER_ERROR(OutOfRange(index, range));
 
     return getElement(object, index);
@@ -96,8 +91,7 @@ void ArrayProperty::set(const UserObject& object, size_t index, const Value& val
         PONDER_ERROR(ForbiddenWrite(name()));
 
     // Check if the index is in range
-    const size_t range = size(object);
-    if (index >= range)
+    if (const size_t range = size(object); index >= range)
         PONDER_ERROR(OutOfRange(index, range));
 
     return setElement(object, index, value);
@@ -114,8 +108,7 @@ void ArrayProperty::insert(const UserObject& object, size_t before, const Value&
         PONDER_ERROR(ForbiddenWrite(name()));
 
     // Check if the index is in range
-    const size_t range = size(object) + 1;
-    if (before >= range)
+    if (const size_t range = size(object) + 1; before >= range)
         PONDER_ERROR(OutOfRange(before, range));
 
     return insertElement(object, before, value);
@@ -132,8 +125,7 @@ void ArrayProperty::remove(const UserObject& object, size_t index) const
         PONDER_ERROR(ForbiddenWrite(name()));
 
     // Check if the index is in range
-    const size_t range = size(object);
-    if (index >= range)
+    if (const size_t range = size(object); index >= range)
         PONDER_ERROR(OutOfRange(index, range));
 
     return removeElement(object, index);

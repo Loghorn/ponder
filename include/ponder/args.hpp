@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -78,15 +78,14 @@ public:
     :   Args(std::initializer_list<Value>({std::forward<V>(args)...}))
     {
     }
-    
+
     /**
      * \brief Initialise the list with an initialisation list.
      *
      * \param il Arguments to put in the list.
      */
-    Args(std::initializer_list<Value> il)
+    Args(std::initializer_list<Value> il) : m_values(il)
     {
-        m_values = il;
     }
 
     /**
@@ -94,7 +93,7 @@ public:
      *
      * \return Size of the arguments list
      */
-    size_t count() const;
+    [[nodiscard]] size_t count() const;
 
     /**
      * \brief Overload of operator [] to access an argument from its index
@@ -120,7 +119,7 @@ public:
      * \return Reference to this
      */
     Args& operator += (const Value& arg);
-    
+
     /**
      * \brief Insert an argument into the list at a given index
      *

@@ -56,13 +56,12 @@ class Dictionary
 {
 public:
 
-    struct pair_t : public std::pair<KEY,VALUE>
+    struct pair_t : std::pair<KEY,VALUE>
     {
         pair_t() : std::pair<KEY,VALUE>() {}
         pair_t(KEY_REF k, const VALUE& v) : std::pair<KEY,VALUE>(KEY(k), v) {}
-        pair_t(const pair_t& p) = default;
-        KEY_REF name() const { return std::pair<KEY,VALUE>::first; }
-        const VALUE& value() const { return std::pair<KEY,VALUE>::second; }
+        [[nodiscard]] KEY_REF name() const { return std::pair<KEY,VALUE>::first; }
+        [[nodiscard]] const VALUE& value() const { return std::pair<KEY,VALUE>::second; }
     };
 
 private:
@@ -81,32 +80,32 @@ public:
     using value_type = pair_t;
     using const_iterator = typename container_t::const_iterator;
 
-    const_iterator begin() const    { return m_contents.cbegin(); }
-    const_iterator end() const      { return m_contents.cend(); }
+    [[nodiscard]] const_iterator begin() const    { return m_contents.cbegin(); }
+    [[nodiscard]] const_iterator end() const      { return m_contents.cend(); }
 
-    const_iterator findKey(KEY_REF key) const
+    [[nodiscard]] const_iterator findKey(KEY_REF key) const
     {
         // binary search for key
-        const_iterator it(std::lower_bound(m_contents.begin(), m_contents.end(), key, KeyCmp()));
-        if (it != m_contents.end() && CMP()(key, it->first)) // it > it-1, check ==
-            it = m_contents.end();
+        auto it(std::lower_bound(begin(), end(), key, KeyCmp()));
+        if (it != end() && CMP()(key, it->first)) // it > it-1, check ==
+            it = end();
         return it;
     }
 
-    const_iterator findValue(const VALUE& value) const
+    [[nodiscard]] const_iterator findValue(const VALUE& value) const
     {
-        for (auto&& it = m_contents.begin(); it != m_contents.end(); ++it)
+        for (auto&& it = begin(); it != end(); ++it)
         {
             if (it->second == value)
                 return it;
         }
-        return m_contents.end();
+        return end();
     }
 
     bool tryFind(KEY_REF key, const_iterator& returnValue) const
     {
-        const_iterator it = findKey(key);
-        if (it != m_contents.end())
+        auto it = findKey(key);
+        if (it != end())
         {
             returnValue = it;
             return true;
@@ -114,22 +113,22 @@ public:
         return false; // not found
     }
 
-    bool containsKey(KEY_REF key) const
+    [[nodiscard]] bool containsKey(KEY_REF key) const
     {
-        return findKey(key) != m_contents.end();
+        return findKey(key) != end();
     }
 
-    bool containsValue(const VALUE& value) const
+    [[nodiscard]] bool containsValue(const VALUE& value) const
     {
-        return findValue(value) != m_contents.end();
+        return findValue(value) != end();
     }
 
-    size_t size() const { return m_contents.size(); }
+    [[nodiscard]] size_t size() const { return m_contents.size(); }
 
     void insert(KEY_REF key, const VALUE &value)
     {
         erase(key);
-        auto it = std::lower_bound(m_contents.begin(), m_contents.end(), key, KeyCmp());
+        auto it = std::lower_bound(begin(), end(), key, KeyCmp());
         m_contents.insert(it, pair_t(key, value));
     }
 
@@ -140,16 +139,16 @@ public:
 
     void erase(KEY_REF key)
     {
-        const_iterator it = findKey(key);
-        if (it != m_contents.end())
+        auto it = findKey(key);
+        if (it != end())
         {
             m_contents.erase(it);
         }
     }
 
-    const_iterator at(size_t index) const
+    [[nodiscard]] const_iterator at(size_t index) const
     {
-        const_iterator it(begin());
+        auto it = begin();
         std::advance(it, index);
         return it;
     }

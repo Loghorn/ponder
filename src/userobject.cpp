@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,40 +32,18 @@
 #include <ponder/class.hpp>
 
 namespace ponder {
-    
+
 const UserObject UserObject::nothing;
 
-UserObject::UserObject()
-    : m_class(nullptr)
-    , m_holder()
-{
-}
+UserObject::UserObject() = default;
 
-UserObject::UserObject(const UserObject& other)
-    : m_class(other.m_class)
-    , m_holder(other.m_holder)
-{
-}
+UserObject::UserObject(const UserObject& other) = default;
 
-UserObject::UserObject(UserObject&& other) noexcept
-{
-    std::swap(m_class, other.m_class);
-    m_holder.swap(other.m_holder);
-}
+UserObject::UserObject(UserObject&& other) noexcept = default;
 
-UserObject& UserObject::operator = (const UserObject& other)
-{
-    m_class = other.m_class;
-    m_holder = other.m_holder;
-    return *this;
-}
+UserObject& UserObject::operator = (const UserObject& other) = default;
 
-UserObject& UserObject::operator = (UserObject&& other) noexcept
-{
-    std::swap(m_class, other.m_class);
-    m_holder.swap(other.m_holder);
-    return *this;
-}
+UserObject& UserObject::operator = (UserObject&& other) noexcept = default;
 
 void* UserObject::pointer() const
 {
@@ -110,7 +88,7 @@ bool UserObject::operator == (const UserObject& other) const
     {
         return m_holder->object() == other.m_holder->object();
     }
-    else if (!m_class && !other.m_class)
+    if (!m_class && !other.m_class)
     {
         return true; // both are UserObject::nothing
     }

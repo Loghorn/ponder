@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,7 +34,7 @@
 #include <ponder/uses/runtime.hpp>
 #include "test.hpp"
 #include <string>
-#include <string.h> // memset
+#include <cstring> // memset
 
 namespace ConstructorTest
 {
@@ -47,7 +47,7 @@ namespace ConstructorTest
         four  = 4,
         five  = 5
     };
-    
+
     struct MyType
     {
         static int instCount;
@@ -61,46 +61,46 @@ namespace ConstructorTest
     struct MyBase1
     {
         MyBase1() : base1("base1") {}
-        virtual ~MyBase1() {}
+        virtual ~MyBase1() = default;
         ponder::String base1;
     };
-    
+
     struct MyBase2
     {
         MyBase2() : base2("base2") {}
-        virtual ~MyBase2() {}
+        virtual ~MyBase2() = default;
         ponder::String base2;
     };
-    
-    struct MyClass : MyBase1, MyBase2
+
+    struct MyClass final : MyBase1, MyBase2
     {
         MyClass()
             : l(0), r(0.), s("0"), e(zero), u(0) {}
-        
+
         MyClass(long l_)
             : l(l_), r(1.), s("1"), e(one), u(1) {}
-        
+
         MyClass(long l_, double r_)
             : l(l_), r(r_), s("2"), e(two), u(2) {}
-        
+
         MyClass(long l_, double r_, ponder::String s_)
-            : l(l_), r(r_), s(s_), e(three), u(3) {}
-        
+            : l(l_), r(r_), s(std::move(s_)), e(three), u(3) {}
+
         MyClass(long l_, double r_, ponder::String s_, MyEnum e_)
-            : l(l_), r(r_), s(s_), e(e_), u(4) {}
-        
+            : l(l_), r(r_), s(std::move(s_)), e(e_), u(4) {}
+
         MyClass(long l_, double r_, ponder::String s_, MyEnum e_, MyType t_)
-            : l(l_), r(r_), s(s_), e(e_), u(t_) {}
-        
-        ~MyClass() {}
-        
+            : l(l_), r(r_), s(std::move(s_)), e(e_), u(t_) {}
+
+        ~MyClass() override {}
+
         long l;
         double r;
         ponder::String s;
         MyEnum e;
         MyType u;
     };
-        
+
     void declare()
     {
         ponder::Enum::declare<MyEnum>("ConstructorTest::MyEnum")
@@ -110,12 +110,12 @@ namespace ConstructorTest
             .value("three", three)
             .value("four",  four)
             .value("five",  five);
-        
+
         ponder::Class::declare<MyType>("ConstructorTest::MyType");
-        
+
         ponder::Class::declare<MyBase1>("ConstructorTest::MyBase1");
         ponder::Class::declare<MyBase2>("ConstructorTest::MyBase2");
-        
+
         ponder::Class::declare<MyClass>("ConstructorTest::MyClass")
             .base<MyBase1>()
             .base<MyBase2>()
@@ -123,7 +123,7 @@ namespace ConstructorTest
             .constructor<long>()
             .constructor<long, double>()
             .constructor<long, double, ponder::String>()
-            .constructor<long, double, ponder::String, MyEnum>()        
+            .constructor<long, double, ponder::String, MyEnum>()
             // trying types that don't exactly match those declared
             .constructor<unsigned short, float, ponder::String, MyEnum, int>();
     }
@@ -146,7 +146,7 @@ TEST_CASE("Object factories can be used to create class instances") // and alloc
 {
     const ponder::Class& metaclass = ponder::classByType<MyClass>();
     const size_t sz = metaclass.sizeOf();
-    
+
     REQUIRE(sz > 0);
     REQUIRE(sz == sizeof(MyClass));
 
@@ -154,16 +154,16 @@ TEST_CASE("Object factories can be used to create class instances") // and alloc
     {
         {
             ponder::UserObject object;
-            
+
             IS_TRUE( object == ponder::UserObject::nothing );
-            
+
             ponder::runtime::ObjectFactory fact(metaclass);
             object = fact.construct(ponder::Args(777, 99.05f, "wow"));
-            
+
             IS_TRUE( object != ponder::UserObject::nothing );
-            
+
             MyClass* instance = object.get<MyClass*>();
-            
+
             REQUIRE(instance->l == 777);
             REQUIRE(instance->r == Approx(99.05).epsilon(1E-5));
             REQUIRE(instance->s == "wow");
@@ -171,32 +171,32 @@ TEST_CASE("Object factories can be used to create class instances") // and alloc
             REQUIRE(instance->u.x == 3);
         }
     }
-    
+
     SECTION("using placement new")
     {
         {
             char buff[sizeof(MyClass) + 20];
-            constexpr char c_guard{ (char)0xcd };
+            constexpr char c_guard{ static_cast<char>(0xcd) };
             memset(buff, c_guard, sizeof(buff));
             char *p = buff + 4;
-            
+
             REQUIRE(*(p-1) == c_guard);
             REQUIRE(*p == c_guard);
             REQUIRE(p[sz] == c_guard);
-            
+
             ponder::runtime::ObjectFactory fact(metaclass);
             ponder::UserObject object = fact.construct(ponder::Args(), p); // placement new
-            
+
             IS_TRUE( object != ponder::UserObject::nothing );
-            
+
             REQUIRE(*(p-1) == c_guard);
             REQUIRE(*p != c_guard);
             REQUIRE(p[sz] == c_guard);
-            
+
             MyClass* instance = object.get<MyClass*>();
-            
+
             REQUIRE(instance == reinterpret_cast<MyClass*>(p));
-            
+
             REQUIRE(instance->l == 0);
             REQUIRE(instance->r == Approx(0.).epsilon(1E-5));
             REQUIRE(instance->s == "0");
@@ -204,21 +204,21 @@ TEST_CASE("Object factories can be used to create class instances") // and alloc
             REQUIRE(instance->u.x == 0);
         }
     }
-    
+
     SECTION("using create/destroy")
     {
         {
             ponder::UserObject object;
-            
+
             IS_TRUE( object == ponder::UserObject::nothing );
-            
+
             ponder::runtime::ObjectFactory fact(metaclass);
             object = fact.create(777, 99.05f, "wow");
-            
+
             IS_TRUE( object != ponder::UserObject::nothing );
-            
+
             MyClass* instance = object.get<MyClass*>();
-            
+
             REQUIRE(instance->l == 777);
             REQUIRE(instance->r == Approx(99.05).epsilon(1E-5));
             REQUIRE(instance->s == "wow");
@@ -226,16 +226,16 @@ TEST_CASE("Object factories can be used to create class instances") // and alloc
             REQUIRE(instance->u.x == 3);
         }
     }
-    
+
     SECTION("using create & auto pointer")
     {
         {
             auto object = ponder::runtime::createUnique(metaclass, 777, 99.05f, "wow");
-            
+
             IS_TRUE( *object.get() != ponder::UserObject::nothing );
-            
-            MyClass* instance = object.get()->get<MyClass*>();
-            
+
+            MyClass* instance = object->get<MyClass*>();
+
             REQUIRE(instance->l == 777);
             REQUIRE(instance->r == Approx(99.05).epsilon(1E-5));
             REQUIRE(instance->s == "wow");
@@ -252,18 +252,18 @@ TEST_CASE("Object factories can be used to create class instances") // and alloc
 TEST_CASE("Classes can have constructors") // and allocate dynamically
 {
     const ponder::Class* metaclass = &ponder::classByType<MyClass>();
-    
+
     REQUIRE(metaclass != nullptr);
 
     SECTION("with no parameters")
     {
         ponder::UserObject object;
-        
+
         IS_TRUE( object == ponder::UserObject::nothing );
-        
+
         ponder::runtime::ObjectFactory fact(*metaclass);
         object = fact.construct();
-        
+
         IS_TRUE( object != ponder::UserObject::nothing );
 
         MyClass* instance = object.get<MyClass*>();
@@ -278,9 +278,9 @@ TEST_CASE("Classes can have constructors") // and allocate dynamically
     SECTION("with one parameter")
     {
         ponder::UserObject object;
-        
+
         IS_TRUE( object == ponder::UserObject::nothing );
-        
+
         ponder::runtime::ObjectFactory fact(*metaclass);
         object = fact.construct(ponder::Args(1));
 
@@ -296,9 +296,9 @@ TEST_CASE("Classes can have constructors") // and allocate dynamically
     SECTION("with two parameters")
     {
         ponder::UserObject object;
-        
+
         IS_TRUE( object == ponder::UserObject::nothing );
-        
+
         ponder::runtime::ObjectFactory fact(*metaclass);
         object = fact.construct(ponder::Args(2, 2.));
 
@@ -315,9 +315,9 @@ TEST_CASE("Classes can have constructors") // and allocate dynamically
     SECTION("with three parameters")
     {
         ponder::UserObject object;
-        
+
         IS_TRUE( object == ponder::UserObject::nothing );
-        
+
         ponder::runtime::ObjectFactory fact(*metaclass);
         object = fact.construct(ponder::Args(3, 3., "3"));
 
@@ -333,9 +333,9 @@ TEST_CASE("Classes can have constructors") // and allocate dynamically
     SECTION("with four parameters")
     {
         ponder::UserObject object;
-        
+
         IS_TRUE( object == ponder::UserObject::nothing );
-        
+
         ponder::runtime::ObjectFactory fact(*metaclass);
         object = fact.construct(ponder::Args(4, 4., "4", four));
 
@@ -351,9 +351,9 @@ TEST_CASE("Classes can have constructors") // and allocate dynamically
     SECTION("with five parameters")
     {
         ponder::UserObject object;
-        
+
         IS_TRUE( object == ponder::UserObject::nothing );
-        
+
         ponder::runtime::ObjectFactory fact(*metaclass);
         object = fact.construct(ponder::Args(5, 5., "5", five, 5));
 
@@ -381,37 +381,37 @@ TEST_CASE("Classes can have constructors") // and allocate dynamically
 //TEST_CASE("Object factories can be used to create class instances") // and allocate dynamically
 //{
 //    const ponder::Class &metaclass = ponder::classByType<MyClass>();
-//    
+//
 //    SECTION("with no parameters")
 //    {
 ////        ponder::UserObject object;
 //        auto object = ponder::runtime::createUnique(const ponder::Class &cls, A args...)
-//        
+//
 //        IS_TRUE( object == ponder::UserObject::nothing );
-//        
+//
 //        ponder::runtime::ObjectFactory fact(metaclass);
 //        object = fact.create();
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 0);
 //        REQUIRE(instance->r == Approx(0.).epsilon(1E-5));
 //        REQUIRE(instance->s == "0");
 //        REQUIRE(instance->e == zero);
 //        REQUIRE(instance->u.x == 0);
 //    }
-//    
+//
 //    SECTION("with one parameter")
 //    {
 //        ponder::runtime::ObjectFactory fact(metaclass);
 //        ponder::UserObject object = fact.construct(ponder::Args(1));
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 1);
 //        REQUIRE(instance->r == Approx(1.).epsilon(1E-5));
 //        REQUIRE(instance->s == "1");
@@ -422,64 +422,64 @@ TEST_CASE("Classes can have constructors") // and allocate dynamically
 //    SECTION("with two parameters")
 //    {
 //        ponder::UserObject object = metaclass->construct(ponder::Args(2, 2.));
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 2);
 //        REQUIRE(instance->r == Approx(2.).epsilon(1E-5));
 //        REQUIRE(instance->s == "2");
 //        REQUIRE(instance->e == two);
 //        REQUIRE(instance->u.x == 2);
 //    }
-//    
-//    
+//
+//
 //    SECTION("with three parameters")
 //    {
 //        ponder::UserObject object = metaclass->construct(ponder::Args(3, 3., "3"));
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 3);
 //        REQUIRE(instance->r == Approx(3.).epsilon(1E-5));
 //        REQUIRE(instance->s == "3");
 //        REQUIRE(instance->e == three);
 //        REQUIRE(instance->u.x == 3);
 //    }
-//    
+//
 //    SECTION("with four parameters")
 //    {
 //        ponder::UserObject object = metaclass->construct(ponder::Args(4, 4., "4", four));
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 4);
 //        REQUIRE(instance->r == Approx(4.).epsilon(1E-5));
 //        REQUIRE(instance->s == "4");
 //        REQUIRE(instance->e == four);
 //        REQUIRE(instance->u.x == 4);
 //    }
-//    
+//
 //    SECTION("with five parameters")
 //    {
 //        ponder::UserObject object = metaclass->construct(ponder::Args(5, 5., "5", five, 5));
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 5);
 //        REQUIRE(instance->r == Approx(5.).epsilon(1E-5));
 //        REQUIRE(instance->s == "5");
 //        REQUIRE(instance->e == five);
 //        REQUIRE(instance->u.x == 5);
 //    }
-    
+
 //}
 
 
@@ -487,40 +487,40 @@ TEST_CASE("Object factory constructors can use placement new")
 {
     const ponder::Class &metaclass = ponder::classByType<MyClass>();
     const size_t sz = metaclass.sizeOf();
-    
+
     REQUIRE(sz > 0);
     REQUIRE(sz == sizeof(MyClass));
-    
+
     SECTION("with no parameters")
     {
         char buff[sizeof(MyClass) + 20];
-        const char c_guard{ (char)0xcd };
+        constexpr char c_guard{ static_cast<char>(0xcd) };
         memset(buff, c_guard, sizeof(buff));
         char *p = buff + 4;
-        
+
         REQUIRE(buff[0] == c_guard);
         REQUIRE(*p == c_guard);
         REQUIRE(p[sz] == c_guard);
-        
+
         ponder::runtime::ObjectFactory fact(metaclass);
         ponder::UserObject object = fact.construct(ponder::Args(), p); // placement new
-        
+
         IS_TRUE( object != ponder::UserObject::nothing );
-        
+
         REQUIRE(buff[0] == c_guard);
         REQUIRE(*p != c_guard);
         REQUIRE(p[sz] == c_guard);
-        
+
         MyClass* instance = object.get<MyClass*>();
-        
+
         REQUIRE(instance == reinterpret_cast<MyClass*>(p));
-        
+
         REQUIRE(instance->l == 0);
         REQUIRE(instance->r == Approx(0.).epsilon(1E-5));
         REQUIRE(instance->s == "0");
         REQUIRE(instance->e == zero);
         REQUIRE(instance->u.x == 0);
-        
+
         fact.destruct(object); // not destroy()
     }
 }
@@ -532,111 +532,111 @@ TEST_CASE("Object factory constructors can use placement new")
 //TEST_CASE("Classes can create object") // no arg list
 //{
 //    const ponder::Class* metaclass = &ponder::classByType<MyClass>();
-//    
+//
 //    REQUIRE(metaclass != nullptr);
-//    
+//
 //    SECTION("with no parameters")
 //    {
 //        ponder::UserObject object;
-//        
+//
 //        IS_TRUE( object == ponder::UserObject::nothing );
-//        
+//
 //        object = metaclass->create();
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass *instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 0);
 //        REQUIRE(instance->r == Approx(0.).epsilon(1E-5));
 //        REQUIRE(instance->s == "0");
 //        REQUIRE(instance->e == zero);
 //        REQUIRE(instance->u.x == 0);
 //    }
-//    
+//
 //    SECTION("with one parameter")
 //    {
 //        ponder::UserObject object = metaclass->create(1);
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 1);
 //        REQUIRE(instance->r == Approx(1.).epsilon(1E-5));
 //        REQUIRE(instance->s == "1");
 //        REQUIRE(instance->e == one);
 //        REQUIRE(instance->u.x == 1);
 //    }
-//    
+//
 //    SECTION("with two parameters")
 //    {
 //        ponder::UserObject object = metaclass->create(2, 2.);
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 2);
 //        REQUIRE(instance->r == Approx(2.).epsilon(1E-5));
 //        REQUIRE(instance->s == "2");
 //        REQUIRE(instance->e == two);
 //        REQUIRE(instance->u.x == 2);
 //    }
-//    
-//    
+//
+//
 //    SECTION("with three parameters")
 //    {
 //        ponder::UserObject object = metaclass->create(3, 3., "3");
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 3);
 //        REQUIRE(instance->r == Approx(3.).epsilon(1E-5));
 //        REQUIRE(instance->s == "3");
 //        REQUIRE(instance->e == three);
 //        REQUIRE(instance->u.x == 3);
 //    }
-//    
+//
 //    SECTION("with four parameters")
 //    {
 //        ponder::UserObject object = metaclass->create(4, 4., "4", four);
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 4);
 //        REQUIRE(instance->r == Approx(4.).epsilon(1E-5));
 //        REQUIRE(instance->s == "4");
 //        REQUIRE(instance->e == four);
 //        REQUIRE(instance->u.x == 4);
 //    }
-//    
+//
 //    SECTION("with five parameters")
 //    {
 //        ponder::UserObject object = metaclass->create(5, 5., "5", five, 5);
-//        
+//
 //        IS_TRUE( object != ponder::UserObject::nothing );
-//        
+//
 //        MyClass* instance = object.get<MyClass*>();
-//        
+//
 //        REQUIRE(instance->l == 5);
 //        REQUIRE(instance->r == Approx(5.).epsilon(1E-5));
 //        REQUIRE(instance->s == "5");
 //        REQUIRE(instance->e == five);
 //        REQUIRE(instance->u.x == 5);
 //    }
-//    
+//
 //    SECTION("with invalid parameters")
 //    {
 //        IS_TRUE( metaclass->create("hello") == ponder::UserObject::nothing );
 //        IS_TRUE( metaclass->create(MyType(10)) == ponder::UserObject::nothing );
 //        IS_TRUE( metaclass->create(two, MyType(10)) == ponder::UserObject::nothing );
 //        IS_TRUE( metaclass->create(5., "hello") == ponder::UserObject::nothing );
-//    }    
+//    }
 //}
 
 

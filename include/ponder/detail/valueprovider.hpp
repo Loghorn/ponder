@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,14 +31,13 @@
 #ifndef PONDER_DETAIL_VALUEPROVIDER_HPP
 #define PONDER_DETAIL_VALUEPROVIDER_HPP
 
-#include <ponder/args.hpp>
 #include <ponder/class.hpp>
 #include <ponder/classget.hpp>
 #include <ponder/valuemapper.hpp>
 
 namespace ponder {
 namespace detail {
-    
+
 /*
  * Implementation of ValueProvider
  * Generic version, use default constructor
@@ -58,9 +57,9 @@ template <typename T>
 struct ValueProviderImpl<T, ValueKind::User>
 {
     ValueProviderImpl()
-        :   m_value(0) //classByType<T>().construct(Args::empty).template get<T*>()) // XXXX
+        :   m_value(nullptr) //classByType<T>().construct(Args::empty).template get<T*>()) // XXXX
     {}
-    ~ValueProviderImpl() {} // {classByType<T>().destroy(m_value);}
+    //~ValueProviderImpl() {} // {classByType<T>().destroy(m_value);}
     T& operator()() {return *m_value;}
     T* m_value;
 };
@@ -82,7 +81,7 @@ struct ValueProviderImpl<T*, Type>
 template <typename T>
 struct ValueProviderImpl<T*, ValueKind::User>
 {
-    T* operator()() {return classByType<T>().construct().template get<T*>();}
+    T* operator()() {return classByType<T>().constructor(0)->create().template get<T*>();}
 };
 
 /*

@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -49,41 +49,36 @@ class ClassVisitor;
  */
 class PONDER_API Property : public Type
 {
-    PONDER__NON_COPYABLE(Property);
+    PONDER_NON_COPYABLE(Property);
 public:
-
-    /**
-     * \brief Destructor
-     */
-    virtual ~Property();
 
     /**
      * \brief Get the name of the property
      *
      * \return Name of the property
      */
-    IdReturn name() const;
+    [[nodiscard]] IdReturn name() const;
 
     /**
      * \brief Get the type of the property
      *
      * \return Type of the property
      */
-    ValueKind kind() const;
+    [[nodiscard]] ValueKind kind() const;
 
     /**
      * \brief Check if the property can be read
      *
      * \return True if the property can be read, false otherwise
      */
-    virtual bool isReadable() const;
-    
+    [[nodiscard]] virtual bool isReadable() const;
+
     /**
      * \brief Check if the property can be written
      *
      * \return True if the property can be written, false otherwise
      */
-    virtual bool isWritable() const;
+    [[nodiscard]] virtual bool isWritable() const;
 
     /**
      * \brief Get the current value of the property for a given object
@@ -95,7 +90,7 @@ public:
      * \throw NullObject object is invalid
      * \throw ForbiddenRead property is not readable
      */
-    Value get(const UserObject& object) const;
+    [[nodiscard]] Value get(const UserObject& object) const;
 
     /**
      * \brief Set the current value of the property for a given object
@@ -138,7 +133,7 @@ protected:
      *
      * \return Value of the property
      */
-    virtual Value getValue(const UserObject& object) const = 0;
+    [[nodiscard]] virtual Value getValue(const UserObject& object) const = 0;
 
     /**
      * \brief Do the actual writing of the value

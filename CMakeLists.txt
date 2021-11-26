@@ -127,8 +127,6 @@ set(SRC_HEADERS
     include/ponder/detail/valueimpl.hpp
     include/ponder/detail/valueprovider.hpp
     include/ponder/detail/valueref.hpp
-    include/ponder/detail/variant.hpp
-    include/ponder/detail/variant_recursive_wrapper.hpp
     # Qt
     include/ponder/qt/qlist.hpp
     include/ponder/qt/qstring.hpp

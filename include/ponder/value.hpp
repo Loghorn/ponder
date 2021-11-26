@@ -35,7 +35,7 @@
 #include <ponder/enumobject.hpp>
 #include <ponder/userobject.hpp>
 #include <ponder/valuemapper.hpp>
-#include <ponder/detail/variant.hpp>
+#include <variant>
 #include <iosfwd>
 #include <string>
 
@@ -260,7 +260,7 @@ public:
 
 private:
 
-    using Variant = mapbox::util::variant<
+    using Variant = std::variant<
         NoType, bool, long, double, String,
         EnumObject, UserObject, detail::ValueRef
     >;

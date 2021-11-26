@@ -30,6 +30,7 @@
 #ifndef PONDER_USES_RUNTIME_IMPL_HPP
 #define PONDER_USES_RUNTIME_IMPL_HPP
 
+#include <functional>
 #include <ponder/detail/rawtype.hpp>
 #include <ponder/detail/util.hpp>
 

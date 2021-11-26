@@ -111,7 +111,7 @@ T& Value::ref()
 {
     try
     {
-        return m_value.get<T>();
+        return std::get<T>(m_value);
     }
     catch (detail::bad_conversion&)
     {
@@ -124,7 +124,7 @@ const T& Value::cref() const
 {
     try
     {
-        return m_value.get<T>();
+        return std::get<T>(m_value);
     }
     catch (detail::bad_conversion&)
     {
@@ -149,13 +149,13 @@ bool Value::isCompatible() const
 template <typename T>
 typename T::result_type Value::visit(T visitor) const
 {
-    return mapbox::util::apply_visitor(visitor, m_value);
+    return std::visit(visitor, m_value);
 }
 
 template <typename T>
 typename T::result_type Value::visit(T visitor, const Value& other) const
 {
-    return mapbox::util::apply_visitor(visitor, m_value, other.m_value);
+    return std::visit(visitor, m_value, other.m_value);
 }
 
 } // namespace ponder

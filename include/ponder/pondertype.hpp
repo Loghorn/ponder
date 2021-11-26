@@ -242,6 +242,16 @@ namespace detail
         virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} \
     private:
 
+#define PONDER_POLYMORPHIC_BASE() \
+    public: \
+        virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} \
+    private:
+
+#define PONDER_POLYMORPHIC_DERIVED() \
+    public: \
+        ponder::TypeId ponderClassId() const override {return ponder::detail::staticTypeId(*this);} \
+    private:
+
 } // namespace ponder
 
 /** \cond NoDocumentation */

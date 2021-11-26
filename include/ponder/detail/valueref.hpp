@@ -52,10 +52,6 @@ public:
         return ValueRef(&p, std::type_index(typeid(T)));
     }
 
-    ValueRef(const ValueRef&) = default;
-
-    ValueRef& operator= (const ValueRef&) = delete;
-
     bool operator< (const ValueRef& other) const
     {
         return m_type->less(m_ptr, other.m_ptr);
@@ -106,14 +102,14 @@ private:
         }
     };
 
-    ValueRef(const void * const p, const IType *t)
+    ValueRef(const void * p, const IType *t)
     :   m_ptr(p)
     ,   m_type(t)
     {}
 
-    const void * const m_ptr;
+    const void * m_ptr;
     //std::type_index m_type;
-    const IType * const m_type;
+    const IType * m_type;
 };
 
 } // detail

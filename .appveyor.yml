@@ -5,18 +5,22 @@ shallow_clone: true
 image:
   - Visual Studio 2017
   - Visual Studio 2019
+  - Visual Studio 2022
 
 environment:
   matrix:
     - ARCH: 32-bit
       VS17GEN: "Visual Studio 15 2017"
       VS19GEN: "Visual Studio 16 2019"
+      VS22GEN: "Visual Studio 17 2022"
       VS19ARCH: "-A Win32"
       CMOPTS: "-DBUILD_TEST=ON -DBUILD_SHARED_LIBS=OFF"
     - ARCH: 64-bit
       VS17GEN: "Visual Studio 15 2017 Win64"
       VS19GEN: "Visual Studio 16 2019"
+      VS22GEN: "Visual Studio 17 2022"
       VS19ARCH: "-A x64"
+      VS22ARCH: "-A x64"
       CMOPTS: "-DBUILD_TEST=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TEST_LUA=ON"
 
 build:
@@ -30,6 +34,7 @@ build_script:
       cd build
       if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" cmake -G "%VS17GEN%" %CMOPTS% ..
       if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" cmake -G "%VS19GEN%" %VS19ARCH% %CMOPTS% ..
+      if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2022" cmake -G "%VS22GEN%" %VS22ARCH% %CMOPTS% ..
       cmake --build . --config Debug
       cmake --build . --config Release
 

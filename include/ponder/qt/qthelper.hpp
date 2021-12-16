@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -74,9 +74,9 @@ public:
             case QVariant::Bool:      return ponder::ValueKind::Boolean;
             case QVariant::Char:      return ponder::ValueKind::Integer;
             case QVariant::Int:       return ponder::ValueKind::Integer;
-            case QVariant::LongLong:  return ponder::ValueKind::Integer;
+            case QVariant::LongLong:  return ponder::ValueKind::LongInteger;
             case QVariant::UInt:      return ponder::ValueKind::Integer;
-            case QVariant::ULongLong: return ponder::ValueKind::Integer;
+            case QVariant::ULongLong: return ponder::ValueKind::LongInteger;
             case QVariant::Double:    return ponder::ValueKind::Real;
             case QVariant::String:    return ponder::ValueKind::String;
             default:                  return ponder::ValueKind::None;
@@ -168,13 +168,14 @@ public:
         switch (value.kind())
         {
             default:
-            case ponder::ValueKind::None:     return QVariant();
-            case ponder::ValueKind::Boolean:   return QVariant(value.to<bool>());
-            case ponder::ValueKind::Integer:    return QVariant(value.to<int>());
-            case ponder::ValueKind::Real:   return QVariant(value.to<double>());
-            case ponder::ValueKind::String: return QVariant(value.to<QString>());
-            case ponder::ValueKind::Enum:   return QVariant(value.to<int>());
-            case ponder::ValueKind::User:   return QVariant();
+            case ponder::ValueKind::None:        return QVariant();
+            case ponder::ValueKind::Boolean:     return QVariant(value.to<bool>());
+            case ponder::ValueKind::Integer:     return QVariant(value.to<long>());
+            case ponder::ValueKind::LongInteger: return QVariant(value.to<long long>());
+            case ponder::ValueKind::Real:        return QVariant(value.to<double>());
+            case ponder::ValueKind::String:      return QVariant(value.to<QString>());
+            case ponder::ValueKind::Enum:        return QVariant(value.to<int>());
+            case ponder::ValueKind::User:        return QVariant();
         }
     }
 

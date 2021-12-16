@@ -85,6 +85,11 @@ namespace ValueTest
             return ponder::ValueKind::Integer;
         }
 
+        ponder::ValueKind operator()(long long) const
+        {
+            return ponder::ValueKind::LongInteger;
+        }
+
         ponder::ValueKind operator()(double) const
         {
             return ponder::ValueKind::Real;
@@ -140,6 +145,7 @@ TEST_CASE("Ponder has variant values")
     ponder::Value shortValue   = static_cast<short>(1);
     ponder::Value intValue     = static_cast<int>(1);
     ponder::Value longValue    = static_cast<long>(1);
+    ponder::Value longlongValue= static_cast<long long>(1);
     ponder::Value ucharValue   = static_cast<unsigned char>(1);
     ponder::Value ushortValue  = static_cast<unsigned short>(1);
     ponder::Value uintValue    = static_cast<unsigned int>(1);
@@ -161,6 +167,7 @@ TEST_CASE("Ponder has variant values")
         IS_TRUE(shortValue.kind() ==   ponder::ValueKind::Integer);
         IS_TRUE(intValue.kind() ==     ponder::ValueKind::Integer);
         IS_TRUE(longValue.kind() ==    ponder::ValueKind::Integer);
+        IS_TRUE(longlongValue.kind() ==ponder::ValueKind::LongInteger);
         IS_TRUE(ucharValue.kind() ==   ponder::ValueKind::Integer);
         IS_TRUE(ushortValue.kind() ==  ponder::ValueKind::Integer);
         IS_TRUE(uintValue.kind() ==    ponder::ValueKind::Integer);
@@ -181,6 +188,7 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(boolValue.to<short>() ==          1);
         REQUIRE(boolValue.to<int>() ==            1);
         REQUIRE(boolValue.to<long>() ==           1);
+        REQUIRE(boolValue.to<long long>() ==      1);
         REQUIRE(boolValue.to<unsigned char>() ==  1);
         REQUIRE(boolValue.to<unsigned short>() == 1);
         REQUIRE(boolValue.to<unsigned int>() ==   1);
@@ -196,6 +204,7 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(boolValue.isCompatible<short>() ==          true);
         REQUIRE(boolValue.isCompatible<int>() ==            true);
         REQUIRE(boolValue.isCompatible<long>() ==           true);
+        REQUIRE(boolValue.isCompatible<long long>() ==      true);
         REQUIRE(boolValue.isCompatible<unsigned char>() ==  true);
         REQUIRE(boolValue.isCompatible<unsigned short>() == true);
         REQUIRE(boolValue.isCompatible<unsigned int>() ==   true);
@@ -214,6 +223,7 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(intValue.to<short>() ==          1);
         REQUIRE(intValue.to<int>() ==            1);
         REQUIRE(intValue.to<long>() ==           1);
+        REQUIRE(intValue.to<long long>() ==      1);
         REQUIRE(intValue.to<unsigned char>() ==  1);
         REQUIRE(intValue.to<unsigned short>() == 1);
         REQUIRE(intValue.to<unsigned int>() ==   1);
@@ -229,13 +239,14 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(intValue.isCompatible<short>() ==          true);
         REQUIRE(intValue.isCompatible<int>() ==            true);
         REQUIRE(intValue.isCompatible<long>() ==           true);
+        REQUIRE(intValue.isCompatible<long long>() ==      true);
         REQUIRE(intValue.isCompatible<unsigned char>() ==  true);
         REQUIRE(intValue.isCompatible<unsigned short>() == true);
         REQUIRE(intValue.isCompatible<unsigned int>() ==   true);
         REQUIRE(intValue.isCompatible<unsigned long>() ==  true);
         REQUIRE(intValue.isCompatible<float>() ==          true);
         REQUIRE(intValue.isCompatible<double>() ==         true);
-        REQUIRE(intValue.isCompatible<ponder::String>() ==    true);
+        REQUIRE(intValue.isCompatible<ponder::String>() == true);
         REQUIRE(intValue.isCompatible<MyEnum>() ==         true);
         REQUIRE(intValue.isCompatible<MyClass>() ==        false);
     }
@@ -247,6 +258,7 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(doubleValue.to<short>() ==          1);
         REQUIRE(doubleValue.to<int>() ==            1);
         REQUIRE(doubleValue.to<long>() ==           1);
+        REQUIRE(doubleValue.to<long long>() ==      1);
         REQUIRE(doubleValue.to<unsigned char>() ==  1);
         REQUIRE(doubleValue.to<unsigned short>() == 1);
         REQUIRE(doubleValue.to<unsigned int>() ==   1);
@@ -262,13 +274,14 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(doubleValue.isCompatible<short>() ==          true);
         REQUIRE(doubleValue.isCompatible<int>() ==            true);
         REQUIRE(doubleValue.isCompatible<long>() ==           true);
+        REQUIRE(doubleValue.isCompatible<long long>() ==      true);
         REQUIRE(doubleValue.isCompatible<unsigned char>() ==  true);
         REQUIRE(doubleValue.isCompatible<unsigned short>() == true);
         REQUIRE(doubleValue.isCompatible<unsigned int>() ==   true);
         REQUIRE(doubleValue.isCompatible<unsigned long>() ==  true);
         REQUIRE(doubleValue.isCompatible<float>() ==          true);
         REQUIRE(doubleValue.isCompatible<double>() ==         true);
-        REQUIRE(doubleValue.isCompatible<ponder::String>() ==    true);
+        REQUIRE(doubleValue.isCompatible<ponder::String>() == true);
         REQUIRE(doubleValue.isCompatible<MyEnum>() ==         true);
         REQUIRE(doubleValue.isCompatible<MyClass>() ==        false);
     }
@@ -295,13 +308,14 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(stringValue.isCompatible<short>() ==          true);
         REQUIRE(stringValue.isCompatible<int>() ==            true);
         REQUIRE(stringValue.isCompatible<long>() ==           true);
+        REQUIRE(stringValue.isCompatible<long long>() ==      true);
         REQUIRE(stringValue.isCompatible<unsigned char>() ==  true);
         REQUIRE(stringValue.isCompatible<unsigned short>() == true);
         REQUIRE(stringValue.isCompatible<unsigned int>() ==   true);
         REQUIRE(stringValue.isCompatible<unsigned long>() ==  true);
         REQUIRE(stringValue.isCompatible<float>() ==          true);
         REQUIRE(stringValue.isCompatible<double>() ==         true);
-        REQUIRE(stringValue.isCompatible<ponder::String>() ==    true);
+        REQUIRE(stringValue.isCompatible<ponder::String>() == true);
         REQUIRE(stringValue.isCompatible<MyEnum>() ==         true);
         REQUIRE(stringValue.isCompatible<MyClass>() ==        false);
     }
@@ -328,6 +342,7 @@ TEST_CASE("Ponder has variant values")
         REQUIRE_THROWS_AS(badStringValue.to<short>(),          ponder::BadType);
         REQUIRE_THROWS_AS(badStringValue.to<int>(),            ponder::BadType);
         REQUIRE_THROWS_AS(badStringValue.to<long>(),           ponder::BadType);
+        REQUIRE_THROWS_AS(badStringValue.to<long long>(),      ponder::BadType);
         REQUIRE_THROWS_AS(badStringValue.to<unsigned char>(),  ponder::BadType);
         REQUIRE_THROWS_AS(badStringValue.to<unsigned short>(), ponder::BadType);
         REQUIRE_THROWS_AS(badStringValue.to<unsigned int>(),   ponder::BadType);
@@ -342,13 +357,14 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(badStringValue.isCompatible<short>() ==          false);
         REQUIRE(badStringValue.isCompatible<int>() ==            false);
         REQUIRE(badStringValue.isCompatible<long>() ==           false);
+        REQUIRE(badStringValue.isCompatible<long long>() ==      false);
         REQUIRE(badStringValue.isCompatible<unsigned char>() ==  false);
         REQUIRE(badStringValue.isCompatible<unsigned short>() == false);
         REQUIRE(badStringValue.isCompatible<unsigned int>() ==   false);
         REQUIRE(badStringValue.isCompatible<unsigned long>() ==  false);
         REQUIRE(badStringValue.isCompatible<float>() ==          false);
         REQUIRE(badStringValue.isCompatible<double>() ==         false);
-        REQUIRE(badStringValue.isCompatible<ponder::String>() ==    true);
+        REQUIRE(badStringValue.isCompatible<ponder::String>() == true);
         REQUIRE(badStringValue.isCompatible<MyEnum>() ==         false);
         REQUIRE(badStringValue.isCompatible<MyClass>() ==        false);
     }
@@ -360,6 +376,7 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(enumValue.to<short>() ==          1);
         REQUIRE(enumValue.to<int>() ==            1);
         REQUIRE(enumValue.to<long>() ==           1);
+        REQUIRE(enumValue.to<long long>() ==      1);
         REQUIRE(enumValue.to<unsigned char>() ==  1);
         REQUIRE(enumValue.to<unsigned short>() == 1);
         REQUIRE(enumValue.to<unsigned int>() ==   1);
@@ -375,13 +392,14 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(enumValue.isCompatible<short>() ==          true);
         REQUIRE(enumValue.isCompatible<int>() ==            true);
         REQUIRE(enumValue.isCompatible<long>() ==           true);
+        REQUIRE(enumValue.isCompatible<long long>() ==      true);
         REQUIRE(enumValue.isCompatible<unsigned char>() ==  true);
         REQUIRE(enumValue.isCompatible<unsigned short>() == true);
         REQUIRE(enumValue.isCompatible<unsigned int>() ==   true);
         REQUIRE(enumValue.isCompatible<unsigned long>() ==  true);
         REQUIRE(enumValue.isCompatible<float>() ==          true);
         REQUIRE(enumValue.isCompatible<double>() ==         true);
-        REQUIRE(enumValue.isCompatible<ponder::String>() ==    true);
+        REQUIRE(enumValue.isCompatible<ponder::String>() == true);
         REQUIRE(enumValue.isCompatible<MyEnum>() ==         true);
         REQUIRE(enumValue.isCompatible<MyClass>() ==        false);
     }
@@ -393,13 +411,14 @@ TEST_CASE("Ponder has variant values")
         REQUIRE_THROWS_AS(objectValue.to<short>(),             ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<int>(),               ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<long>(),              ponder::BadType);
+        REQUIRE_THROWS_AS(objectValue.to<long long>(),         ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<unsigned char>(),     ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<unsigned short>(),    ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<unsigned int>(),      ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<unsigned long>(),     ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<float>(),             ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<double>(),            ponder::BadType);
-        REQUIRE_THROWS_AS(objectValue.to<ponder::String>(),       ponder::BadType);
+        REQUIRE_THROWS_AS(objectValue.to<ponder::String>(),    ponder::BadType);
         REQUIRE_THROWS_AS(objectValue.to<MyEnum>(),            ponder::BadType);
         REQUIRE(objectValue.to<MyClass>() == object1);
         IS_TRUE(objectValue.to<ponder::UserObject>() == ponder::UserObject(&object1));
@@ -409,6 +428,7 @@ TEST_CASE("Ponder has variant values")
         REQUIRE(objectValue.isCompatible<short>() ==          false);
         REQUIRE(objectValue.isCompatible<int>() ==            false);
         REQUIRE(objectValue.isCompatible<long>() ==           false);
+        REQUIRE(objectValue.isCompatible<long long>() ==      false);
         REQUIRE(objectValue.isCompatible<unsigned char>() ==  false);
         REQUIRE(objectValue.isCompatible<unsigned short>() == false);
         REQUIRE(objectValue.isCompatible<unsigned int>() ==   false);
@@ -430,6 +450,7 @@ TEST_CASE("Ponder has variant values")
         IS_TRUE(shortValue.visit(visitor) ==   ponder::ValueKind::Integer);
         IS_TRUE(intValue.visit(visitor) ==     ponder::ValueKind::Integer);
         IS_TRUE(longValue.visit(visitor) ==    ponder::ValueKind::Integer);
+        IS_TRUE(longlongValue.visit(visitor) ==ponder::ValueKind::LongInteger);
         IS_TRUE(ucharValue.visit(visitor) ==   ponder::ValueKind::Integer);
         IS_TRUE(ushortValue.visit(visitor) ==  ponder::ValueKind::Integer);
         IS_TRUE(uintValue.visit(visitor) ==    ponder::ValueKind::Integer);
@@ -444,64 +465,82 @@ TEST_CASE("Ponder has variant values")
 
     SECTION("values can be compared for equality")
     {
-        REQUIRE((noValue == noValue) ==     true);
-        REQUIRE((noValue == boolValue) ==   false);
-        REQUIRE((noValue == intValue) ==    false);
-        REQUIRE((noValue == doubleValue) == false);
-        REQUIRE((noValue == stringValue) == false);
-        REQUIRE((noValue == enumValue) ==   false);
-        REQUIRE((noValue == objectValue) == false);
+        REQUIRE((noValue == noValue) ==       true);
+        REQUIRE((noValue == boolValue) ==     false);
+        REQUIRE((noValue == intValue) ==      false);
+        REQUIRE((noValue == longlongValue) == false);
+        REQUIRE((noValue == doubleValue) ==   false);
+        REQUIRE((noValue == stringValue) ==   false);
+        REQUIRE((noValue == enumValue) ==     false);
+        REQUIRE((noValue == objectValue) ==   false);
 
-        REQUIRE((boolValue == noValue) ==     false);
-        REQUIRE((boolValue == boolValue) ==   true);
-        REQUIRE((boolValue == intValue) ==    false);
-        REQUIRE((boolValue == doubleValue) == false);
-        REQUIRE((boolValue == stringValue) == false);
-        REQUIRE((boolValue == enumValue) ==   false);
-        REQUIRE((boolValue == objectValue) == false);
+        REQUIRE((boolValue == noValue) ==       false);
+        REQUIRE((boolValue == boolValue) ==     true);
+        REQUIRE((boolValue == intValue) ==      false);
+        REQUIRE((boolValue == longlongValue) == false);
+        REQUIRE((boolValue == doubleValue) ==   false);
+        REQUIRE((boolValue == stringValue) ==   false);
+        REQUIRE((boolValue == enumValue) ==     false);
+        REQUIRE((boolValue == objectValue) ==   false);
 
-        REQUIRE((intValue == noValue) ==     false);
-        REQUIRE((intValue == boolValue) ==   false);
-        REQUIRE((intValue == intValue) ==    true);
-        REQUIRE((intValue == doubleValue) == false);
-        REQUIRE((intValue == stringValue) == false);
-        REQUIRE((intValue == enumValue) ==   false);
-        REQUIRE((intValue == objectValue) == false);
+        REQUIRE((intValue == noValue) ==       false);
+        REQUIRE((intValue == boolValue) ==     false);
+        REQUIRE((intValue == intValue) ==      true);
+        REQUIRE((intValue == longlongValue) == false);
+        REQUIRE((intValue == doubleValue) ==   false);
+        REQUIRE((intValue == stringValue) ==   false);
+        REQUIRE((intValue == enumValue) ==     false);
+        REQUIRE((intValue == objectValue) ==   false);
 
-        REQUIRE((doubleValue == noValue) ==     false);
-        REQUIRE((doubleValue == boolValue) ==   false);
-        REQUIRE((doubleValue == intValue) ==    false);
-        REQUIRE((doubleValue == doubleValue) == true);
-        REQUIRE((doubleValue == stringValue) == false);
-        REQUIRE((doubleValue == enumValue) ==   false);
-        REQUIRE((doubleValue == objectValue) == false);
+        REQUIRE((longlongValue == noValue) ==       false);
+        REQUIRE((longlongValue == boolValue) ==     false);
+        REQUIRE((longlongValue == intValue) ==      false);
+        REQUIRE((longlongValue == longlongValue) == true);
+        REQUIRE((longlongValue == doubleValue) ==   false);
+        REQUIRE((longlongValue == stringValue) ==   false);
+        REQUIRE((longlongValue == enumValue) ==     false);
+        REQUIRE((longlongValue == objectValue) ==   false);
 
-        REQUIRE((stringValue == noValue) ==     false);
-        REQUIRE((stringValue == boolValue) ==   false);
-        REQUIRE((stringValue == intValue) ==    false);
-        REQUIRE((stringValue == doubleValue) == false);
-        REQUIRE((stringValue == stringValue) == true);
-        REQUIRE((stringValue == enumValue) ==   false);
-        REQUIRE((stringValue == objectValue) == false);
+        REQUIRE((doubleValue == noValue) ==       false);
+        REQUIRE((doubleValue == boolValue) ==     false);
+        REQUIRE((doubleValue == intValue) ==      false);
+        REQUIRE((doubleValue == longlongValue) == false);
+        REQUIRE((doubleValue == doubleValue) ==   true);
+        REQUIRE((doubleValue == stringValue) ==   false);
+        REQUIRE((doubleValue == enumValue) ==     false);
+        REQUIRE((doubleValue == objectValue) ==   false);
 
-        REQUIRE((enumValue == noValue) ==     false);
-        REQUIRE((enumValue == boolValue) ==   false);
-        REQUIRE((enumValue == intValue) ==    false);
-        REQUIRE((enumValue == doubleValue) == false);
-        REQUIRE((enumValue == stringValue) == false);
-        REQUIRE((enumValue == enumValue) ==   true);
-        REQUIRE((enumValue == objectValue) == false);
+        REQUIRE((stringValue == noValue) ==       false);
+        REQUIRE((stringValue == boolValue) ==     false);
+        REQUIRE((stringValue == intValue) ==      false);
+        REQUIRE((stringValue == longlongValue) == false);
+        REQUIRE((stringValue == doubleValue) ==   false);
+        REQUIRE((stringValue == stringValue) ==   true);
+        REQUIRE((stringValue == enumValue) ==     false);
+        REQUIRE((stringValue == objectValue) ==   false);
 
-        REQUIRE((objectValue == noValue) ==     false);
-        REQUIRE((objectValue == boolValue) ==   false);
-        REQUIRE((objectValue == intValue) ==    false);
-        REQUIRE((objectValue == doubleValue) == false);
-        REQUIRE((objectValue == stringValue) == false);
-        REQUIRE((objectValue == enumValue) ==   false);
-        REQUIRE((objectValue == objectValue) == true);
+        REQUIRE((enumValue == noValue) ==       false);
+        REQUIRE((enumValue == boolValue) ==     false);
+        REQUIRE((enumValue == intValue) ==      false);
+        REQUIRE((enumValue == longlongValue) == false);
+        REQUIRE((enumValue == doubleValue) ==   false);
+        REQUIRE((enumValue == stringValue) ==   false);
+        REQUIRE((enumValue == enumValue) ==     true);
+        REQUIRE((enumValue == objectValue) ==   false);
+
+        REQUIRE((objectValue == noValue) ==       false);
+        REQUIRE((objectValue == boolValue) ==     false);
+        REQUIRE((objectValue == intValue) ==      false);
+        REQUIRE((objectValue == longlongValue) == false);
+        REQUIRE((objectValue == doubleValue) ==   false);
+        REQUIRE((objectValue == stringValue) ==   false);
+        REQUIRE((objectValue == enumValue) ==     false);
+        REQUIRE((objectValue == objectValue) ==   true);
 
         REQUIRE(ponder::Value(true)    == ponder::Value(true));
         REQUIRE(ponder::Value(1)       == ponder::Value(1));
+        REQUIRE(ponder::Value(1LL)     == ponder::Value(1LL));
+        REQUIRE(ponder::Value(1ULL)    == ponder::Value(1ULL));
         REQUIRE(ponder::Value(1.)      == ponder::Value(1.));
         REQUIRE(ponder::Value("1")     == ponder::Value("1"));
         REQUIRE(ponder::Value(One)     == ponder::Value(One));
@@ -510,6 +549,8 @@ TEST_CASE("Ponder has variant values")
 
         REQUIRE(ponder::Value(true)    != ponder::Value(false));
         REQUIRE(ponder::Value(1)       != ponder::Value(2));
+        REQUIRE(ponder::Value(1LL)       != ponder::Value(2LL));
+        REQUIRE(ponder::Value(1ULL)       != ponder::Value(2ULL));
         REQUIRE(ponder::Value(1.)      != ponder::Value(2.));
         REQUIRE(ponder::Value("1")     != ponder::Value("2"));
         REQUIRE(ponder::Value(One)     != ponder::Value(Two));
@@ -521,76 +562,94 @@ TEST_CASE("Ponder has variant values")
     {
 #define equivalent(left, right) (!((left) < (right)) && !((right) < (left)))
 
-        REQUIRE(equivalent(noValue, noValue) ==     true);
-        REQUIRE(equivalent(noValue, boolValue) ==   false);
-        REQUIRE(equivalent(noValue, intValue) ==    false);
-        REQUIRE(equivalent(noValue, doubleValue) == false);
-        REQUIRE(equivalent(noValue, stringValue) == false);
-        REQUIRE(equivalent(noValue, enumValue) ==   false);
-        REQUIRE(equivalent(noValue, objectValue) == false);
+        REQUIRE(equivalent(noValue, noValue) ==       true);
+        REQUIRE(equivalent(noValue, boolValue) ==     false);
+        REQUIRE(equivalent(noValue, intValue) ==      false);
+        REQUIRE(equivalent(noValue, longlongValue) == false);
+        REQUIRE(equivalent(noValue, doubleValue) ==   false);
+        REQUIRE(equivalent(noValue, stringValue) ==   false);
+        REQUIRE(equivalent(noValue, enumValue) ==     false);
+        REQUIRE(equivalent(noValue, objectValue) ==   false);
 
-        REQUIRE(equivalent(boolValue, noValue) ==     false);
-        REQUIRE(equivalent(boolValue, boolValue) ==   true);
-        REQUIRE(equivalent(boolValue, intValue) ==    false);
-        REQUIRE(equivalent(boolValue, doubleValue) == false);
-        REQUIRE(equivalent(boolValue, stringValue) == false);
-        REQUIRE(equivalent(boolValue, enumValue) ==   false);
-        REQUIRE(equivalent(boolValue, objectValue) == false);
+        REQUIRE(equivalent(boolValue, noValue) ==       false);
+        REQUIRE(equivalent(boolValue, boolValue) ==     true);
+        REQUIRE(equivalent(boolValue, intValue) ==      false);
+        REQUIRE(equivalent(boolValue, longlongValue) == false);
+        REQUIRE(equivalent(boolValue, doubleValue) ==   false);
+        REQUIRE(equivalent(boolValue, stringValue) ==   false);
+        REQUIRE(equivalent(boolValue, enumValue) ==     false);
+        REQUIRE(equivalent(boolValue, objectValue) ==   false);
 
-        REQUIRE(equivalent(intValue, noValue) ==     false);
-        REQUIRE(equivalent(intValue, boolValue) ==   false);
-        REQUIRE(equivalent(intValue, intValue) ==    true);
-        REQUIRE(equivalent(intValue, doubleValue) == false);
-        REQUIRE(equivalent(intValue, stringValue) == false);
-        REQUIRE(equivalent(intValue, enumValue) ==   false);
-        REQUIRE(equivalent(intValue, objectValue) == false);
+        REQUIRE(equivalent(intValue, noValue) ==       false);
+        REQUIRE(equivalent(intValue, boolValue) ==     false);
+        REQUIRE(equivalent(intValue, intValue) ==      true);
+        REQUIRE(equivalent(intValue, longlongValue) == false);
+        REQUIRE(equivalent(intValue, doubleValue) ==   false);
+        REQUIRE(equivalent(intValue, stringValue) ==   false);
+        REQUIRE(equivalent(intValue, enumValue) ==     false);
+        REQUIRE(equivalent(intValue, objectValue) ==   false);
 
-        REQUIRE(equivalent(doubleValue, noValue) ==     false);
-        REQUIRE(equivalent(doubleValue, boolValue) ==   false);
-        REQUIRE(equivalent(doubleValue, intValue) ==    false);
-        REQUIRE(equivalent(doubleValue, doubleValue) == true);
-        REQUIRE(equivalent(doubleValue, stringValue) == false);
-        REQUIRE(equivalent(doubleValue, enumValue) ==   false);
-        REQUIRE(equivalent(doubleValue, objectValue) == false);
+        REQUIRE(equivalent(longlongValue, noValue) ==       false);
+        REQUIRE(equivalent(longlongValue, boolValue) ==     false);
+        REQUIRE(equivalent(longlongValue, intValue) ==      false);
+        REQUIRE(equivalent(longlongValue, longlongValue) == true);
+        REQUIRE(equivalent(longlongValue, doubleValue) ==   false);
+        REQUIRE(equivalent(longlongValue, stringValue) ==   false);
+        REQUIRE(equivalent(longlongValue, enumValue) ==     false);
+        REQUIRE(equivalent(longlongValue, objectValue) ==   false);
 
-        REQUIRE(equivalent(stringValue, noValue) ==     false);
-        REQUIRE(equivalent(stringValue, boolValue) ==   false);
-        REQUIRE(equivalent(stringValue, intValue) ==    false);
-        REQUIRE(equivalent(stringValue, doubleValue) == false);
-        REQUIRE(equivalent(stringValue, stringValue) == true);
-        REQUIRE(equivalent(stringValue, enumValue) ==   false);
-        REQUIRE(equivalent(stringValue, objectValue) == false);
+        REQUIRE(equivalent(doubleValue, noValue) ==       false);
+        REQUIRE(equivalent(doubleValue, boolValue) ==     false);
+        REQUIRE(equivalent(doubleValue, intValue) ==      false);
+        REQUIRE(equivalent(doubleValue, longlongValue) == false);
+        REQUIRE(equivalent(doubleValue, doubleValue) ==   true);
+        REQUIRE(equivalent(doubleValue, stringValue) ==   false);
+        REQUIRE(equivalent(doubleValue, enumValue) ==     false);
+        REQUIRE(equivalent(doubleValue, objectValue) ==   false);
 
-        REQUIRE(equivalent(enumValue, noValue) ==     false);
-        REQUIRE(equivalent(enumValue, boolValue) ==   false);
-        REQUIRE(equivalent(enumValue, intValue) ==    false);
-        REQUIRE(equivalent(enumValue, doubleValue) == false);
-        REQUIRE(equivalent(enumValue, stringValue) == false);
-        REQUIRE(equivalent(enumValue, enumValue) ==   true);
-        REQUIRE(equivalent(enumValue, objectValue) == false);
+        REQUIRE(equivalent(stringValue, noValue) ==       false);
+        REQUIRE(equivalent(stringValue, boolValue) ==     false);
+        REQUIRE(equivalent(stringValue, intValue) ==      false);
+        REQUIRE(equivalent(stringValue, longlongValue) == false);
+        REQUIRE(equivalent(stringValue, doubleValue) ==   false);
+        REQUIRE(equivalent(stringValue, stringValue) ==   true);
+        REQUIRE(equivalent(stringValue, enumValue) ==     false);
+        REQUIRE(equivalent(stringValue, objectValue) ==   false);
 
-        REQUIRE(equivalent(objectValue, noValue) ==     false);
-        REQUIRE(equivalent(objectValue, boolValue) ==   false);
-        REQUIRE(equivalent(objectValue, intValue) ==    false);
-        REQUIRE(equivalent(objectValue, doubleValue) == false);
-        REQUIRE(equivalent(objectValue, stringValue) == false);
-        REQUIRE(equivalent(objectValue, enumValue) ==   false);
-        REQUIRE(equivalent(objectValue, objectValue) == true);
+        REQUIRE(equivalent(enumValue, noValue) ==       false);
+        REQUIRE(equivalent(enumValue, boolValue) ==     false);
+        REQUIRE(equivalent(enumValue, intValue) ==      false);
+        REQUIRE(equivalent(enumValue, longlongValue) == false);
+        REQUIRE(equivalent(enumValue, doubleValue) ==   false);
+        REQUIRE(equivalent(enumValue, stringValue) ==   false);
+        REQUIRE(equivalent(enumValue, enumValue) ==     true);
+        REQUIRE(equivalent(enumValue, objectValue) ==   false);
 
-        REQUIRE(equivalent(ponder::Value(),        ponder::Value()) ==        true);
-        REQUIRE(equivalent(ponder::Value(true),    ponder::Value(true)) ==    true);
-        REQUIRE(equivalent(ponder::Value(1),       ponder::Value(1)) ==       true);
-        REQUIRE(equivalent(ponder::Value(1.),      ponder::Value(1.)) ==      true);
-        REQUIRE(equivalent(ponder::Value("1"),     ponder::Value("1")) ==     true);
-        REQUIRE(equivalent(ponder::Value(One),     ponder::Value(One)) ==     true);
+        REQUIRE(equivalent(objectValue, noValue) ==       false);
+        REQUIRE(equivalent(objectValue, boolValue) ==     false);
+        REQUIRE(equivalent(objectValue, intValue) ==      false);
+        REQUIRE(equivalent(objectValue, longlongValue) == false);
+        REQUIRE(equivalent(objectValue, doubleValue) ==   false);
+        REQUIRE(equivalent(objectValue, stringValue) ==   false);
+        REQUIRE(equivalent(objectValue, enumValue) ==     false);
+        REQUIRE(equivalent(objectValue, objectValue) ==   true);
+
+        REQUIRE(equivalent(ponder::Value(),         ponder::Value()) ==         true);
+        REQUIRE(equivalent(ponder::Value(true),     ponder::Value(true)) ==     true);
+        REQUIRE(equivalent(ponder::Value(1),        ponder::Value(1)) ==        true);
+        REQUIRE(equivalent(ponder::Value(1LL),      ponder::Value(1LL)) ==      true);
+        REQUIRE(equivalent(ponder::Value(1.),       ponder::Value(1.)) ==       true);
+        REQUIRE(equivalent(ponder::Value("1"),      ponder::Value("1")) ==      true);
+        REQUIRE(equivalent(ponder::Value(One),      ponder::Value(One)) ==      true);
         REQUIRE(equivalent(ponder::Value(&object1), ponder::Value(&object1)) == true);
         REQUIRE(equivalent(ponder::Value(&object1), ponder::Value(&object2)) == false);
 
-        REQUIRE((ponder::Value(false) < ponder::Value(true)) == true);
-        REQUIRE((ponder::Value(1)     < ponder::Value(2)) ==    true);
-        REQUIRE((ponder::Value(1.)    < ponder::Value(2.)) ==   true);
-        REQUIRE((ponder::Value("1")   < ponder::Value("2")) ==  true);
-        REQUIRE((ponder::Value(One)   < ponder::Value(Two)) ==  true);
+        REQUIRE((ponder::Value(false) < ponder::Value(true)) ==  true);
+        REQUIRE((ponder::Value(1)     < ponder::Value(2)) ==     true);
+        REQUIRE((ponder::Value(1LL)     < ponder::Value(2LL)) == true);
+        REQUIRE((ponder::Value(1.)    < ponder::Value(2.)) ==    true);
+        REQUIRE((ponder::Value("1")   < ponder::Value("2")) ==   true);
+        REQUIRE((ponder::Value(One)   < ponder::Value(Two)) ==   true);
 
 #undef equivalent
     }

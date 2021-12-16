@@ -168,6 +168,7 @@ static int pushValue(lua_State *L, const Value& val,
             return 1;
 
         case ValueKind::Integer:
+        case ValueKind::LongInteger:
             lua_pushinteger(L, val.to<lua_Integer>());
             return 1;
 
@@ -217,6 +218,7 @@ static Value getValue(lua_State *L, int index,
 
             case ValueKind::Real:
             case ValueKind::Integer:
+            case ValueKind::LongInteger:
                 vtype = LUA_TNUMBER;
                 break;
 

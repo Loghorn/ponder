@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +32,7 @@
 #define PONDER_VALUEVISITOR_HPP
 
 namespace ponder {
-    
+
 /**
  * \brief Base class for writing custom Value visitors
  *
@@ -45,13 +45,14 @@ namespace ponder {
  *
  * The template parameter T is the type returned by the visitor.
  *
- * To handle one of the possible types of the value, just write the corresponding 
- * \c operator() function. Here is the list of the mapping between Ponder types and their 
+ * To handle one of the possible types of the value, just write the corresponding
+ * \c operator() function. Here is the list of the mapping between Ponder types and their
  * corresponding C++ types:
  *
  * \li ponder::ValueKind::None --> ponder::NoType
  * \li ponder::ValueKind::Boolean --> bool
  * \li ponder::ValueKind::Integer --> long
+ * \li ponder::ValueKind::LongInteger --> long long
  * \li ponder::ValueKind::Real --> double
  * \li ponder::ValueKind::String --> ponder::String
  * \li ponder::ValueKind::Enum --> ponder::EnumObject
@@ -65,33 +66,38 @@ namespace ponder {
  *     {
  *         return new BooleanEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(long value)
  *     {
  *         return new IntegerEditor(value);
  *     }
- * 
+ *
+ *     PropertyEditor* operator()(long long value)
+ *     {
+ *         return new IntegerEditor(value);
+ *     }
+ *
  *     PropertyEditor* operator()(double value)
  *     {
  *         return new RealEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(IdRef value)
  *     {
  *         return new StringEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(const ponder::EnumObject& value)
  *     {
  *         return new EnumEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(const ponder::UserObject& value)
  *     {
  *         return new UserEditor(value);
  *     }
  * };
- * 
+ *
  * ponder::Value value(5.4);
  * PropertyEditor* editor = value.visit(EditorFactory());
  * \endcode

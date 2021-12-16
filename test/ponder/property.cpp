@@ -63,7 +63,9 @@ namespace PropertyTest
         MyClass()
         : b(false)
         , i(0)
+        , ll(9999999999999)
         , f(0.f)
+        , d(0.)
         , e(Zero)
         , mt(11)
         {}
@@ -71,7 +73,9 @@ namespace PropertyTest
         // members
         bool b;
         int i;
+        long long ll;
         float f;
+        double d;
         std::string s;
         MyEnum e;
         MyType mt;
@@ -84,7 +88,9 @@ namespace PropertyTest
 
         MEMBER_ACCESSORS(bool,b)
         MEMBER_ACCESSORS(int,i)
+        MEMBER_ACCESSORS(long long,ll)
         MEMBER_ACCESSORS(float,f)
+        MEMBER_ACCESSORS(double,d)
         MEMBER_ACCESSORS(std::string,s)
         MEMBER_ACCESSORS(MyEnum,e)
         MEMBER_ACCESSORS(MyType, mt)
@@ -101,7 +107,9 @@ namespace PropertyTest
 
     FUNCTION_ACCESSORS(bool,b)
     FUNCTION_ACCESSORS(int,i)
+    FUNCTION_ACCESSORS(long long,ll)
     FUNCTION_ACCESSORS(float,f)
+    FUNCTION_ACCESSORS(double,d)
     FUNCTION_ACCESSORS(std::string,s)
     FUNCTION_ACCESSORS(MyEnum,e)
     FUNCTION_ACCESSORS(MyType, mt)
@@ -132,7 +140,9 @@ namespace PropertyTest
         ponder::Class::declare<MyClass>("PropertyTest::MyClass")
             PROPERTY(bool,b)
             PROPERTY(int,i)
+            PROPERTY(long long,ll)
             PROPERTY(float,f)
+            PROPERTY(double,d)
             PROPERTY(std::string,s)
             PROPERTY(MyEnum,e)
             .property("getCT", &MyClass::getCT)
@@ -190,7 +200,9 @@ TEST_CASE("Classes can have properties")
 
         CHECK_PROP_TYPE(b, ponder::ValueKind::Boolean);
         CHECK_PROP_TYPE(i, ponder::ValueKind::Integer);
+        CHECK_PROP_TYPE(ll, ponder::ValueKind::LongInteger);
         CHECK_PROP_TYPE(f, ponder::ValueKind::Real);
+        CHECK_PROP_TYPE(d, ponder::ValueKind::Real);
         CHECK_PROP_TYPE(s, ponder::ValueKind::String);
         CHECK_PROP_TYPE(e, ponder::ValueKind::Enum);
     }
@@ -212,7 +224,9 @@ TEST_CASE("Classes can have properties")
 
         CHECK_PROP_READABLE(b)
         CHECK_PROP_READABLE(i)
+        CHECK_PROP_READABLE(ll)
         CHECK_PROP_READABLE(f)
+        CHECK_PROP_READABLE(d)
         CHECK_PROP_READABLE(s)
         CHECK_PROP_READABLE(e)
     }
@@ -233,7 +247,9 @@ TEST_CASE("Classes can have properties")
 
         CHECK_PROP_WRITABLE(b)
         CHECK_PROP_WRITABLE(i)
+        CHECK_PROP_WRITABLE(ll)
         CHECK_PROP_WRITABLE(f)
+        CHECK_PROP_WRITABLE(d)
         CHECK_PROP_WRITABLE(s)
         CHECK_PROP_WRITABLE(e)
     }
@@ -257,13 +273,17 @@ TEST_CASE("Classes can have properties")
 
         c.b = true;
         c.i = 77;
+        c.ll = 77777777777;
         c.f = 34.5f;
+        c.d = 34.5;
         c.s = "Woo!";
         c.e = One;
 
         CHECK_PROP_GET(bool,b)
         CHECK_PROP_GET(int,i)
+        CHECK_PROP_GET(long long,ll)
         CHECK_PROP_GET(float,f)
+        CHECK_PROP_GET(double,d)
         CHECK_PROP_GET(std::string,s)
         CHECK_PROP_GET(MyEnum,e)
 
@@ -300,7 +320,9 @@ TEST_CASE("Classes can have properties")
 
         CHECK_PROP_SET(b,true)
         CHECK_PROP_SET(i,789)
+        CHECK_PROP_SET(ll,789000000)
         CHECK_PROP_SET(f,345.75f)
+        CHECK_PROP_SET(d,345.75)
         CHECK_PROP_SET(s,std::string("The Reverend Black Grape"))
         CHECK_PROP_SET(e,Two)
     }

@@ -261,7 +261,7 @@ public:
 private:
 
     using Variant = std::variant<
-        NoType, bool, long, double, String,
+        NoType, bool, long, long long, double, String,
         EnumObject, UserObject, detail::ValueRef
     >;
 

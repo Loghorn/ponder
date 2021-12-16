@@ -80,6 +80,9 @@ public:
             case ValueKind::Integer:
                 m_archive.Int(value.to<long>());
                 break;
+            case ValueKind::LongInteger:
+                m_archive.Int64(value.to<long long>());
+                break;
             case ValueKind::Real:
                 m_archive.Double(value.to<double>());
                 break;

@@ -71,6 +71,7 @@ enum class ValueKind
     None,       ///< No type has been defined yet
     Boolean,    ///< Boolean type (`bool`)
     Integer,    ///< Integer types (`unsigned`,`signed`, `char`, `short`, `int`, `long`)
+    LongInteger,///< Long Integer types (`long long`)
     Real,       ///< Real types (`float`, `double`)
     String,     ///< String types (`char*`, `ponder::String`)
     Enum,       ///< Enumerated types

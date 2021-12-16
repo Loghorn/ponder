@@ -46,13 +46,14 @@ namespace SerialiseTest
     class Simple
     {
     public:
-        Simple() : m_i(0), m_f(0.f), m_b(true) {}
+        Simple() : m_i(0), m_f(0.f), m_b(true), m_ll(9999999999LL) {}
 
         Simple(int i, std::string s, float f, bool b)
-        :   m_i(i)
-        ,   m_s(std::move(s))
-        ,   m_f(f)
-        ,   m_b(b)
+        : m_i(i)
+        , m_s(std::move(s))
+        , m_f(f)
+        , m_b(b)
+        , m_ll(9999999999LL)
         {}
 
         [[nodiscard]] float getF() const { return m_f; }
@@ -62,6 +63,7 @@ namespace SerialiseTest
         std::string m_s;
         std::vector<int> m_v;
         bool m_b;
+        long long m_ll;
 
     private:
         float m_f;
@@ -85,6 +87,7 @@ namespace SerialiseTest
             .property("string", &Simple::m_s)
             .property("vector", &Simple::m_v)
             .property("bool", &Simple::m_b)
+            .property("longlong", &Simple::m_ll)
             ;
 
         ponder::Class::declare<Ref>()

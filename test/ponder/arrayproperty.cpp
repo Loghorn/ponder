@@ -62,6 +62,10 @@ namespace ArrayPropertyTest
             ints[1] = 10;
             ints[2] = 100;
 
+            longints[0] = -1000000000;
+            longints[1] = 1000000000;
+            longints[2] = 10000000000;
+
             strings.emplace_back("string 0");
             strings.emplace_back("string 1");
             strings.emplace_back("string 2");
@@ -76,6 +80,7 @@ namespace ArrayPropertyTest
 
         bool bools[2];
         std::array<int, 3> ints;
+        std::array<long long, 3> longints;
         std::vector<ponder::String> strings;
         std::list<MyType> objects;
         std::vector<std::shared_ptr<MyType>> smartptrs;
@@ -88,6 +93,7 @@ namespace ArrayPropertyTest
         ponder::Class::declare<MyClass>("ArrayPropertyTest::MyClass")
             .property("bools", &MyClass::bools)
             .property("ints", &MyClass::ints)
+            .property("longints", &MyClass::longints)
             .property("strings", &MyClass::strings)
             .property("objects", &MyClass::objects)
             //.property("smartptrs", &MyClass::smartptrs)
@@ -108,12 +114,14 @@ struct ArrayPropertyFixture
         const ponder::Class& metaclass = ponder::classByType<MyClass>();
         bools   = &static_cast<const ponder::ArrayProperty&>(metaclass.property("bools"));
         ints    = &static_cast<const ponder::ArrayProperty&>(metaclass.property("ints"));
+        longints= &static_cast<const ponder::ArrayProperty&>(metaclass.property("longints"));
         strings = &static_cast<const ponder::ArrayProperty&>(metaclass.property("strings"));
         objects = &static_cast<const ponder::ArrayProperty&>(metaclass.property("objects"));
     }
 
     const ponder::ArrayProperty* bools;
     const ponder::ArrayProperty* ints;
+    const ponder::ArrayProperty* longints;
     const ponder::ArrayProperty* strings;
     const ponder::ArrayProperty* objects;
     MyClass object;
@@ -127,6 +135,7 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Array property can be inspected")
 {
     REQUIRE(bools != nullptr);
     REQUIRE(ints != nullptr);
+    REQUIRE(longints != nullptr);
     REQUIRE(strings != nullptr);
     REQUIRE(objects != nullptr);
 
@@ -134,6 +143,7 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Array property can be inspected")
     {
         REQUIRE(bools->kind() == ponder::ValueKind::Array);
         REQUIRE(ints->kind() == ponder::ValueKind::Array);
+        REQUIRE(longints->kind() == ponder::ValueKind::Array);
         REQUIRE(strings->kind() == ponder::ValueKind::Array);
         REQUIRE(objects->kind() == ponder::ValueKind::Array);
     }
@@ -142,6 +152,7 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Array property can be inspected")
      {
          REQUIRE(bools->elementType() == ponder::ValueKind::Boolean);
          REQUIRE(ints->elementType() == ponder::ValueKind::Integer);
+         REQUIRE(longints->elementType() == ponder::ValueKind::LongInteger);
          REQUIRE(strings->elementType() == ponder::ValueKind::String);
          REQUIRE(objects->elementType() == ponder::ValueKind::User);
      }
@@ -150,6 +161,7 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Array property can be inspected")
      {
          REQUIRE(bools->dynamic() == false);
          REQUIRE(ints->dynamic() == false);
+         REQUIRE(longints->dynamic() == false);
          REQUIRE(strings->dynamic() == true);
          REQUIRE(objects->dynamic() == true);
      }
@@ -158,6 +170,7 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Array property can be inspected")
     {
         REQUIRE(bools->size(object) == std::extent<decltype(object.bools)>::value);
         REQUIRE(ints->size(object) == object.ints.size());
+        REQUIRE(longints->size(object) == object.longints.size());
         REQUIRE(strings->size(object) == object.strings.size());
         REQUIRE(objects->size(object) == object.objects.size());
     }
@@ -173,6 +186,11 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be read")
     REQUIRE(ints->get(object, 1) == ponder::Value(object.ints[1]));
     REQUIRE(ints->get(object, 2) == ponder::Value(object.ints[2]));
     REQUIRE_THROWS_AS(ints->get(object, 3), ponder::OutOfRange);
+
+    REQUIRE(longints->get(object, 0) == ponder::Value(object.longints[0]));
+    REQUIRE(longints->get(object, 1) == ponder::Value(object.longints[1]));
+    REQUIRE(longints->get(object, 2) == ponder::Value(object.longints[2]));
+    REQUIRE_THROWS_AS(longints->get(object, 3), ponder::OutOfRange);
 
     REQUIRE(strings->get(object, 0) == ponder::Value(object.strings[0]));
     REQUIRE(strings->get(object, 1) == ponder::Value(object.strings[1]));
@@ -198,24 +216,28 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be written to")
 {
     bools->set(&object, 1, true);
     ints->set(&object, 1, 20);
+    longints->set(&object, 1, 20000000);
     strings->set(&object, 1, "hello");
     objects->set(&object, 1, MyType(8));
 
     REQUIRE(object.bools[1] == true);
     REQUIRE(object.ints[1] == 20);
+    REQUIRE(object.longints[1] == 20000000);
     REQUIRE(object.strings[1] == "hello");
     REQUIRE(*std::next(object.objects.begin(), 1) == MyType(8));
 
     REQUIRE_THROWS_AS(bools->set(&object, 10, true),        ponder::OutOfRange);
     REQUIRE_THROWS_AS(ints->set(&object, 10, 1),            ponder::OutOfRange);
+    REQUIRE_THROWS_AS(longints->set(&object, 10, 1),        ponder::OutOfRange);
     REQUIRE_THROWS_AS(strings->set(&object, 10, "hi"),      ponder::OutOfRange);
     REQUIRE_THROWS_AS(objects->set(&object, 10, MyType(9)), ponder::OutOfRange);
 }
 
 TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be inserted into")
 {
-    REQUIRE_THROWS_AS(bools->insert(&object, 0, true), ponder::ForbiddenWrite);
-    REQUIRE_THROWS_AS(ints->insert(&object, 0, true),  ponder::ForbiddenWrite);
+    REQUIRE_THROWS_AS(bools->insert(&object, 0, true),    ponder::ForbiddenWrite);
+    REQUIRE_THROWS_AS(ints->insert(&object, 0, true),     ponder::ForbiddenWrite);
+    REQUIRE_THROWS_AS(longints->insert(&object, 0, true), ponder::ForbiddenWrite);
 
     const size_t stringsSize = object.strings.size();
     const size_t objectsSize = object.objects.size();
@@ -233,8 +255,9 @@ TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be inserted into")
 
 TEST_CASE_METHOD(ArrayPropertyFixture, "Property arrays can be removed from")
 {
-    REQUIRE_THROWS_AS(bools->remove(&object, 0), ponder::ForbiddenWrite);
-    REQUIRE_THROWS_AS(ints->remove(&object, 0),  ponder::ForbiddenWrite);
+    REQUIRE_THROWS_AS(bools->remove(&object, 0),    ponder::ForbiddenWrite);
+    REQUIRE_THROWS_AS(ints->remove(&object, 0),     ponder::ForbiddenWrite);
+    REQUIRE_THROWS_AS(longints->remove(&object, 0), ponder::ForbiddenWrite);
 
     const ponder::String string1 = object.strings[1];
     const MyType      object1 = *std::next(object.objects.begin(), 1);

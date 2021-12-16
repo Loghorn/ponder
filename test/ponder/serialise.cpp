@@ -46,12 +46,13 @@ namespace SerialiseTest
     class Simple
     {
     public:
-        Simple() : m_i(0), m_f(0.f) {}
+        Simple() : m_i(0), m_f(0.f), m_b(true) {}
 
-        Simple(int i, std::string s, float f)
+        Simple(int i, std::string s, float f, bool b)
         :   m_i(i)
         ,   m_s(std::move(s))
         ,   m_f(f)
+        ,   m_b(b)
         {}
 
         [[nodiscard]] float getF() const { return m_f; }
@@ -60,6 +61,7 @@ namespace SerialiseTest
         int m_i;
         std::string m_s;
         std::vector<int> m_v;
+        bool m_b;
 
     private:
         float m_f;
@@ -82,6 +84,7 @@ namespace SerialiseTest
             .property("float", &Simple::getF, &Simple::setF)
             .property("string", &Simple::m_s)
             .property("vector", &Simple::m_v)
+            .property("bool", &Simple::m_b)
             ;
 
         ponder::Class::declare<Ref>()
@@ -107,7 +110,7 @@ TEST_CASE("Can serialise using RapidXML")
         std::string storage;
 
         {
-            std::unique_ptr<Simple> s = std::make_unique<Simple>(78, std::string("yadda"), 99.25f);
+            std::unique_ptr<Simple> s = std::make_unique<Simple>(78, std::string("yadda"), 99.25f, true);
             REQUIRE(s != nullptr);
             s->m_v = {3,6,9};
 
@@ -129,7 +132,7 @@ TEST_CASE("Can serialise using RapidXML")
         }
 
         {
-            std::unique_ptr<Simple> s2 = std::make_unique<Simple>(0, "", 0.f);
+            std::unique_ptr<Simple> s2 = std::make_unique<Simple>(0, "", 0.f, true);
             REQUIRE(s2 != nullptr);
 
             rapidxml::xml_document<> doc;
@@ -213,7 +216,7 @@ TEST_CASE("Can serialise using RapidJSON")
         std::string storage;
 
         {
-            std::unique_ptr<Simple> s = std::make_unique<Simple>(78, std::string("yadda"), 99.25f);
+            std::unique_ptr<Simple> s = std::make_unique<Simple>(78, std::string("yadda"), 99.25f, true);
             REQUIRE(s != nullptr);
             s->m_v = { 3,6,9 };
 
@@ -235,7 +238,7 @@ TEST_CASE("Can serialise using RapidJSON")
         }
 
         {
-            std::unique_ptr<Simple> s2 = std::make_unique<Simple>(0, "", 0.f);
+            std::unique_ptr<Simple> s2 = std::make_unique<Simple>(0, "", 0.f, true);
             REQUIRE(s2 != nullptr);
 
             rapidjson::Document jdoc;

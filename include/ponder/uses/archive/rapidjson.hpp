@@ -68,11 +68,26 @@ public:
         m_archive.EndObject();
     }
 
-    void setProperty(Node node, const std::string& name, const std::string& text)
+    void setProperty(Node node, const std::string& name, const Value& value)
     {
         if (m_arrayLevel == 0)
             m_archive.Key(name);
-        m_archive.String(text);
+        switch (value.kind())
+        {
+            case ValueKind::Boolean:
+                m_archive.Bool(value.to<bool>());
+                break;
+            case ValueKind::Integer:
+                m_archive.Int(value.to<long>());
+                break;
+            case ValueKind::Real:
+                m_archive.Double(value.to<double>());
+                break;
+            case ValueKind::String:
+            case ValueKind::Enum:
+            case ValueKind::Reference:
+                m_archive.String(value.to<std::string>());
+        }
     }
 
     Node beginArray(Node parent, const std::string& name)
@@ -141,9 +156,33 @@ public:
         return ArrayIterator({ node.m_value, node.m_value.Begin() });
     }
 
-    string_view getValue(Node node)
+    Value getValue(Node node)
     {
-        return { node.m_value.GetString(), node.m_value.GetStringLength() };
+        switch (node.m_value.GetType())
+        {
+            case rapidjson::kFalseType:
+                return false;
+            case rapidjson::kTrueType:
+                return true;
+            case rapidjson::kStringType:
+                return std::string_view{ node.m_value.GetString(), node.m_value.GetStringLength() };
+            case rapidjson::kNumberType:
+                if (node.m_value.IsInt64())
+                    return node.m_value.GetInt64();
+                else if (node.m_value.IsUint64())
+                    return node.m_value.GetUint64();
+                else if (node.m_value.IsUint())
+                    return node.m_value.GetUint();
+                else if (node.m_value.IsInt())
+                    return node.m_value.GetInt();
+                else
+                    return node.m_value.GetDouble();
+            case rapidjson::kNullType:
+            case rapidjson::kObjectType:
+            case rapidjson::kArrayType:
+                break;
+        }
+        return {};
     }
 
     bool isValid(Node node)

@@ -70,7 +70,7 @@ void ArchiveWriter<ARCHIVE>::write(NodeType parent, const UserObject& object)
                 }
                 else
                 {
-                    m_archive.setProperty(arrayNode, itemName, arrayProperty.get(object, j).to<std::string>());
+                    m_archive.setProperty(arrayNode, itemName, arrayProperty.get(object, j));
                 }
             }
 
@@ -78,7 +78,7 @@ void ArchiveWriter<ARCHIVE>::write(NodeType parent, const UserObject& object)
         }
         else
         {
-            m_archive.setProperty(parent, property.name(), property.get(object).to<std::string>());
+            m_archive.setProperty(parent, property.name(), property.get(object));
         }
     }
 }

@@ -83,11 +83,12 @@ public:
 
     void endChild(Node /*parent*/, Node /*child*/) {}
 
-    void setProperty(Node parent, const std::string& name, const std::string& text)
+    void setProperty(Node parent, const std::string& name, const Value& value)
     {
         const char* nodeName = parent->document()->allocate_string(name.c_str(), name.length() + 1);
         Node child = parent->document()->allocate_node(rapidxml::node_element, nodeName);
         parent->append_node(child);
+        auto text = value.to<std::string>();
         child->value(child->document()->allocate_string(text.c_str(), text.length() + 1));
     }
 
@@ -109,7 +110,7 @@ public:
     {
         return ArrayIterator(node, string_view(name.c_str(), name.length()));
     }
-    
+
     string_view getValue(Node node)
     {
         return string_view(node->value(), node->value_size());

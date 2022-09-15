@@ -240,7 +240,8 @@ namespace detail
 #if defined(_MSC_VER) && _MSC_VER >= 1920
 
 #define PONDER_POLYMORPHIC() \
-    _Pragma("warning(push, 0)") \
+    _Pragma("warning(push)") \
+    _Pragma("warning(disable : 26433)") \
     public: \
         virtual ponder::TypeId ponderClassId() const {return ponder::detail::staticTypeId(*this);} /* NOLINT */ \
     private:\

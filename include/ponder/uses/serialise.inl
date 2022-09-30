@@ -66,7 +66,13 @@ void ArchiveWriter<ARCHIVE>::write(NodeType parent, const UserObject& object)
             {
                 if (arrayProperty.elementType() == ValueKind::User)
                 {
-                    write(arrayNode, arrayProperty.get(object, j).to<UserObject>());
+                    const UserObject& arrayItem = arrayProperty.get(object, j).to<UserObject>();
+
+                    NodeType child = m_archive.beginChild(arrayNode, itemName);
+
+                    write(child, arrayItem);
+
+                    m_archive.endChild(arrayNode, child);
                 }
                 else
                 {

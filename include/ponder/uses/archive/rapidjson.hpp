@@ -48,6 +48,7 @@ class RapidJsonArchiveWriter
 {
     ARCHIVE& m_archive;
     int m_arrayLevel{ 0 };
+    int m_childLevel{ 1 };
 
 public:
 
@@ -58,19 +59,22 @@ public:
 
     Node beginChild(Node parent, const std::string& name)
     {
-        m_archive.Key(name);
+        if (m_arrayLevel == 0)
+            m_archive.Key(name);
+        ++m_childLevel;
         m_archive.StartObject();
         return Node();
     }
 
     void endChild(Node parent, Node child)
     {
+        --m_childLevel;
         m_archive.EndObject();
     }
 
     void setProperty(Node node, const std::string& name, const Value& value)
     {
-        if (m_arrayLevel == 0)
+        if (m_childLevel > m_arrayLevel)
             m_archive.Key(name);
         switch (value.kind())
         {

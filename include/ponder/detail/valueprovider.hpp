@@ -49,19 +49,14 @@ struct ValueProviderImpl
 };
 
 /*
- * Specialization for user types: use metaclass to instantiate
- * so that we get an exception rather than a compile error
+ * Specialization for user types: we get a compile error
  * if the type has no default constructor
  */
 template <typename T>
 struct ValueProviderImpl<T, ValueKind::User>
 {
-    ValueProviderImpl()
-        :   m_value(nullptr) //classByType<T>().construct(Args::empty).template get<T*>()) // XXXX
-    {}
-    //~ValueProviderImpl() {} // {classByType<T>().destroy(m_value);}
-    T& operator()() {return *m_value;}
-    T* m_value;
+    T& operator()() {return m_value;}
+    T m_value;
 };
 
 /*

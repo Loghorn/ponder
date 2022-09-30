@@ -79,9 +79,20 @@ namespace SerialiseTest
         Simple *m_ref;
     };
 
+    struct Complex
+    {
+        std::vector<Simple> m_v;
+    };
+
+    struct SuperComplex
+    {
+        std::vector<Complex> m_v;
+    };
+
     static void declare()
     {
         ponder::Class::declare<Simple>()
+            .constructor()
             .property("int", &Simple::m_i)
             .property("float", &Simple::getF, &Simple::setF)
             .property("string", &Simple::m_s)
@@ -94,11 +105,21 @@ namespace SerialiseTest
             .property("instance", &Ref::m_instance)
 //            .property("ref", &Ref::m_ref)
             ;
+
+        ponder::Class::declare<Complex>()
+            .property("vect", &Complex::m_v)
+            ;
+
+        ponder::Class::declare<SuperComplex>()
+            .property("complex_vector", &SuperComplex::m_v)
+            ;
     }
 }
 
 PONDER_AUTO_TYPE(SerialiseTest::Simple, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Ref, &SerialiseTest::declare)
+PONDER_AUTO_TYPE(SerialiseTest::Complex, &SerialiseTest::declare)
+PONDER_AUTO_TYPE(SerialiseTest::SuperComplex, &SerialiseTest::declare)
 
 using namespace SerialiseTest;
 
@@ -207,6 +228,48 @@ TEST_CASE("Can serialise using RapidXML")
             CHECK(r->m_instance.m_i == 89);
             CHECK(r->m_instance.getF() == 0.75f);
             CHECK(r->m_instance.m_s == std::string("stringy"));
+        }
+    }
+
+    SECTION("Complex values")
+    {
+        std::string storage;
+
+        {
+            Complex c;
+            c.m_v.emplace_back(78, std::string("yadda"), 99.25f, true);
+            c.m_v.emplace_back(11, std::string("wooby"), 66.75f, false);
+
+            rapidxml::xml_document<> doc;
+            auto rootNode = doc.allocate_node(rapidxml::node_element, "complex");
+            REQUIRE(rootNode != nullptr);
+            doc.append_node(rootNode);
+
+            ponder::archive::RapidXmlArchive<> archive;
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(c));
+
+            std::cout << doc;
+
+            std::ostringstream ostrm;
+            ostrm << doc;
+            storage = ostrm.str();
+            doc.clear();
+        }
+
+        {
+            Complex c2;
+
+            rapidxml::xml_document<> doc;
+            doc.parse<rapidxml::parse_non_destructive>(storage.data());
+            auto rootNode = doc.first_node();
+            REQUIRE(rootNode != nullptr);
+
+            ponder::archive::RapidXmlArchive<> archive;
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(c2));
+
+            CHECK(c2.m_v.size() == 2);
         }
     }
 }
@@ -320,7 +383,100 @@ TEST_CASE("Can serialise using RapidJSON")
             CHECK(r->m_instance.m_s == std::string("stringy"));
         }
     }
+
+    SECTION("Complex values")
+    {
+        std::string storage;
+
+        {
+            Complex c;
+            c.m_v.emplace_back(78, std::string("yadda"), 99.25f, true);
+            c.m_v.emplace_back(11, std::string("wooby"), 66.75f, false);
+            c.m_v[0].m_v = {1,2,3};
+            c.m_v[1].m_v = {4,5,6,7,8};
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer jwriter(sb);
+            jwriter.StartObject();
+
+            using Archive = ponder::archive::RapidJsonArchiveWriter<rapidjson::Writer<rapidjson::StringBuffer>>;
+            Archive archive(jwriter);
+            Archive::Node rootNode{};
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(c));
+
+            jwriter.EndObject();
+
+            std::cout << sb.GetString() << std::endl;
+
+            storage = sb.GetString();
+        }
+
+        {
+            Complex c2;
+
+            rapidjson::Document jdoc;
+            REQUIRE(!jdoc.Parse(storage.data()).HasParseError());
+
+            using Archive = ponder::archive::RapidJsonArchiveReader;
+            Archive archive(jdoc);
+            Archive::Node rootNode{ jdoc };
+            REQUIRE(archive.isValid(rootNode));
+
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(c2));
+
+            CHECK(c2.m_v.size() == 2);
+        }
+    }
+
+    SECTION("SuperComplex values")
+    {
+        std::string storage;
+
+        {
+            SuperComplex sc;
+
+            Complex c;
+            c.m_v.emplace_back(78, std::string("yadda"), 99.25f, true);
+            c.m_v.emplace_back(11, std::string("wooby"), 66.75f, false);
+            c.m_v[0].m_v = {1,2,3};
+            c.m_v[1].m_v = {4,5,6,7,8};
+
+            sc.m_v.push_back(c);
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer jwriter(sb);
+            jwriter.StartObject();
+
+            using Archive = ponder::archive::RapidJsonArchiveWriter<rapidjson::Writer<rapidjson::StringBuffer>>;
+            Archive archive(jwriter);
+            Archive::Node rootNode{};
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(sc));
+
+            jwriter.EndObject();
+
+            std::cout << sb.GetString() << std::endl;
+
+            storage = sb.GetString();
+        }
+
+        {
+            SuperComplex sc2;
+
+            rapidjson::Document jdoc;
+            REQUIRE(!jdoc.Parse(storage.data()).HasParseError());
+
+            using Archive = ponder::archive::RapidJsonArchiveReader;
+            Archive archive(jdoc);
+            Archive::Node rootNode{ jdoc };
+            REQUIRE(archive.isValid(rootNode));
+
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(sc2));
+
+            CHECK(sc2.m_v.size() == 1);
+        }
+    }
 }
-
-
-

@@ -47,8 +47,8 @@ template <typename ARCHIVE>
 class RapidJsonArchiveWriter
 {
     ARCHIVE& m_archive;
-    int m_arrayLevel{ 0 };
-    int m_childLevel{ 1 };
+    unsigned int m_arrayLevel{ 0 };
+    unsigned int m_childLevel{ 1 };
 
 public:
 
@@ -59,7 +59,7 @@ public:
 
     Node beginChild(Node parent, const std::string& name)
     {
-        if (m_arrayLevel == 0)
+        if (m_arrayLevel < m_childLevel)
             m_archive.Key(name);
         ++m_childLevel;
         m_archive.StartObject();

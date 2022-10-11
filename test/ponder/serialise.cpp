@@ -89,6 +89,36 @@ namespace SerialiseTest
         std::vector<Complex> m_v;
     };
 
+    template <typename T>
+    struct Param
+    {
+        T value;
+    };
+
+    using Param_i = Param<int>;
+    using Param_d = Param<double>;
+
+    enum class ParamType
+    {
+        i,
+        d,
+        a,
+    };
+
+    struct Params
+    {
+        ParamType type;
+        Param_i value_i;
+        Param_d value_d;
+        std::vector<int> value_a;
+    };
+
+    struct TestA
+    {
+        std::string name;
+        std::vector<Params> params;
+    };
+
     static void declare()
     {
         ponder::Class::declare<Simple>()
@@ -113,6 +143,32 @@ namespace SerialiseTest
         ponder::Class::declare<SuperComplex>()
             .property("complex_vector", &SuperComplex::m_v)
             ;
+
+        ponder::Class::declare<Param_i>()
+            .property("value", &Param_i::value)
+            ;
+
+        ponder::Class::declare<Param_d>()
+            .property("value", &Param_d::value)
+            ;
+
+        ponder::Enum::declare<ParamType>()
+            .value("i",  ParamType::i)
+            .value("d",  ParamType::d)
+            .value("a",  ParamType::a)
+            ;
+
+        ponder::Class::declare<Params>()
+            .property("type", &Params::type)
+            .property("i", &Params::value_i)
+            .property("d", &Params::value_d)
+            .property("a", &Params::value_a)
+            ;
+
+        ponder::Class::declare<TestA>()
+            .property("name", &TestA::name)
+            .property("params", &TestA::params)
+            ;
     }
 }
 
@@ -120,6 +176,11 @@ PONDER_AUTO_TYPE(SerialiseTest::Simple, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Ref, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Complex, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::SuperComplex, &SerialiseTest::declare)
+PONDER_AUTO_TYPE(SerialiseTest::Param_i, &SerialiseTest::declare)
+PONDER_AUTO_TYPE(SerialiseTest::Param_d, &SerialiseTest::declare)
+PONDER_AUTO_TYPE(SerialiseTest::ParamType, &SerialiseTest::declare)
+PONDER_AUTO_TYPE(SerialiseTest::Params, &SerialiseTest::declare)
+PONDER_AUTO_TYPE(SerialiseTest::TestA, &SerialiseTest::declare)
 
 using namespace SerialiseTest;
 
@@ -270,6 +331,100 @@ TEST_CASE("Can serialise using RapidXML")
             reader.read(rootNode, ponder::UserObject::makeRef(c2));
 
             CHECK(c2.m_v.size() == 2);
+        }
+    }
+
+    SECTION("SuperComplex values")
+    {
+        std::string storage;
+
+        {
+            SuperComplex sc;
+
+            Complex c;
+            c.m_v.emplace_back(78, std::string("yadda"), 99.25f, true);
+            c.m_v.emplace_back(11, std::string("wooby"), 66.75f, false);
+            c.m_v[0].m_v = {1,2,3};
+            c.m_v[1].m_v = {4,5,6,7,8};
+
+            sc.m_v.push_back(c);
+
+            rapidxml::xml_document<> doc;
+            auto rootNode = doc.allocate_node(rapidxml::node_element, "superComplex");
+            REQUIRE(rootNode != nullptr);
+            doc.append_node(rootNode);
+
+            ponder::archive::RapidXmlArchive<> archive;
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(sc));
+
+            std::cout << doc;
+
+            std::ostringstream ostrm;
+            ostrm << doc;
+            storage = ostrm.str();
+            doc.clear();
+        }
+
+        {
+            SuperComplex sc2;
+
+            rapidxml::xml_document<> doc;
+            doc.parse<rapidxml::parse_non_destructive>(storage.data());
+            auto rootNode = doc.first_node();
+            REQUIRE(rootNode != nullptr);
+
+            ponder::archive::RapidXmlArchive<> archive;
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(sc2));
+
+            CHECK(sc2.m_v.size() == 1);
+        }
+    }
+
+    SECTION("TestA")
+    {
+        std::string storage;
+
+        {
+            TestA testA{ "testA" };
+            testA.params.emplace_back(Params{ParamType::d, 0, 2.3});
+            testA.params.emplace_back(Params{ParamType::i, 10, 0});
+            testA.params.emplace_back(Params{ParamType::a, 0, 0, {1,2,3}});
+
+            rapidxml::xml_document<> doc;
+            auto rootNode = doc.allocate_node(rapidxml::node_element, "testA");
+            REQUIRE(rootNode != nullptr);
+            doc.append_node(rootNode);
+
+            ponder::archive::RapidXmlArchive<> archive;
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(testA));
+
+            std::cout << doc;
+
+            std::ostringstream ostrm;
+            ostrm << doc;
+            storage = ostrm.str();
+            doc.clear();
+        }
+
+        {
+            TestA testA;
+
+            rapidxml::xml_document<> doc;
+            doc.parse<rapidxml::parse_non_destructive>(storage.data());
+            auto rootNode = doc.first_node();
+            REQUIRE(rootNode != nullptr);
+
+            ponder::archive::RapidXmlArchive<> archive;
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(testA));
+
+            CHECK(testA.params.size() == 3);
+            CHECK(testA.params[0].type == ParamType::d);
+            CHECK(testA.params[1].type == ParamType::i);
+            CHECK(testA.params[2].type == ParamType::a);
         }
     }
 }
@@ -477,6 +632,54 @@ TEST_CASE("Can serialise using RapidJSON")
             reader.read(rootNode, ponder::UserObject::makeRef(sc2));
 
             CHECK(sc2.m_v.size() == 1);
+        }
+    }
+
+    SECTION("TestA")
+    {
+        std::string storage;
+
+        {
+            TestA testA{ "testA" };
+            testA.params.emplace_back(Params{ParamType::d, 0, 2.3});
+            testA.params.emplace_back(Params{ParamType::i, 10, 0});
+            testA.params.emplace_back(Params{ParamType::a, 0, 0, {1,2,3}});
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer jwriter(sb);
+            jwriter.StartObject();
+
+            using Archive = ponder::archive::RapidJsonArchiveWriter<rapidjson::Writer<rapidjson::StringBuffer>>;
+            Archive archive(jwriter);
+            Archive::Node rootNode{};
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(testA));
+
+            jwriter.EndObject();
+
+            std::cout << sb.GetString() << std::endl;
+
+            storage = sb.GetString();
+        }
+
+        {
+            TestA testA;
+
+            rapidjson::Document jdoc;
+            REQUIRE(!jdoc.Parse(storage.data()).HasParseError());
+
+            using Archive = ponder::archive::RapidJsonArchiveReader;
+            Archive archive(jdoc);
+            Archive::Node rootNode{ jdoc };
+            REQUIRE(archive.isValid(rootNode));
+
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(testA));
+
+            CHECK(testA.params.size() == 3);
+            CHECK(testA.params[0].type == ParamType::d);
+            CHECK(testA.params[1].type == ParamType::i);
+            CHECK(testA.params[2].type == ParamType::a);
         }
     }
 }

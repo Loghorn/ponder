@@ -130,7 +130,9 @@ void ArchiveReader<ARCHIVE>::read(NodeType node, const UserObject& object)
 
                 if (arrayProperty.elementType() == ValueKind::User)
                 {
-                    read(it.getItem(), arrayProperty.get(object, index).to<UserObject>());
+                    auto arrayItem = arrayProperty.get(object, index).to<UserObject>();
+                    read(it.getItem(), arrayItem);
+                    arrayProperty.set(object, index, arrayItem);
                 }
                 else
                 {

@@ -45,6 +45,12 @@ inline const Class& classByName(IdRef name)
     return detail::ClassManager::instance().getByName(name);
 }
 
+inline const Class* classByNameSafe(IdRef name)
+{
+    // Note: detail::typeName() not used here so no automated registration.
+    return detail::ClassManager::instance().getByNameSafe(name);
+}
+
 template <typename T>
 const Class& classByObject(const T& object)
 {

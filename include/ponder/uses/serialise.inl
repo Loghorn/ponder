@@ -44,7 +44,13 @@ void ArchiveWriter<ARCHIVE>::write(NodeType parent, const UserObject& object)
         //                if ((exclude != Value::nothing) && property.hasTag(exclude))
         //                    continue;
 
-        if (property.kind() == ValueKind::User)
+        auto kind = property.kind();
+        if (kind == ValueKind::None)
+        {
+            kind = property.get(object).kind();
+        }
+
+        if (kind == ValueKind::User)
         {
             NodeType child = m_archive.beginChild(parent, property.name());
 
@@ -53,7 +59,7 @@ void ArchiveWriter<ARCHIVE>::write(NodeType parent, const UserObject& object)
 
             m_archive.endChild(parent, child);
         }
-        else if (property.kind() == ValueKind::Array)
+        else if (kind == ValueKind::Array)
         {
             auto const& arrayProperty = static_cast<const ArrayProperty&>(property);
 
@@ -111,6 +117,19 @@ void ArchiveReader<ARCHIVE>::read(NodeType node, const UserObject& object)
         {
             // The current property is a composed type: deserialize it recursively
             read(child, property.get(object).to<UserObject>());
+        }
+        else if (property.kind() == ValueKind::None)
+        {
+            auto v = property.get(object);
+            if (v.isCompatible<UserObject>())
+            {
+                read(child, v.to<UserObject>());
+            }
+            else
+            {
+                v = m_archive.getValue(child);
+            }
+            property.set(object, v);
         }
         else if (property.kind() == ValueKind::Array)
         {

@@ -34,6 +34,7 @@
 #include <ponder/uses/archive/rapidjson.hpp>
 #include <ponder/uses/serialise.hpp>
 #include <ponder/classbuilder.hpp>
+#include <ponder/variantmapper.hpp>
 
 #include <rapidxml/rapidxml_print.hpp>
 #include <rapidjson/stringbuffer.h>
@@ -111,6 +112,8 @@ namespace SerialiseTest
         Param_i value_i;
         Param_d value_d;
         std::vector<int> value_a;
+
+        std::variant<short, float, Param_i> value_v;
     };
 
     struct TestA
@@ -133,7 +136,7 @@ namespace SerialiseTest
 
         ponder::Class::declare<Ref>()
             .property("instance", &Ref::m_instance)
-//            .property("ref", &Ref::m_ref)
+            //            .property("ref", &Ref::m_ref)
             ;
 
         ponder::Class::declare<Complex>()
@@ -145,24 +148,26 @@ namespace SerialiseTest
             ;
 
         ponder::Class::declare<Param_i>()
+            .constructor()
             .property("value", &Param_i::value)
             ;
 
         ponder::Class::declare<Param_d>()
+            .constructor()
             .property("value", &Param_d::value)
             ;
 
         ponder::Enum::declare<ParamType>()
-            .value("i",  ParamType::i)
-            .value("d",  ParamType::d)
-            .value("a",  ParamType::a)
-            ;
+            .value("i", ParamType::i)
+            .value("d", ParamType::d)
+            .value("a", ParamType::a);
 
         ponder::Class::declare<Params>()
             .property("type", &Params::type)
             .property("i", &Params::value_i)
             .property("d", &Params::value_d)
             .property("a", &Params::value_a)
+            .property("VARIANT", &Params::value_v)
             ;
 
         ponder::Class::declare<TestA>()
@@ -179,6 +184,7 @@ PONDER_AUTO_TYPE(SerialiseTest::SuperComplex, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Param_i, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Param_d, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::ParamType, &SerialiseTest::declare)
+PONDER_VARIANT_TYPE(std::variant<short, float, SerialiseTest::Param_i>)
 PONDER_AUTO_TYPE(SerialiseTest::Params, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::TestA, &SerialiseTest::declare)
 
@@ -644,6 +650,9 @@ TEST_CASE("Can serialise using RapidJSON")
             testA.params.emplace_back(Params{ParamType::d, 0, 2.3});
             testA.params.emplace_back(Params{ParamType::i, 10, 0});
             testA.params.emplace_back(Params{ParamType::a, 0, 0, {1,2,3}});
+            testA.params.emplace_back(Params{ParamType::i, 0, 0, {}, (short)3});
+            testA.params.emplace_back(Params{ParamType::i, 0, 0, {}, 3.3f});
+            testA.params.emplace_back(Params{ParamType::i, 0, 0, {}, Param_i{42}});
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer jwriter(sb);
@@ -676,10 +685,15 @@ TEST_CASE("Can serialise using RapidJSON")
             ponder::archive::ArchiveReader reader(archive);
             reader.read(rootNode, ponder::UserObject::makeRef(testA));
 
-            CHECK(testA.params.size() == 3);
+            CHECK(testA.params.size() == 6);
             CHECK(testA.params[0].type == ParamType::d);
             CHECK(testA.params[1].type == ParamType::i);
             CHECK(testA.params[2].type == ParamType::a);
+            CHECK(testA.params[3].value_v.index() == 0);
+            CHECK(std::get<0>(testA.params[3].value_v) == 3);
+            CHECK(testA.params[4].value_v.index() == 1);
+            CHECK(std::get<1>(testA.params[4].value_v) == Approx(3.3));
+            CHECK(testA.params[5].value_v.index() == 2);
         }
     }
 }

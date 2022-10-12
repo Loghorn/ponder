@@ -77,7 +77,7 @@ enum class ValueKind
     Enum,       ///< Enumerated types
     Array,      ///< Array types (`T[]`, `std::vector`, `std::list`)
     Reference,  ///< Reference types (`T*`, `const T*`, `T&`, `const T&`)
-    User        ///< User-defined classes
+    User,       ///< User-defined classes
 };
 
 /**

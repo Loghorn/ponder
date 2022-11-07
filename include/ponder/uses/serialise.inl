@@ -116,7 +116,9 @@ void ArchiveReader<ARCHIVE>::read(NodeType node, const UserObject& object)
         if (property.kind() == ValueKind::User)
         {
             // The current property is a composed type: deserialize it recursively
-            read(child, property.get(object).to<UserObject>());
+            auto v = property.get(object);
+            read(child, v.to<UserObject>());
+            property.set(object, v);
         }
         else if (property.kind() == ValueKind::None)
         {

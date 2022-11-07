@@ -78,6 +78,15 @@ struct FunctionApplyToParams<std::tuple<void>, B>
     }
 };
 
+template <typename B>
+struct FunctionApplyToParams<Args, B>
+{
+    static typename B::ReturnType foreach()
+    {
+        return typename B::ReturnType {B::template apply<Args>()};
+    }
+};
+
 //--------------------------------------------------------------------------------------
 
 template <typename R, typename... P>
@@ -111,8 +120,7 @@ class FunctionImpl : public Function
     using FuncTraits = T;
     using FuncPolicies = std::tuple<P...>;
 
-    static constexpr size_t c_nParams =
-        std::tuple_size_v<typename FuncTraits::Details::ParamTypes>;
+    static constexpr size_t c_nParams = FuncTraits::Details::c_nParams;
 
     std::array<FunctionParamInfo, c_nParams> m_paramInfo;
 

@@ -155,6 +155,11 @@ namespace FunctionTest
             return a * b;
         }
 
+        static int staticFunc3(const ponder::Args& args)
+        {
+            return static_cast<int>(args.count());
+        }
+
         static NonCopyable& staticFuncRetRef()
         {
             static NonCopyable nc;
@@ -278,9 +283,12 @@ namespace FunctionTest
             // ***** non-class function *****
             .function("nonClassFunc1", &MyClass::staticFunc)
             .function("nonClassFunc2", &MyClass::staticFunc2)
+            .function("nonClassFunc3", &MyClass::staticFunc3)
 
             .function("nonCopyRef", &MyClass::staticFuncRetRef, ponder::policy::ReturnInternalRef())
             .function("nonCopyPtr", &MyClass::staticFuncRetPtr, ponder::policy::ReturnInternalRef())
+
+            .function("variadicLambdaFunc", [](const ponder::Args& args){ return args.count(); })
             ;
 
         ponder::Class::declare<DataHolder>()
@@ -341,8 +349,10 @@ struct FunctionTestFixture
     ,   fn_funcWrapper3(metaclass.function("funcWrapper3"))
     ,   fn_nonClassFunc1(metaclass.function("nonClassFunc1"))
     ,   fn_nonClassFunc2(metaclass.function("nonClassFunc2"))
+    ,   fn_nonClassFunc3(metaclass.function("nonClassFunc3"))
     ,   fn_nonCopyRef(metaclass.function("nonCopyRef"))
     ,   fn_nonCopyPtr(metaclass.function("nonCopyPtr"))
+    ,   fn_variadicLambdaFunc(metaclass.function("variadicLambdaFunc"))
     {}
 
     const ponder::Class &metaclass;
@@ -372,8 +382,10 @@ struct FunctionTestFixture
     const ponder::Function &fn_funcWrapper3;
     const ponder::Function &fn_nonClassFunc1;
     const ponder::Function &fn_nonClassFunc2;
+    const ponder::Function &fn_nonClassFunc3;
     const ponder::Function &fn_nonCopyRef;
     const ponder::Function &fn_nonCopyPtr;
+    const ponder::Function &fn_variadicLambdaFunc;
 };
 
 //-----------------------------------------------------------------------------
@@ -415,6 +427,8 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered function properties can be int
 
         IS_TRUE(fn_nonCopyRef.kind() == ponder::FunctionKind::Function);
         IS_TRUE(fn_nonCopyPtr.kind() == ponder::FunctionKind::Function);
+        
+        IS_TRUE(fn_variadicLambdaFunc.kind() == ponder::FunctionKind::Lambda);
     }
 
     SECTION("functions have a return type")
@@ -446,6 +460,8 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered function properties can be int
 
         REQUIRE(metaclass.function("nonCopyRef").returnType() == ponder::ValueKind::User);
         REQUIRE(metaclass.function("nonCopyPtr").returnType() == ponder::ValueKind::User);
+
+        REQUIRE(metaclass.function("variadicLambdaFunc").returnType() == ponder::ValueKind::LongInteger);
     }
 
     SECTION("functions have a number of parameters")
@@ -479,6 +495,8 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered function properties can be int
 
         REQUIRE(metaclass.function("nonCopyRef").paramCount() == 0);
         REQUIRE(metaclass.function("nonCopyPtr").paramCount() == 0);
+
+        REQUIRE(metaclass.function("variadicLambdaFunc").paramCount() == 1);
     }
 
     SECTION("function parameters have a type")
@@ -676,8 +694,14 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered functions can be called with t
         Value r2 = FunctionCaller(fn_nonClassFunc2).call(ponder::Args(2.5f, 3.0f));
         REQUIRE(r2.to<float>() == 7.5f);
 
+        Value r3 = FunctionCaller(fn_nonClassFunc3).call(ponder::Args(2.5f, 3.0f, "aaa", 12));
+        REQUIRE(r3.to<int>() == 4);
+
         Value ncr = FunctionCaller(fn_nonCopyRef).call();
         Value ncp = FunctionCaller(fn_nonCopyPtr).call();
+
+        Value r4 = FunctionCaller(fn_variadicLambdaFunc).call(ponder::Args(42, "42", 4.2));
+        IS_TRUE(r4.to<int>() == 3);
     }
 
     SECTION("Function call helpers can be used with ponder::Args")
@@ -723,8 +747,14 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered functions can be called with t
         Value r2 = callStatic(fn_nonClassFunc2, ponder::Args(2.5f, 3.0f));
         REQUIRE(r2.to<float>() == 7.5f);
 
+        Value r3 = callStatic(fn_nonClassFunc3, ponder::Args(2.5f, 3.0f));
+        REQUIRE(r3.to<int>() == 2);
+
         Value ncr = callStatic(fn_nonCopyRef);
         Value ncp = callStatic(fn_nonCopyPtr);
+
+        Value r4 = callStatic(fn_variadicLambdaFunc, ponder::Args(42, "42", 4.2));
+        IS_TRUE(r4.to<int>() == 3);
     }
 
     SECTION("Function call helpers can be used direct")
@@ -767,6 +797,9 @@ TEST_CASE_METHOD(FunctionTestFixture, "Registered functions can be called with t
 
         Value r2 = callStatic(fn_nonClassFunc2, 2.5f, 3.0f);
         REQUIRE(r2.to<float>() == 7.5f);
+
+        Value r3 = callStatic(fn_nonClassFunc3, 1, 2, 3, 4, 5, 6, 7);
+        REQUIRE(r3.to<int>() == 7);
 
         Value ncr = callStatic(fn_nonCopyRef);
         Value ncp = callStatic(fn_nonCopyPtr);

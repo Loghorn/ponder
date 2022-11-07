@@ -52,6 +52,7 @@ struct FunctionDetails<R(*)(A...)>
     using FuncType = ReturnType(*)(A...);
     using DispatchType = ReturnType(A...);
     using FunctionCallTypes = std::tuple<A...>;
+	static constexpr size_t c_nParams = sizeof...(A);
 };
 
 template <typename R, typename... A>
@@ -62,6 +63,7 @@ struct FunctionDetails<R(A...)>
     using FuncType = ReturnType(*)(A...);
     using DispatchType = ReturnType(A...);
     using FunctionCallTypes = std::tuple<A...>;
+	static constexpr size_t c_nParams = sizeof...(A);
 };
 
 template <typename R, typename... A>
@@ -72,6 +74,7 @@ struct FunctionDetails<R(*)(A...) noexcept>
     using FuncType = ReturnType(*)(A...);
     using DispatchType = ReturnType(A...);
     using FunctionCallTypes = std::tuple<A...>;
+	static constexpr size_t c_nParams = sizeof...(A);
 };
 
 template <typename R, typename... A>
@@ -82,6 +85,95 @@ struct FunctionDetails<R(A...) noexcept>
     using FuncType = ReturnType(*)(A...);
     using DispatchType = ReturnType(A...);
     using FunctionCallTypes = std::tuple<A...>;
+	static constexpr size_t c_nParams = sizeof...(A);
+};
+
+template <typename R>
+struct FunctionDetails<R(*)(Args)>
+{
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(Args);
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename R>
+struct FunctionDetails<R(Args)>
+{
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(Args);
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename R>
+struct FunctionDetails<R(*)(Args) noexcept>
+{
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(Args);
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename R>
+struct FunctionDetails<R(Args) noexcept>
+{
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(Args);
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename R>
+struct FunctionDetails<R(*)(const Args&)>
+{
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(Args);
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename R>
+struct FunctionDetails<R(const Args&)>
+{
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(Args);
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename R>
+struct FunctionDetails<R(*)(const Args&) noexcept>
+{
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(Args);
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename R>
+struct FunctionDetails<R(const Args&) noexcept>
+{
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using FuncType = ReturnType(*)(Args);
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
 };
 
 
@@ -100,6 +192,7 @@ struct MethodDetails<R(C::*)(A...)>
     using DispatchType = ReturnType(ClassType&, A...);
     using FunctionCallTypes = std::tuple<ClassType&, A...>;
     static constexpr bool isConst = false;
+	static constexpr size_t c_nParams = sizeof...(A);
 };
 
 // Const method.
@@ -113,6 +206,7 @@ struct MethodDetails<R(C::*)(A...) const>
     using FuncType = ReturnType(ClassType::*)(A...) const;
     using FunctionCallTypes = std::tuple<const ClassType&, A...>;
     static constexpr bool isConst = true;
+	static constexpr size_t c_nParams = sizeof...(A);
 };
 
 // Non-const noexcept method.
@@ -126,6 +220,7 @@ struct MethodDetails<R(C::*)(A...) noexcept>
     using DispatchType = ReturnType(ClassType&, A...);
     using FunctionCallTypes = std::tuple<ClassType&, A...>;
     static constexpr bool isConst = false;
+	static constexpr size_t c_nParams = sizeof...(A);
 };
 
 // Const noexcept method.
@@ -139,6 +234,7 @@ struct MethodDetails<R(C::*)(A...) const noexcept>
     using FuncType = ReturnType(ClassType::*)(A...) const;
     using FunctionCallTypes = std::tuple<const ClassType&, A...>;
     static constexpr bool isConst = true;
+	static constexpr size_t c_nParams = sizeof...(A);
 };
 
 
@@ -172,6 +268,29 @@ struct CallableDetails<R(L::*)(A...) const>
     using ReturnType = R;
     using DispatchType = ReturnType(A...);
     using FunctionCallTypes = std::tuple<A...>;
+	static constexpr size_t c_nParams = sizeof...(A);
+};
+
+template <typename L, typename R>
+struct CallableDetails<R(L::*)(Args) const>
+{
+    using LambdaClassType = L;    // N.B. Lambda class
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename L, typename R>
+struct CallableDetails<R(L::*)(const Args&) const>
+{
+    using LambdaClassType = L;    // N.B. Lambda class
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
 };
 
 /*

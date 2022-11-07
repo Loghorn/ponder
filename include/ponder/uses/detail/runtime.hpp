@@ -192,6 +192,13 @@ public:
         using CallReturner = typename ChooseCallReturner<FPolicies, R>::type;
         return CallReturner::value(func(ConvertArgs<A>::convert(args, Is)...));
     }
+
+    template<typename F>
+    static Value call(F func, const Args& args)
+    {
+        using CallReturner = typename ChooseCallReturner<FPolicies, R>::type;
+        return CallReturner::value(func(args));
+    }
 };
 
 // Specialization of CallHelper for functions returning void
@@ -204,6 +211,13 @@ public:
     static Value call(F func, const Args& args, std::index_sequence<Is...>)
     {
         func(ConvertArgs<A>::convert(args,Is)...);
+        return Value::nothing;
+    }
+
+    template<typename F>
+    static Value call(F func, const Args& args)
+    {
+        func(args);
         return Value::nothing;
     }
 };
@@ -223,6 +237,18 @@ template <typename R, typename... A> struct FunctionWrapper<R, std::tuple<A...>>
         using ArgEnumerator = std::make_index_sequence<sizeof...(A)>;
         return CallHelper<R, FTraits, FPolicies>::template
             call<F, A...>(func, args, ArgEnumerator());
+    }
+};
+
+template <typename R> struct FunctionWrapper<R, Args>
+{
+    using Type = std::function<R(Args)>;
+
+    template <typename F, typename FTraits, typename FPolicies>
+    static Value call(F func, const Args& args)
+    {
+        return CallHelper<R, FTraits, FPolicies>::template
+            call<F>(func, args);
     }
 };
 

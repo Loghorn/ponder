@@ -217,7 +217,9 @@ public:
      * \throw BadArgument one of the arguments can't be converted to the requested type
      */
     template <typename... A>
-    Value call(const UserObject &obj, A&&... args);
+    Value call(const UserObject &obj, A&&... vargs);
+
+    inline Value call(const UserObject &obj, Args args);
 
 private:
 
@@ -266,7 +268,9 @@ public:
      * \throw BadArgument one of the arguments can't be converted to the requested type
      */
     template <typename... A>
-    Value call(A... args);
+    Value call(A... vargs);
+
+    inline Value call(const Args &args);
 
 private:
 
@@ -337,6 +341,11 @@ static Value call(const Function &fn, const UserObject &obj, A&&... args)
                                  detail::ArgsBuilder<A...>::makeArgs(std::forward<A>(args)...));
 }
 
+static Value call(const Function &fn, const UserObject &obj, const Args &args)
+{
+    return ObjectCaller(fn).call(obj, args);
+}
+
 /**
  * \brief Call a non-member function
  *
@@ -352,6 +361,11 @@ template <typename... A>
 static Value callStatic(const Function &fn, A&&... args)
 {
     return FunctionCaller(fn).call(detail::ArgsBuilder<A...>::makeArgs(std::forward<A>(args)...));
+}
+
+static Value callStatic(const Function &fn, Args &args)
+{
+    return FunctionCaller(fn).call(args);
 }
 
 } // namespace runtime
@@ -387,11 +401,34 @@ Value ObjectCaller::call(const UserObject &obj, A&&... vargs)
     return m_caller->execute(args);
 }
 
+Value ObjectCaller::call(const UserObject &obj, Args args)
+{
+    if (obj.pointer() == nullptr)
+        PONDER_ERROR(NullObject(&obj.getClass()));
+
+    // Check the number of arguments
+    if (args.count() < m_func.paramCount())
+        PONDER_ERROR(NotEnoughArguments(m_func.name(), args.count(), m_func.paramCount()));
+
+    args.insert(0, obj);
+
+    return m_caller->execute(args);
+}
+
 template <typename... A>
 Value FunctionCaller::call(A... vargs)
 {
     const Args args(detail::ArgsBuilder<A...>::makeArgs(vargs...));
 
+    // Check the number of arguments
+    if (args.count() < m_func.paramCount())
+        PONDER_ERROR(NotEnoughArguments(m_func.name(), args.count(), m_func.paramCount()));
+
+    return m_caller->execute(args);
+}
+
+Value FunctionCaller::call(const Args &args)
+{
     // Check the number of arguments
     if (args.count() < m_func.paramCount())
         PONDER_ERROR(NotEnoughArguments(m_func.name(), args.count(), m_func.paramCount()));

@@ -293,6 +293,39 @@ struct CallableDetails<R(L::*)(const Args&) const>
 	static constexpr size_t c_nParams = 1;
 };
 
+template <typename L, typename R, typename... A>
+struct CallableDetails<R(L::*)(A...) const noexcept>
+{
+    using LambdaClassType = L;    // N.B. Lambda class
+    using ParamTypes = std::tuple<A...>;
+    using ReturnType = R;
+    using DispatchType = ReturnType(A...);
+    using FunctionCallTypes = std::tuple<A...>;
+	static constexpr size_t c_nParams = sizeof...(A);
+};
+
+template <typename L, typename R>
+struct CallableDetails<R(L::*)(Args) const noexcept>
+{
+    using LambdaClassType = L;    // N.B. Lambda class
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
+template <typename L, typename R>
+struct CallableDetails<R(L::*)(const Args&) const noexcept>
+{
+    using LambdaClassType = L;    // N.B. Lambda class
+    using ParamTypes = Args;
+    using ReturnType = R;
+    using DispatchType = ReturnType(Args);
+    using FunctionCallTypes = Args;
+	static constexpr size_t c_nParams = 1;
+};
+
 /*
  * For functions, if they return an rvalue, we cannot return by reference.
  */

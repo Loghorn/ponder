@@ -289,6 +289,8 @@ namespace FunctionTest
             .function("nonCopyPtr", &MyClass::staticFuncRetPtr, ponder::policy::ReturnInternalRef())
 
             .function("variadicLambdaFunc", [](const ponder::Args& args){ return args.count(); })
+
+            .function("noexceptLambdaFunc", []() noexcept { return 0; })
             ;
 
         ponder::Class::declare<DataHolder>()

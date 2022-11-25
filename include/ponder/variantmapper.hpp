@@ -46,149 +46,32 @@
 namespace ponder_ext {
 namespace detail {
 
-    template <typename... Ts>
-    class VariantProperty : public ponder::SimpleProperty
+    struct VariantHolder
     {
-        template <typename T, typename... Rest>
-        static void variant_assign(std::variant<Ts...> &var, const ponder::UserObject &val)
-        {
-            const ponder::Class *targetClass = ponder::classByTypeSafe<T>();
-            if (!targetClass || val.getClass() != *targetClass)
-            {
-                if constexpr (sizeof...(Rest) > 0)
-                    variant_assign<Rest...>(var, val);
-            }
-            else
-            {
-                var = val.get<T>();
-            }
-        }
+        size_t index;
+        std::string typeName;
+        ponder::UserObject object;
+    };
 
-        template <typename Tval, typename T, typename... Rest>
-        static void variant_assign(std::variant<Ts...> &var, const ponder::Value &val)
-        {
-            if constexpr (!std::is_convertible_v<Tval, T>)
-            {
-                if constexpr (sizeof...(Rest) > 0)
-                    variant_assign<Tval, Rest...>(var, val);
-            }
-            else
-            {
-                var = val.to<T>();
-            }
-        }
-
+    template <typename... Ts>
+    class VariantIndexProperty : public ponder::SimpleProperty
+    {
     public:
-        VariantProperty(bool typeInfo)
-            : SimpleProperty(typeInfo ? "t" : "v", typeInfo ? ponder::ValueKind::String : ponder::ValueKind::None), m_typeInfo(typeInfo)
+        VariantIndexProperty(std::shared_ptr<VariantHolder> holder)
+            : SimpleProperty("i", ponder::ValueKind::LongInteger), m_holder(std::move(holder))
         {
         }
 
         ponder::Value getValue(const ponder::UserObject &object) const override
         {
-            if (m_holder != ponder::UserObject::nothing)
-            {
-                return m_holder;
-            }
-
             auto *v = object.get<std::variant<Ts...> *>();
-            ponder::Value value = std::visit(
-                [](auto &&val)
-                {
-                    return ponder::Value(val);
-                },
-                *v);
-
-            if (m_typeInfo)
-            {
-                switch (value.kind())
-                {
-                default:
-                case ponder::ValueKind::None:
-                    return "error";
-                case ponder::ValueKind::Boolean:
-                    return "bool";
-                case ponder::ValueKind::Integer:
-                    return "long";
-                case ponder::ValueKind::LongInteger:
-                    return "long long";
-                case ponder::ValueKind::Real:
-                    return "double";
-                case ponder::ValueKind::String:
-                    return "string";
-                case ponder::ValueKind::Enum:
-                    return "enum";
-                case ponder::ValueKind::User:
-                    return value.cref<ponder::UserObject>().getClass().name();
-                    break;
-                }
-            }
-            return value;
+            m_holder->index = v->index();
+            return m_holder->index;
         }
 
         void setValue(const ponder::UserObject &object, const ponder::Value &value) const override
         {
-            if (m_typeInfo)
-            {
-                auto type = value.to<std::string>();
-
-                auto mc = ponder::classByNameSafe(type);
-                if (mc)
-                {
-                    m_holder = ponder::runtime::create(*mc);
-                }
-                return;
-            }
-
-            auto *v = object.get<std::variant<Ts...> *>();
-            switch (value.kind())
-            {
-            default:
-            case ponder::ValueKind::None:
-                break;
-            case ponder::ValueKind::Boolean:
-                if constexpr (std::disjunction_v<std::is_same<bool, Ts>...>)
-                    *v = value.to<bool>();
-                else
-                    variant_assign<bool, Ts...>(*v, value);
-                break;
-            case ponder::ValueKind::Integer:
-                if constexpr (std::disjunction_v<std::is_same<long, Ts>...>)
-                    *v = value.to<long>();
-                else
-                    variant_assign<long, Ts...>(*v, value);
-                break;
-            case ponder::ValueKind::LongInteger:
-                if constexpr (std::disjunction_v<std::is_same<long long, Ts>...>)
-                    *v = value.to<long long>();
-                else
-                    variant_assign<long long, Ts...>(*v, value);
-                break;
-            case ponder::ValueKind::Real:
-                if constexpr (std::disjunction_v<std::is_same<double, Ts>...> || std::disjunction_v<std::is_same<long double, Ts>...>)
-                    *v = value.to<double>();
-                else if constexpr (std::disjunction_v<std::is_same<float, Ts>...>)
-                    *v = value.to<float>();
-                else
-                    variant_assign<double, Ts...>(*v, value);
-                break;
-            case ponder::ValueKind::String:
-                if constexpr (std::disjunction_v<std::is_same<std::string, Ts>...>)
-                    *v = value.to<std::string>();
-                else
-                    variant_assign<std::string, Ts...>(*v, value);
-                break;
-            case ponder::ValueKind::Enum:
-                if constexpr (std::disjunction_v<std::is_same<int, Ts>...>)
-                    *v = value.to<int>();
-                else
-                    variant_assign<int, Ts...>(*v, value);
-                break;
-            case ponder::ValueKind::User:
-                variant_assign<Ts...>(*v, value.to<ponder::UserObject>());
-                break;
-            }
-            m_holder = ponder::UserObject::nothing;
+            m_holder->index = static_cast<size_t>(value.to<long long>());
         }
 
         bool isReadable() const override
@@ -202,8 +85,193 @@ namespace detail {
         }
 
     private:
-        bool m_typeInfo;
-        static inline ponder::UserObject m_holder;
+        std::shared_ptr<VariantHolder> m_holder;
+    };
+
+    template <typename... Ts>
+    class VariantTypeProperty : public ponder::SimpleProperty
+    {
+    public:
+        VariantTypeProperty(std::shared_ptr<VariantHolder> holder)
+            : SimpleProperty("t", ponder::ValueKind::String), m_holder(std::move(holder))
+        {
+        }
+
+        ponder::Value getValue(const ponder::UserObject &object) const override
+        {
+            if (!m_holder->typeName.empty())
+                return m_holder->typeName;
+
+            auto *v = object.get<std::variant<Ts...> *>();
+            ponder::Value value = std::visit([](auto &&val) { return ponder::Value(val); }, *v);
+
+            switch (value.kind())
+            {
+            default:
+            case ponder::ValueKind::None: return "error";
+            case ponder::ValueKind::Boolean: return "bool";
+            case ponder::ValueKind::Integer: return "long";
+            case ponder::ValueKind::LongInteger: return "long long";
+            case ponder::ValueKind::Real: return "double";
+            case ponder::ValueKind::String: return "string";
+            case ponder::ValueKind::Enum: return "enum";
+            case ponder::ValueKind::User: return value.cref<ponder::UserObject>().getClass().name();
+            }
+
+            return value;
+        }
+
+        void setValue(const ponder::UserObject &object, const ponder::Value &value) const override
+        {
+            auto type = value.to<std::string>();
+            m_holder->typeName = type;
+
+            auto mc = ponder::classByNameSafe(type);
+            if (mc)
+            {
+                m_holder->object = ponder::runtime::create(*mc);
+            }
+            else
+            {
+                m_holder->object = ponder::UserObject::nothing;
+            }
+        }
+
+        bool isReadable() const override
+        {
+            return true;
+        }
+
+        bool isWritable() const override
+        {
+            return true;
+        }
+
+    private:
+        std::shared_ptr<VariantHolder> m_holder;
+    };
+
+    template <typename... Ts>
+    class VariantProperty : public ponder::SimpleProperty
+    {
+        struct expander
+        {
+            template<std::size_t I, std::size_t ...Is>
+            static inline std::variant<Ts...> expand_type(std::size_t index, std::index_sequence<I, Is...>)
+            {
+                if constexpr (sizeof...(Is) > 0)
+                    return index == I ? std::variant<Ts...>(std::in_place_index<I>) : expand_type(index, std::index_sequence<Is...>{});
+                else
+                    return std::variant<Ts...>(std::in_place_index<I>);
+            }
+        };
+
+        [[nodiscard]] static constexpr auto expand_type(std::size_t index)
+        {
+            return expander::expand_type(index, std::index_sequence_for<Ts...>{});
+        }
+
+        struct assigner
+        {
+            assigner(std::variant<Ts...>& v, std::size_t index) : v(v), index(index) {}
+
+            template<std::size_t I, std::size_t ...Is>
+            inline auto assign(std::index_sequence<I, Is...>, const ponder::Value &value) 
+            {
+                if constexpr(sizeof...(Is) > 0)
+                {
+                    if(index == I) 
+                        v.emplace<I>(value.to<std::variant_alternative_t<I, std::variant<Ts...>>>());
+                    else 
+                        assign(std::index_sequence<Is...>{}, value);
+                } 
+                else
+                    v.emplace<I>(value.to<std::variant_alternative_t<I, std::variant<Ts...>>>());
+            }
+
+            template<std::size_t I, std::size_t ...Is>
+            inline auto assign(std::index_sequence<I, Is...>, const ponder::UserObject &value) 
+            {
+                if constexpr(sizeof...(Is) > 0)
+                {
+                    if(index == I) 
+                        v.emplace<I>(value.get<std::variant_alternative_t<I, std::variant<Ts...>>>());
+                    else 
+                        assign(std::index_sequence<Is...>{}, value);
+                } 
+                else
+                    v.emplace<I>(value.get<std::variant_alternative_t<I, std::variant<Ts...>>>());
+            }
+        private:
+            std::variant<Ts...>& v;
+            std::size_t index;
+        };
+
+
+        static constexpr void assign_variant(std::variant<Ts...>& v, std::size_t index, const ponder::Value &value)
+        {
+            assigner{v, index}.assign(std::index_sequence_for<Ts...>{}, value);
+        }
+
+        static constexpr void assign_variant(std::variant<Ts...>& v, std::size_t index, const ponder::UserObject &value)
+        {
+            assigner{v, index}.assign(std::index_sequence_for<Ts...>{}, value);
+        }
+
+    public:
+        VariantProperty(std::shared_ptr<VariantHolder> holder)
+            : SimpleProperty("v", ponder::ValueKind::None), m_holder(std::move(holder))
+        {
+        }
+
+        ponder::Value getValue(const ponder::UserObject &object) const override
+        {
+            if (m_holder->object != ponder::UserObject::nothing)
+            {
+                return m_holder->object;
+            }
+
+            auto *v = object.get<std::variant<Ts...> *>();
+            if (v->index() == m_holder->index)
+                return std::visit([](auto &&val) { return ponder::Value(val); }, *v);
+            else
+                return std::visit([](auto &&val) { return ponder::Value(val); }, expand_type(m_holder->index));
+        }
+
+        void setValue(const ponder::UserObject &object, const ponder::Value &value) const override
+        {
+            auto *v = object.get<std::variant<Ts...> *>();
+            switch (value.kind())
+            {
+            default:
+            case ponder::ValueKind::None:
+                break;
+            case ponder::ValueKind::Boolean:
+            case ponder::ValueKind::Integer:
+            case ponder::ValueKind::LongInteger:
+            case ponder::ValueKind::Real:
+            case ponder::ValueKind::String:
+            case ponder::ValueKind::Enum:
+                assign_variant(*v, m_holder->index, value);
+                break;
+            case ponder::ValueKind::User:
+                assign_variant(*v, m_holder->index, value.to<ponder::UserObject>());
+                break;
+            }
+        }
+
+        bool isReadable() const override
+        {
+            return true;
+        }
+
+        bool isWritable() const override
+        {
+            return true;
+        }
+
+    private:
+        std::shared_ptr<VariantHolder> m_holder;
     };
 }
 
@@ -213,11 +281,17 @@ struct VariantMapper {};
 template <typename... Ts>
 struct VariantMapper<std::variant<Ts...>>
 {
-    static size_t propertyCount() { return 2; }
+    std::shared_ptr<detail::VariantHolder> m_holder = std::make_shared<detail::VariantHolder>();
 
-    static std::shared_ptr<ponder::Property> property(size_t index)
+    static size_t propertyCount() { return 3; }
+
+    std::shared_ptr<ponder::Property> property(size_t index)
     {
-        return std::make_shared<detail::VariantProperty<Ts...>>(index == 0);
+        if (index == 0)
+            return std::make_shared<detail::VariantIndexProperty<Ts...>>(m_holder);
+        if (index == 1)
+            return std::make_shared<detail::VariantTypeProperty<Ts...>>(m_holder);
+        return std::make_shared<detail::VariantProperty<Ts...>>(m_holder);
     }
 
     static size_t functionCount() { return 0; }
@@ -226,22 +300,21 @@ struct VariantMapper<std::variant<Ts...>>
 };
 }
 
-#define PONDER_VARIANT_TYPE(...) \
-    namespace ponder { namespace detail { \
-        template<> struct StaticTypeDecl<__VA_ARGS__> { \
-            static void registerFn() { \
-                ponder::Class::declare<__VA_ARGS__>().external<ponder_ext::VariantMapper>(); \
-            } \
-            static TypeId id(bool checkRegister = true) { \
-                if (checkRegister) detail::ensureTypeRegistered(calcTypeId<__VA_ARGS__>(), registerFn); \
-                return calcTypeId<__VA_ARGS__>(); \
-            } \
-            static const char* name(bool checkRegister = true) { \
-                if (checkRegister) detail::ensureTypeRegistered(calcTypeId<__VA_ARGS__>(), registerFn); \
-                return #__VA_ARGS__; \
-            } \
-            static constexpr bool defined = true, copyable = true; \
-        }; \
-    }}
+namespace ponder { namespace detail { 
+    template<typename... Ts> struct StaticTypeDecl<std::variant<Ts...>> { 
+        static void registerFn() { 
+            ponder::Class::declare<std::variant<Ts...>>().external<ponder_ext::VariantMapper>(); 
+        } 
+        static TypeId id(bool checkRegister = true) { 
+            if (checkRegister) detail::ensureTypeRegistered(calcTypeId<std::variant<Ts...>>(), registerFn); 
+            return calcTypeId<std::variant<Ts...>>(); 
+        } 
+        static const char* name(bool checkRegister = true) { 
+            if (checkRegister) detail::ensureTypeRegistered(calcTypeId<std::variant<Ts...>>(), registerFn); 
+            return typeid(std::variant<Ts...>).name();
+        } 
+        static constexpr bool defined = true, copyable = true; 
+    }; 
+}}
 
 #endif

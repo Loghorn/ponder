@@ -44,6 +44,12 @@
 
 namespace SerialiseTest
 {
+    struct test
+    {
+        std::string a, b;
+        friend bool operator==(const test& a, const test& b) { return a.a == b.a && a.b == b.b; }
+    };
+
     class Simple
     {
     public:
@@ -124,6 +130,12 @@ namespace SerialiseTest
 
     static void declare()
     {
+        ponder::Class::declare<test>()
+            .constructor()
+            .property("a", &test::a)
+            .property("b", &test::b)
+            ;
+
         ponder::Class::declare<Simple>()
             .constructor()
             .property("int", &Simple::m_i)
@@ -177,6 +189,7 @@ namespace SerialiseTest
     }
 }
 
+PONDER_AUTO_TYPE(SerialiseTest::test, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Simple, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Ref, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Complex, &SerialiseTest::declare)
@@ -184,7 +197,6 @@ PONDER_AUTO_TYPE(SerialiseTest::SuperComplex, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Param_i, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::Param_d, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::ParamType, &SerialiseTest::declare)
-PONDER_VARIANT_TYPE(std::variant<short, float, SerialiseTest::Param_i>)
 PONDER_AUTO_TYPE(SerialiseTest::Params, &SerialiseTest::declare)
 PONDER_AUTO_TYPE(SerialiseTest::TestA, &SerialiseTest::declare)
 
@@ -638,6 +650,88 @@ TEST_CASE("Can serialise using RapidJSON")
             reader.read(rootNode, ponder::UserObject::makeRef(sc2));
 
             CHECK(sc2.m_v.size() == 1);
+        }
+    }
+
+    SECTION("Variant values")
+    {
+        std::string storage;
+
+        //using variant = std::variant<bool, long>;
+        using variant = std::variant<test, bool, long, int>;
+
+        variant vv1 = 123L;
+            
+        {
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer jwriter(sb);
+            jwriter.StartObject();
+
+            using Archive = ponder::archive::RapidJsonArchiveWriter<rapidjson::Writer<rapidjson::StringBuffer>>;
+            Archive archive(jwriter);
+            Archive::Node rootNode{};
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(vv1));
+
+            jwriter.EndObject();
+
+            std::cout << sb.GetString() << std::endl;
+
+            storage = sb.GetString();
+        }
+
+        {
+            variant vvA;
+
+            rapidjson::Document jdoc;
+            REQUIRE(!jdoc.Parse(storage.data()).HasParseError());
+
+            using Archive = ponder::archive::RapidJsonArchiveReader;
+            Archive archive(jdoc);
+            Archive::Node rootNode{ jdoc };
+            REQUIRE(archive.isValid(rootNode));
+
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(vvA));
+
+            CHECK(vvA == vv1);
+        }
+
+        variant vv2 = false;
+            
+        {
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer jwriter(sb);
+            jwriter.StartObject();
+
+            using Archive = ponder::archive::RapidJsonArchiveWriter<rapidjson::Writer<rapidjson::StringBuffer>>;
+            Archive archive(jwriter);
+            Archive::Node rootNode{};
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(vv2));
+
+            jwriter.EndObject();
+
+            std::cout << sb.GetString() << std::endl;
+
+            storage = sb.GetString();
+        }
+
+        {
+            variant vvB;
+
+            rapidjson::Document jdoc;
+            REQUIRE(!jdoc.Parse(storage.data()).HasParseError());
+
+            using Archive = ponder::archive::RapidJsonArchiveReader;
+            Archive archive(jdoc);
+            Archive::Node rootNode{ jdoc };
+            REQUIRE(archive.isValid(rootNode));
+
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(vvB));
+
+            CHECK(vvB == vv2);
         }
     }
 

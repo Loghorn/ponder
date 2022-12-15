@@ -41,8 +41,10 @@ namespace archive {
     {
     public:
         NodeType beginChild(NodeType parent, const std::string& name);
-        void setText(NodeType node, const std::string& text);
-        bool isValid(NodeType node);
+        NodeType endChild(NodeType parent, NodeType child);
+        NodeType beginArray(NodeType parent, const std::string& name);
+        NodeType endArray(NodeType parent, NodeType arrayNode);
+        void setProperty(NodeType node, const std::string& name, const std::string& value);
     };
  
  */
@@ -71,10 +73,10 @@ private:
  class Archive
  {
  public:
-     NodeType findArray(NodeType node, const std::string& name);
-     NodeType arrayNextItem(NodeType node, const std::string& name);
-     std::string getText(NodeType node)
-     bool isValid(Node node);
+     NodeType findProperty(NodeType node, const std::string& name);
+     ArrayIterator createArrayIterator(NodeType node, const std::string& name);
+     std::string getValue(NodeType node);
+     bool isValid(NodeType node);
  };
  
  */

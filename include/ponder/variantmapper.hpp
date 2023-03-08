@@ -49,7 +49,6 @@ namespace detail {
     struct VariantHolder
     {
         size_t index;
-        std::string typeName;
         ponder::UserObject object;
     };
 
@@ -99,9 +98,6 @@ namespace detail {
 
         ponder::Value getValue(const ponder::UserObject &object) const override
         {
-            if (!m_holder->typeName.empty())
-                return m_holder->typeName;
-
             auto *v = object.get<std::variant<Ts...> *>();
             ponder::Value value = std::visit([](auto &&val) { return ponder::Value(val); }, *v);
 
@@ -124,7 +120,6 @@ namespace detail {
         void setValue(const ponder::UserObject &object, const ponder::Value &value) const override
         {
             auto type = value.to<std::string>();
-            m_holder->typeName = type;
 
             auto mc = ponder::classByNameSafe(type);
             if (mc)

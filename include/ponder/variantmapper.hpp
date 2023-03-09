@@ -171,31 +171,31 @@ namespace detail {
             assigner(std::variant<Ts...>& v, std::size_t index) : v(v), index(index) {}
 
             template<std::size_t I, std::size_t ...Is>
-            inline auto assign(std::index_sequence<I, Is...>, const ponder::Value &value) 
+            inline auto assign(std::index_sequence<I, Is...>, const ponder::Value &value)
             {
                 if constexpr(sizeof...(Is) > 0)
                 {
-                    if(index == I) 
-                        v.emplace<I>(value.to<std::variant_alternative_t<I, std::variant<Ts...>>>());
-                    else 
+                    if(index == I)
+                        v.template emplace<I>(value.to<std::variant_alternative_t<I, std::variant<Ts...>>>());
+                    else
                         assign(std::index_sequence<Is...>{}, value);
-                } 
+                }
                 else
-                    v.emplace<I>(value.to<std::variant_alternative_t<I, std::variant<Ts...>>>());
+                    v.template emplace<I>(value.to<std::variant_alternative_t<I, std::variant<Ts...>>>());
             }
 
             template<std::size_t I, std::size_t ...Is>
-            inline auto assign(std::index_sequence<I, Is...>, const ponder::UserObject &value) 
+            inline auto assign(std::index_sequence<I, Is...>, const ponder::UserObject &value)
             {
                 if constexpr(sizeof...(Is) > 0)
                 {
-                    if(index == I) 
-                        v.emplace<I>(value.get<std::variant_alternative_t<I, std::variant<Ts...>>>());
-                    else 
+                    if(index == I)
+                        v.template emplace<I>(value.get<std::variant_alternative_t<I, std::variant<Ts...>>>());
+                    else
                         assign(std::index_sequence<Is...>{}, value);
-                } 
+                }
                 else
-                    v.emplace<I>(value.get<std::variant_alternative_t<I, std::variant<Ts...>>>());
+                    v.template emplace<I>(value.get<std::variant_alternative_t<I, std::variant<Ts...>>>());
             }
         private:
             std::variant<Ts...>& v;
@@ -295,21 +295,21 @@ struct VariantMapper<std::variant<Ts...>>
 };
 }
 
-namespace ponder { namespace detail { 
-    template<typename... Ts> struct StaticTypeDecl<std::variant<Ts...>> { 
-        static void registerFn() { 
-            ponder::Class::declare<std::variant<Ts...>>().external<ponder_ext::VariantMapper>(); 
-        } 
-        static TypeId id(bool checkRegister = true) { 
-            if (checkRegister) detail::ensureTypeRegistered(calcTypeId<std::variant<Ts...>>(), registerFn); 
-            return calcTypeId<std::variant<Ts...>>(); 
-        } 
-        static const char* name(bool checkRegister = true) { 
-            if (checkRegister) detail::ensureTypeRegistered(calcTypeId<std::variant<Ts...>>(), registerFn); 
+namespace ponder { namespace detail {
+    template<typename... Ts> struct StaticTypeDecl<std::variant<Ts...>> {
+        static void registerFn() {
+            ponder::Class::declare<std::variant<Ts...>>().external<ponder_ext::VariantMapper>();
+        }
+        static TypeId id(bool checkRegister = true) {
+            if (checkRegister) detail::ensureTypeRegistered(calcTypeId<std::variant<Ts...>>(), registerFn);
+            return calcTypeId<std::variant<Ts...>>();
+        }
+        static const char* name(bool checkRegister = true) {
+            if (checkRegister) detail::ensureTypeRegistered(calcTypeId<std::variant<Ts...>>(), registerFn);
             return typeid(std::variant<Ts...>).name();
-        } 
-        static constexpr bool defined = true, copyable = true; 
-    }; 
+        }
+        static constexpr bool defined = true, copyable = true;
+    };
 }}
 
 #endif

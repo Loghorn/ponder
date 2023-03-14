@@ -146,6 +146,11 @@ protected:
      */
     virtual void setValue(const UserObject& object, const Value& value) const = 0;
 
+    [[nodiscard]] void* getRawData(const UserObject& object) const;
+    template <typename T>
+    [[nodiscard]] T* getData(const UserObject& object) const { return static_cast<T*>(getRawData(object)); }
+    void setData(const UserObject& object, std::shared_ptr<void> data) const;
+
 private:
 
     Id m_name; // Name of the property

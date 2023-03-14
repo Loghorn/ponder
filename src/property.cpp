@@ -83,4 +83,14 @@ Property::Property(IdRef name, ValueKind type)
 {
 }
 
+void* Property::getRawData(const UserObject& object) const
+{
+    return object.m_propertyData.get();
+}
+    
+void Property::setData(const UserObject& object, std::shared_ptr<void> data) const
+{
+    object.m_propertyData = std::move(data);
+}
+
 } // namespace ponder

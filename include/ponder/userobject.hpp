@@ -315,6 +315,7 @@ private:
     UserObject(const Class* cls, std::shared_ptr<detail::AbstractObjectHolder> h)
         :   m_class(cls)
         ,   m_holder(std::move(h))
+        ,   m_propertyData(nullptr)
     {}
 
     // Metaclass of the stored object
@@ -322,6 +323,9 @@ private:
 
     // Optional abstract holder storing the object
     std::shared_ptr<detail::AbstractObjectHolder> m_holder;
+
+    // Property data
+    mutable std::shared_ptr<void> m_propertyData;
 };
 
 } // namespace ponder

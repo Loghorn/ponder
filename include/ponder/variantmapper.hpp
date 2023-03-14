@@ -56,21 +56,33 @@ namespace detail {
     class VariantIndexProperty : public ponder::SimpleProperty
     {
     public:
-        VariantIndexProperty(std::shared_ptr<VariantHolder> holder)
-            : SimpleProperty("i", ponder::ValueKind::LongInteger), m_holder(std::move(holder))
+        VariantIndexProperty()
+            : SimpleProperty("i", ponder::ValueKind::LongInteger)
         {
         }
 
         ponder::Value getValue(const ponder::UserObject &object) const override
         {
+            auto holder = getData<detail::VariantHolder>(object);
+            if (!holder)
+            {
+                setData(object, std::make_shared<detail::VariantHolder>());
+                holder = getData<detail::VariantHolder>(object);
+            }
             auto *v = object.get<std::variant<Ts...> *>();
-            m_holder->index = v->index();
-            return m_holder->index;
+            holder->index = v->index();
+            return holder->index;
         }
 
         void setValue(const ponder::UserObject &object, const ponder::Value &value) const override
         {
-            m_holder->index = static_cast<size_t>(value.to<long long>());
+            auto holder = getData<detail::VariantHolder>(object);
+            if (!holder)
+            {
+                setData(object, std::make_shared<detail::VariantHolder>());
+                holder = getData<detail::VariantHolder>(object);
+            }
+            holder->index = static_cast<size_t>(value.to<long long>());
         }
 
         bool isReadable() const override
@@ -82,17 +94,14 @@ namespace detail {
         {
             return true;
         }
-
-    private:
-        std::shared_ptr<VariantHolder> m_holder;
     };
 
     template <typename... Ts>
     class VariantTypeProperty : public ponder::SimpleProperty
     {
     public:
-        VariantTypeProperty(std::shared_ptr<VariantHolder> holder)
-            : SimpleProperty("t", ponder::ValueKind::String), m_holder(std::move(holder))
+        VariantTypeProperty()
+            : SimpleProperty("t", ponder::ValueKind::String)
         {
         }
 
@@ -113,22 +122,28 @@ namespace detail {
             case ponder::ValueKind::Enum: return "enum";
             case ponder::ValueKind::User: return value.cref<ponder::UserObject>().getClass().name();
             }
-
-            return value;
         }
 
         void setValue(const ponder::UserObject &object, const ponder::Value &value) const override
         {
+            auto holder = getData<detail::VariantHolder>(object);
+
             auto type = value.to<std::string>();
 
             auto mc = ponder::classByNameSafe(type);
             if (mc)
             {
-                m_holder->object = ponder::runtime::create(*mc);
+                if (!holder)
+                {
+                    setData(object, std::make_shared<detail::VariantHolder>());
+                    holder = getData<detail::VariantHolder>(object);
+                }
+
+                holder->object = ponder::runtime::create(*mc);
             }
-            else
+            else if (holder)
             {
-                m_holder->object = ponder::UserObject::nothing;
+                holder->object = ponder::UserObject::nothing;
             }
         }
 
@@ -141,9 +156,6 @@ namespace detail {
         {
             return true;
         }
-
-    private:
-        std::shared_ptr<VariantHolder> m_holder;
     };
 
     template <typename... Ts>
@@ -175,9 +187,9 @@ namespace detail {
             {
                 if constexpr(sizeof...(Is) > 0)
                 {
-                    if(index == I)
+                    if(index == I) 
                         v.template emplace<I>(value.to<std::variant_alternative_t<I, std::variant<Ts...>>>());
-                    else
+                    else 
                         assign(std::index_sequence<Is...>{}, value);
                 }
                 else
@@ -189,9 +201,9 @@ namespace detail {
             {
                 if constexpr(sizeof...(Is) > 0)
                 {
-                    if(index == I)
+                    if(index == I) 
                         v.template emplace<I>(value.get<std::variant_alternative_t<I, std::variant<Ts...>>>());
-                    else
+                    else 
                         assign(std::index_sequence<Is...>{}, value);
                 }
                 else
@@ -214,27 +226,35 @@ namespace detail {
         }
 
     public:
-        VariantProperty(std::shared_ptr<VariantHolder> holder)
-            : SimpleProperty("v", ponder::ValueKind::None), m_holder(std::move(holder))
+        VariantProperty()
+            : SimpleProperty("v", ponder::ValueKind::None)
         {
         }
 
         ponder::Value getValue(const ponder::UserObject &object) const override
         {
-            if (m_holder->object != ponder::UserObject::nothing)
+            auto holder = getData<detail::VariantHolder>(object);
+            if (!holder)
+                PONDER_ERROR(ponder::ForbiddenCall("setData(object, std::make_shared<detail::VariantHolder>())"));
+
+            if (holder->object != ponder::UserObject::nothing)
             {
-                return m_holder->object;
+                return holder->object;
             }
 
             auto *v = object.get<std::variant<Ts...> *>();
-            if (v->index() == m_holder->index)
+            if (v->index() == holder->index)
                 return std::visit([](auto &&val) { return ponder::Value(val); }, *v);
             else
-                return std::visit([](auto &&val) { return ponder::Value(val); }, expand_type(m_holder->index));
+                return std::visit([](auto &&val) { return ponder::Value(val); }, expand_type(holder->index));
         }
 
         void setValue(const ponder::UserObject &object, const ponder::Value &value) const override
         {
+            auto holder = getData<detail::VariantHolder>(object);
+            if (!holder)
+                PONDER_ERROR(ponder::ForbiddenCall("setData(object, std::make_shared<detail::VariantHolder>())"));
+
             auto *v = object.get<std::variant<Ts...> *>();
             switch (value.kind())
             {
@@ -247,10 +267,10 @@ namespace detail {
             case ponder::ValueKind::Real:
             case ponder::ValueKind::String:
             case ponder::ValueKind::Enum:
-                assign_variant(*v, m_holder->index, value);
+                assign_variant(*v, holder->index, value);
                 break;
             case ponder::ValueKind::User:
-                assign_variant(*v, m_holder->index, value.to<ponder::UserObject>());
+                assign_variant(*v, holder->index, value.to<ponder::UserObject>());
                 break;
             }
         }
@@ -264,9 +284,6 @@ namespace detail {
         {
             return true;
         }
-
-    private:
-        std::shared_ptr<VariantHolder> m_holder;
     };
 }
 
@@ -276,17 +293,15 @@ struct VariantMapper {};
 template <typename... Ts>
 struct VariantMapper<std::variant<Ts...>>
 {
-    std::shared_ptr<detail::VariantHolder> m_holder = std::make_shared<detail::VariantHolder>();
-
     static size_t propertyCount() { return 3; }
 
-    std::shared_ptr<ponder::Property> property(size_t index)
+    static std::shared_ptr<ponder::Property> property(size_t index)
     {
         if (index == 0)
-            return std::make_shared<detail::VariantIndexProperty<Ts...>>(m_holder);
+            return std::make_shared<detail::VariantIndexProperty<Ts...>>();
         if (index == 1)
-            return std::make_shared<detail::VariantTypeProperty<Ts...>>(m_holder);
-        return std::make_shared<detail::VariantProperty<Ts...>>(m_holder);
+            return std::make_shared<detail::VariantTypeProperty<Ts...>>();
+        return std::make_shared<detail::VariantProperty<Ts...>>();
     }
 
     static size_t functionCount() { return 0; }

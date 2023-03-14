@@ -14,6 +14,7 @@ Ponder Changelog
 - UserObject automatically destructs (#50).
 - Big refactor to simplify property bindings & add return internal refs.
 - API improvements (#93).
+- std::variant mapper.
 - Tests: Catch2 updated to 2.13.1
 
 ## 3.1

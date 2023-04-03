@@ -35,6 +35,8 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 
+#include <stack>
+
 namespace ponder {
 namespace archive {
 
@@ -47,34 +49,38 @@ template <typename ARCHIVE>
 class RapidJsonArchiveWriter
 {
     ARCHIVE& m_archive;
-    unsigned int m_arrayLevel{ 0 };
-    unsigned int m_childLevel{ 1 };
+
+    enum class Type { object, array };
+	std::stack<Type> m_stack;
 
 public:
 
     struct JsonNode {};
     using Node = JsonNode*;
 
-    RapidJsonArchiveWriter(ARCHIVE& archive) : m_archive(archive) {}
+    RapidJsonArchiveWriter(ARCHIVE& archive) : m_archive(archive)
+    {
+        m_stack.push(Type::object);
+    }
 
     Node beginChild(Node parent, const std::string& name)
     {
-        if (m_arrayLevel < m_childLevel)
+        if (m_stack.top() == Type::object)
             m_archive.Key(name);
-        ++m_childLevel;
+        m_stack.push(Type::object);
         m_archive.StartObject();
         return Node();
     }
 
     void endChild(Node parent, Node child)
     {
-        --m_childLevel;
+        m_stack.pop();
         m_archive.EndObject();
     }
 
     void setProperty(Node node, const std::string& name, const Value& value)
     {
-        if (m_childLevel > m_arrayLevel)
+        if (m_stack.top() == Type::object)
             m_archive.Key(name);
         switch (value.kind())
         {
@@ -99,16 +105,17 @@ public:
 
     Node beginArray(Node parent, const std::string& name)
     {
-        m_archive.Key(name);
+        if (m_stack.top() == Type::object)
+            m_archive.Key(name);
+        m_stack.push(Type::array);
         m_archive.StartArray();
-        ++m_arrayLevel;
         return parent;
     }
 
     void endArray(Node /*parent*/, Node /*child*/)
     {
         m_archive.EndArray();
-        --m_arrayLevel;
+        m_stack.pop();
     }
 
     string_view getValue(Node node)

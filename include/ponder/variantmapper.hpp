@@ -306,14 +306,14 @@ struct VariantMapper<std::variant<Ts...>>
 
     static size_t functionCount() { return 0; }
 
-    static std::shared_ptr<ponder::Function> function(size_t index) { return nullptr; }
+    static std::shared_ptr<ponder::Function> function(size_t) { return nullptr; }
 };
 }
 
 namespace ponder { namespace detail {
     template<typename... Ts> struct StaticTypeDecl<std::variant<Ts...>> {
         static void registerFn() {
-            ponder::Class::declare<std::variant<Ts...>>().external<ponder_ext::VariantMapper>();
+            ponder::Class::declare<std::variant<Ts...>>().template external<ponder_ext::VariantMapper>();
         }
         static TypeId id(bool checkRegister = true) {
             if (checkRegister) detail::ensureTypeRegistered(calcTypeId<std::variant<Ts...>>(), registerFn);

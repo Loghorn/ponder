@@ -53,14 +53,14 @@ namespace SerialiseTest
     class Simple
     {
     public:
-        Simple() : m_i(0), m_f(0.f), m_b(true), m_ll(9999999999LL) {}
+        Simple() : m_i(0), m_b(true), m_ll(9999999999LL), m_f(0.f) {}
 
         Simple(int i, std::string s, float f, bool b)
         : m_i(i)
         , m_s(std::move(s))
-        , m_f(f)
         , m_b(b)
         , m_ll(9999999999LL)
+        , m_f(f)
         {}
 
         [[nodiscard]] float getF() const { return m_f; }
@@ -124,8 +124,8 @@ namespace SerialiseTest
 
     struct TestA
     {
-        std::string name;
-        std::vector<Params> params;
+        std::string name{};
+        std::vector<Params> params{};
     };
 
     static void declare()
@@ -406,9 +406,9 @@ TEST_CASE("Can serialise using RapidXML")
 
         {
             TestA testA{ "testA" };
-            testA.params.emplace_back(Params{ParamType::d, 0, 2.3});
-            testA.params.emplace_back(Params{ParamType::i, 10, 0});
-            testA.params.emplace_back(Params{ParamType::a, 0, 0, {1,2,3}});
+            testA.params.emplace_back(Params{ParamType::d, {0}, {2.3}, {}, {}});
+            testA.params.emplace_back(Params{ParamType::i, {10}, {0}, {}, {}});
+            testA.params.emplace_back(Params{ParamType::a, {0}, {0}, {1,2,3}, {}});
 
             rapidxml::xml_document<> doc;
             auto rootNode = doc.allocate_node(rapidxml::node_element, "testA");
@@ -743,12 +743,12 @@ TEST_CASE("Can serialise using RapidJSON")
 
         {
             TestA testA{ "testA" };
-            testA.params.emplace_back(Params{ParamType::d, 0, 2.3});
-            testA.params.emplace_back(Params{ParamType::i, 10, 0});
-            testA.params.emplace_back(Params{ParamType::a, 0, 0, {1,2,3}});
-            testA.params.emplace_back(Params{ParamType::i, 0, 0, {}, (short)3});
-            testA.params.emplace_back(Params{ParamType::i, 0, 0, {}, 3.3f});
-            testA.params.emplace_back(Params{ParamType::i, 0, 0, {}, Param_i{42}});
+            testA.params.emplace_back(Params{ParamType::d, {0}, {2.3}, {}, {}});
+            testA.params.emplace_back(Params{ParamType::i, {10}, {0}, {}, {}});
+            testA.params.emplace_back(Params{ParamType::a, {0}, {0}, {1,2,3}, {}});
+            testA.params.emplace_back(Params{ParamType::i, {0}, {0}, {}, (short)3});
+            testA.params.emplace_back(Params{ParamType::i, {0}, {0}, {}, 3.3f});
+            testA.params.emplace_back(Params{ParamType::i, {0}, {0}, {}, Param_i{42}});
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer jwriter(sb);

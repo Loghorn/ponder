@@ -233,6 +233,14 @@ if(MSVC)
     add_definitions(/MP) # Use multiprocessor compilation
 endif()
 
+if (MSVC)
+    # warning level 4 and all warnings as errors
+    add_compile_options(/W4 /WX /analyze:WX- /wd4100 /wd6287 /wd6262 /wd6313)
+else()
+    # lots of warnings and all warnings as errors
+    add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-inconsistent-missing-override)
+endif()
+
 # instruct CMake to build a shared library from all of the source files
 add_library(ponder ${PONDER_SRCS})
 

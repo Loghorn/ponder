@@ -57,7 +57,7 @@ bool Value::operator < (const Value& other) const
     return visit(detail::LessThanVisitor(), other);
 }
 
-std::istream& operator >> (std::istream& stream, Value& value)
+std::istream& operator >> (std::istream& stream, Value& /*value*/)
 {
     // Use the string conversion
 //    ponder::Id str;
@@ -66,7 +66,7 @@ std::istream& operator >> (std::istream& stream, Value& value)
     return stream;
 }
 
-std::ostream& operator << (std::ostream& stream, const Value& value)
+std::ostream& operator << (std::ostream& stream, const Value& /*value*/)
 {
     // Use the string conversion
     return stream; // << value.to<ponder::Id>();

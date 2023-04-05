@@ -126,7 +126,7 @@ class FunctionImpl : public Function
 
 public:
 
-    FunctionImpl(IdRef name, F function, P... policies) : Function(name)
+    FunctionImpl(IdRef name, F function, P...) : Function(name)
     {
         m_funcType = FuncTraits::kind;
         m_returnType = mapType<typename FuncTraits::ExposedType>();

@@ -63,7 +63,7 @@ public:
         m_stack.push(Type::object);
     }
 
-    Node beginChild(Node parent, const std::string& name)
+    Node beginChild(Node, const std::string& name)
     {
         if (m_stack.top() == Type::object)
             m_archive.Key(name);
@@ -72,13 +72,13 @@ public:
         return Node();
     }
 
-    void endChild(Node parent, Node child)
+    void endChild(Node, Node)
     {
         m_stack.pop();
         m_archive.EndObject();
     }
 
-    void setProperty(Node node, const std::string& name, const Value& value)
+    void setProperty(Node, const std::string& name, const Value& value)
     {
         if (m_stack.top() == Type::object)
             m_archive.Key(name);
@@ -100,6 +100,9 @@ public:
             case ValueKind::Enum:
             case ValueKind::Reference:
                 m_archive.String(value.to<std::string>());
+                break;
+            default:
+                break;
         }
     }
 
@@ -112,7 +115,7 @@ public:
         return parent;
     }
 
-    void endArray(Node /*parent*/, Node /*child*/)
+    void endArray(Node, Node)
     {
         m_archive.EndArray();
         m_stack.pop();
@@ -136,7 +139,7 @@ public:
  */
 class RapidJsonArchiveReader
 {
-    rapidjson::Document& m_archive;
+    [[maybe_unused]] rapidjson::Document& m_archive;
 
 public:
     //! An abstract node within the JSON archive.
@@ -165,7 +168,7 @@ public:
         return val;
     }
 
-    ArrayIterator createArrayIterator(Node node, const std::string& name)
+    ArrayIterator createArrayIterator(Node node, const std::string&)
     {
         return ArrayIterator({ node.m_value, node.m_value.Begin() });
     }

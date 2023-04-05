@@ -95,7 +95,7 @@ static void use()
     const auto& func = metaclass.function("hasBigFeet");
     
     // call the function and get the result
-    const bool bigFeet = ponder::runtime::call(func, person).to<bool>();
+    [[maybe_unused]] const bool bigFeet = ponder::runtime::call(func, person).to<bool>();
 
     // UserObject person is dereferenced and deleted here as scope ends.
 }

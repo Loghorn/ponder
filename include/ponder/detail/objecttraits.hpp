@@ -68,9 +68,9 @@ struct TypeTraits
     static constexpr bool isWritable = !std::is_const_v<DereferencedType>;
     static constexpr bool isRef = false;
 
-    static ReferenceType get(void* pointer) { return *static_cast<T*>(pointer); }
-    static PointerType getPointer(T& value) { return &value; }
-    static PointerType getPointer(T* value) { return value; }
+    static ReferenceType get(void* pointer) noexcept { return *static_cast<T*>(pointer); }
+    static PointerType getPointer(T& value) noexcept { return &value; }
+    static PointerType getPointer(T* value) noexcept { return value; }
 };
 
 // void
@@ -86,8 +86,8 @@ struct TypeTraits<void>
     static constexpr bool isWritable = false;
     static constexpr bool isRef = false;
 
-    static ReferenceType get(void* pointer) { return nullptr; }
-    static PointerType getPointer(T* value) { return value; }
+    static ReferenceType get(void* /*pointer*/) noexcept { return nullptr; }
+    static PointerType getPointer(T* value) noexcept { return value; }
 };
 
 // Raw pointers
@@ -103,9 +103,9 @@ struct TypeTraits<T*>
     static constexpr bool isWritable = !std::is_const_v<DereferencedType>;
     static constexpr bool isRef = true;
 
-    static ReferenceType get(void* pointer) {return static_cast<T*>(pointer);}
-    static PointerType getPointer(T& value) {return &value;}
-    static PointerType getPointer(T* value) {return value;}
+    static ReferenceType get(void* pointer) noexcept {return static_cast<T*>(pointer);}
+    static PointerType getPointer(T& value) noexcept {return &value;}
+    static PointerType getPointer(T* value) noexcept {return value;}
 };
 
 // References
@@ -121,9 +121,9 @@ struct TypeTraits<T&>
     static constexpr bool isWritable = !std::is_const_v<DereferencedType>;
     static constexpr bool isRef = true;
 
-    static ReferenceType get(void* pointer) {return *static_cast<T*>(pointer);}
-    static PointerType getPointer(T& value) {return &value;}
-    static PointerType getPointer(T* value) {return value;}
+    static ReferenceType get(void* pointer) noexcept {return *static_cast<T*>(pointer);}
+    static PointerType getPointer(T& value) noexcept {return &value;}
+    static PointerType getPointer(T* value) noexcept {return value;}
 };
 
 // Base class for smart pointers
@@ -139,7 +139,7 @@ struct SmartPointerReferenceTraits
     static constexpr bool isWritable = !std::is_const_v<DereferencedType>;
     static constexpr bool isRef = true;
 
-    static ReferenceType get(void* pointer)   {return *static_cast<P*>(pointer);}
+    static ReferenceType get(void* pointer) noexcept {return *static_cast<P*>(pointer);}
     static PointerType getPointer(P& value) {return get_pointer(value);}
 };
 

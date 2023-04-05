@@ -312,7 +312,7 @@ private:
      // Assign a new value to a property of the object
     void set(const Property& property, const Value& value) const;
 
-    UserObject(const Class* cls, std::shared_ptr<detail::AbstractObjectHolder> h)
+    UserObject(const Class* cls, std::shared_ptr<detail::AbstractObjectHolder> h) noexcept
         :   m_class(cls)
         ,   m_holder(std::move(h))
         ,   m_propertyData(nullptr)

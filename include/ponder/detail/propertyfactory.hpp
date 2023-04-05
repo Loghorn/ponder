@@ -90,7 +90,8 @@ public:
     ValueBinder2(const typename Base::Binding& g, S s) : Base(g), m_set(s) {}
 
     bool setter(typename Base::ClassType& c, typename Base::SetType v) const {
-        return m_set(c, v), true;
+        m_set(c, v);
+        return true;
     }
 
     bool setter(typename Base::ClassType& c, Value const& value) const {
@@ -142,7 +143,8 @@ public:
     InternalRefBinder2(const typename Base::Binding& g, S s) : Base(g), m_set(s) {}
 
     bool setter(typename Base::ClassType& c, typename Base::AccessType v) const {
-        return m_set(c, v), true;
+        m_set(c, v);
+        return true;
     }
     bool setter(typename Base::ClassType& c, Value const& value) const{
         return setter(c, value.to<typename Base::AccessType>());

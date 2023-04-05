@@ -73,7 +73,7 @@ struct IdTraits
     using id_ref_t = string_view;
     using id_return_t = const id_value_t&;
 
-    static const char* cstr(id_ref_t r) {return r.data();}
+    static const char* cstr(id_ref_t r) noexcept {return r.data();}
 };
 
 } // namespace detail
@@ -97,7 +97,7 @@ using IdReturn = detail::IdTraits::id_return_t;
 
 namespace id {
 
-[[nodiscard]] static const char* c_str(IdRef r) {return detail::IdTraits::cstr(r);}
+[[nodiscard]] inline const char* c_str(IdRef r) noexcept {return detail::IdTraits::cstr(r);}
 
 }
 

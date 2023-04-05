@@ -353,7 +353,7 @@ struct ValueMapper<ponder::String>
         {return source.name();}
     static ponder::String from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User, ponder::ValueKind::String));}
-    static ponder::String from(const ponder::detail::ValueRef& source)
+    static ponder::String from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference, ponder::ValueKind::String));}
 };
 
@@ -443,7 +443,7 @@ struct ValueMapper<T, std::enable_if_t<std::is_enum_v<T>>>
         {return static_cast<T>(source.value());}
     static T from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User, ponder::ValueKind::Enum));}
-    static T from(const ponder::detail::ValueRef& source)
+    static T from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference, ponder::ValueKind::Enum));}
 
     // The string -> enum conversion involves a little more work:
@@ -489,7 +489,7 @@ struct ValueMapper<ponder::EnumObject>
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::String,     ponder::ValueKind::Enum));}
     static ponder::EnumObject from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Enum,       ponder::ValueKind::Enum));}
-    static ponder::EnumObject from(const ponder::detail::ValueRef& source)
+    static ponder::EnumObject from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference,  ponder::ValueKind::Enum));}
 };
 
@@ -526,7 +526,7 @@ struct ValueMapper<ponder::UserObject>
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::String,     ponder::ValueKind::User));}
     static ponder::UserObject from(const ponder::EnumObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Enum,       ponder::ValueKind::User));}
-    static ponder::UserObject from(const ponder::detail::ValueRef& source)
+    static ponder::UserObject from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference,  ponder::ValueKind::User));}
 };
 

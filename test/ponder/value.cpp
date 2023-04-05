@@ -668,7 +668,7 @@ TEST_CASE("We can convert values from strings")
 
     SECTION("bool")
     {
-        bool r;
+        bool r = false;
 
         REQUIRE(conv("1", r) == true);
         REQUIRE(r == true);
@@ -775,13 +775,13 @@ TEST_CASE("We can convert values from strings")
         REQUIRE(r == -1.f);
 
         REQUIRE(conv("87654321", r) == true);
-        REQUIRE(r == 87654321);
+        REQUIRE(r == 87654321.f);
 
         REQUIRE(conv("-87654321", r) == true);
-        REQUIRE(r == -87654321);
+        REQUIRE(r == -87654321.f);
 
         REQUIRE(conv("-87654321", r) == true);
-        REQUIRE(r == -87654321);
+        REQUIRE(r == -87654321.f);
 
         REQUIRE(conv("0xabc", r) == true);  // hex
         REQUIRE(r == 0xABC);

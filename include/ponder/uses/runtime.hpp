@@ -47,7 +47,7 @@
 namespace ponder {
 namespace runtime {
 
-static void destroy(const UserObject &obj);
+inline void destroy(const UserObject &obj);
 
 namespace detail {
 
@@ -68,7 +68,7 @@ struct ArgsBuilder<Args> {
 
 template <>
 struct ArgsBuilder<void> {
-    static Args makeArgs(const Args& args) { return Args::empty; }
+    static Args makeArgs(const Args&) { return Args::empty; }
 };
 
 
@@ -295,7 +295,7 @@ private:
  * \sa destroy()
  */
 template <typename... A>
-static UserObject create(const Class &cls, A... args)
+inline UserObject create(const Class &cls, A... args)
 {
     return ObjectFactory(cls).create(args...);
 }
@@ -303,7 +303,7 @@ static UserObject create(const Class &cls, A... args)
 using UniquePtr = std::unique_ptr<UserObject>;
 
 template <typename... A>
-static UniquePtr createUnique(const Class &cls, A... args)
+inline UniquePtr createUnique(const Class &cls, A... args)
 {
     return std::make_unique<UserObject>(create(cls, args...));
 }
@@ -317,7 +317,7 @@ static UniquePtr createUnique(const Class &cls, A... args)
  *
  * \sa create()
  */
-static void destroy(const UserObject &obj)
+inline void destroy(const UserObject &obj)
 {
     ObjectFactory(obj.getClass()).destroy(obj);
 }
@@ -335,13 +335,13 @@ static void destroy(const UserObject &obj)
  * \sa callStatic(), Class::function()
  */
 template <typename... A>
-static Value call(const Function &fn, const UserObject &obj, A&&... args)
+inline Value call(const Function &fn, const UserObject &obj, A&&... args)
 {
     return ObjectCaller(fn).call(obj,
                                  detail::ArgsBuilder<A...>::makeArgs(std::forward<A>(args)...));
 }
 
-static Value call(const Function &fn, const UserObject &obj, const Args &args)
+inline Value call(const Function &fn, const UserObject &obj, const Args &args)
 {
     return ObjectCaller(fn).call(obj, args);
 }
@@ -358,12 +358,12 @@ static Value call(const Function &fn, const UserObject &obj, const Args &args)
  * \sa call(), Class::function()
  */
 template <typename... A>
-static Value callStatic(const Function &fn, A&&... args)
+inline Value callStatic(const Function &fn, A&&... args)
 {
     return FunctionCaller(fn).call(detail::ArgsBuilder<A...>::makeArgs(std::forward<A>(args)...));
 }
 
-static Value callStatic(const Function &fn, Args &args)
+inline Value callStatic(const Function &fn, Args &args)
 {
     return FunctionCaller(fn).call(args);
 }

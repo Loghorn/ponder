@@ -135,7 +135,7 @@ namespace UserObjectTest
     {
         int x;
 
-        Data() : x(0) { DATA_LOG("Data:construct\n"); }
+        Data() : x(0) { DATA_LOG("Data:construct\n", ""); }
         Data(int i) : x(i) { DATA_LOG("Data:construct(%d)\n", x); }
         Data(const Data& d) = default;
         [[nodiscard]] int value() const { return x; }
@@ -431,7 +431,7 @@ TEST_CASE("User objects can be inspected and modified")
         ponder::UserObject userObject(object);
         REQUIRE(userObject.get(0) == ponder::Value(3));
 
-        REQUIRE_THROWS_AS(userObject.get(-1), ponder::OutOfRange);
+        REQUIRE_THROWS_AS(userObject.get(static_cast<size_t>(-1)), ponder::OutOfRange);
         REQUIRE_THROWS_AS(userObject.get(1), ponder::OutOfRange);
         REQUIRE_THROWS_AS(userObject.get(100), ponder::OutOfRange);
     }
@@ -455,7 +455,7 @@ TEST_CASE("User objects can be inspected and modified")
         userObject.set(0, 8);
         REQUIRE(object.x == 8);
 
-        REQUIRE_THROWS_AS(userObject.set(-1, 11), ponder::OutOfRange);
+        REQUIRE_THROWS_AS(userObject.set(static_cast<size_t>(-1), 11), ponder::OutOfRange);
         REQUIRE_THROWS_AS(userObject.set(1, 27), ponder::OutOfRange);
     }
 

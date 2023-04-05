@@ -244,12 +244,12 @@ struct ArrayMapper<std::vector<bool>>
     static constexpr bool isArray = true;
     using ElementType = bool;
 
-    static bool dynamic()
+    static bool dynamic() noexcept
     {
         return true;
     }
 
-    static size_t size(const std::vector<bool>& arr)
+    static size_t size(const std::vector<bool>& arr) noexcept
     {
         return arr.size();
     }

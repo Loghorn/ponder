@@ -94,6 +94,18 @@ public:
     [[nodiscard]] Value get(const UserObject& object) const;
 
     /**
+     * \brief Get the current value of the property for a given object. Used only for serialization
+     *
+     * \param object Object
+     *
+     * \return Value of the property
+     *
+     * \throw NullObject object is invalid
+     * \throw ForbiddenRead property is not readable
+     */
+    [[nodiscard]] Value getForSerialization(const UserObject& object) const;
+
+    /**
      * \brief Set the current value of the property for a given object
      *
      * \param object Object
@@ -135,6 +147,17 @@ protected:
      * \return Value of the property
      */
     [[nodiscard]] virtual Value getValue(const UserObject& object) const = 0;
+
+    /**
+     * \brief Do the actual reading of the value
+     *
+     * This function is only used for serialization and by default calls \cref getValue.
+     *
+     * \param object Object
+     *
+     * \return Value of the property
+     */
+    [[nodiscard]] virtual Value getValueForSerialization(const UserObject& object) const { return getValue(object); }
 
     /**
      * \brief Do the actual writing of the value

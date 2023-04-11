@@ -61,6 +61,15 @@ Value Property::get(const UserObject& object) const
     return getValue(object);
 }
 
+Value Property::getForSerialization(const UserObject& object) const
+{
+    // Check if the property is readable
+    if (!isReadable())
+        PONDER_ERROR(ForbiddenRead(name()));
+
+    return getValueForSerialization(object);
+}
+
 void Property::set(const UserObject& object, const Value& value) const
 {
     // Check if the property is writable

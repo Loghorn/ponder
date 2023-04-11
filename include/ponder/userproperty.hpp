@@ -73,4 +73,4 @@ private:
 
 } // namespace ponder
 
-#endif // PONDER_ENUMPROPERTY_HPP
+#endif // PONDER_USERPROPERTY_HPP

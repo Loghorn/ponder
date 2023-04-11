@@ -34,6 +34,7 @@
 #include <ponder/uses/archive/rapidjson.hpp>
 #include <ponder/uses/serialise.hpp>
 #include <ponder/classbuilder.hpp>
+#include <ponder/optionalmapper.hpp>
 #include <ponder/variantmapper.hpp>
 
 #include <rapidxml/rapidxml_print.hpp>
@@ -41,6 +42,7 @@
 #include <rapidjson/writer.h>
 #include <iostream>
 #include <sstream>
+#include <optional>
 
 namespace SerialiseTest
 {
@@ -650,6 +652,97 @@ TEST_CASE("Can serialise using RapidJSON")
             reader.read(rootNode, ponder::UserObject::makeRef(sc2));
 
             CHECK(sc2.m_v.size() == 1);
+        }
+    }
+
+    SECTION("Optional values")
+    {
+        std::string storage;
+
+        using opt = std::optional<Complex>;
+
+        Complex c;
+        c.m_v.emplace_back(78, std::string("yadda"), 99.25f, true);
+        c.m_v.emplace_back(11, std::string("wooby"), 66.75f, false);
+        c.m_v[0].m_v = {1,2,3};
+        c.m_v[1].m_v = {4,5,6,7,8};
+
+        opt o1 = c;
+            
+        {
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer jwriter(sb);
+            jwriter.StartObject();
+
+            using Archive = ponder::archive::RapidJsonArchiveWriter<rapidjson::Writer<rapidjson::StringBuffer>>;
+            Archive archive(jwriter);
+            Archive::Node rootNode{};
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(o1));
+
+            jwriter.EndObject();
+
+            std::cout << sb.GetString() << std::endl;
+            CHECK(std::string(sb.GetString()) == R"({"v":{"vect":[{"bool":true,"float":99.25,"int":78,"longlong":9999999999,"string":"yadda","vector":[1,2,3]},{"bool":false,"float":66.75,"int":11,"longlong":9999999999,"string":"wooby","vector":[4,5,6,7,8]}]}})");
+
+            storage = sb.GetString();
+        }
+
+        {
+            opt oA;
+
+            rapidjson::Document jdoc;
+            REQUIRE(!jdoc.Parse(storage.data()).HasParseError());
+
+            using Archive = ponder::archive::RapidJsonArchiveReader;
+            Archive archive(jdoc);
+            Archive::Node rootNode{ jdoc };
+            REQUIRE(archive.isValid(rootNode));
+
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(oA));
+
+            CHECK(oA);
+            //CHECK(oA == o1);
+        }
+
+        opt o2;
+            
+        {
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer jwriter(sb);
+            jwriter.StartObject();
+
+            using Archive = ponder::archive::RapidJsonArchiveWriter<rapidjson::Writer<rapidjson::StringBuffer>>;
+            Archive archive(jwriter);
+            Archive::Node rootNode{};
+            ponder::archive::ArchiveWriter writer(archive);
+            writer.write(rootNode, ponder::UserObject::makeRef(o2));
+
+            jwriter.EndObject();
+
+            std::cout << sb.GetString() << std::endl;
+            CHECK(std::string(sb.GetString()) == R"({"v":null})");
+
+            storage = sb.GetString();
+        }
+
+        {
+            opt oB;
+
+            rapidjson::Document jdoc;
+            REQUIRE(!jdoc.Parse(storage.data()).HasParseError());
+
+            using Archive = ponder::archive::RapidJsonArchiveReader;
+            Archive archive(jdoc);
+            Archive::Node rootNode{ jdoc };
+            REQUIRE(archive.isValid(rootNode));
+
+            ponder::archive::ArchiveReader reader(archive);
+            reader.read(rootNode, ponder::UserObject::makeRef(oB));
+
+            CHECK(!oB);
+            //CHECK(oB == o2);
         }
     }
 

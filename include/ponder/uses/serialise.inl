@@ -122,7 +122,7 @@ void ArchiveReader<ARCHIVE>::read(NodeType node, const UserObject& object)
         }
         else if (property.kind() == ValueKind::None)
         {
-            auto v = property.get(object);
+            auto v = property.getForSerialization(object);
             if (v.isCompatible<UserObject>())
             {
                 read(child, v.to<UserObject>());

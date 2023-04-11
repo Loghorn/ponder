@@ -84,6 +84,9 @@ public:
             m_archive.Key(name);
         switch (value.kind())
         {
+            case ValueKind::None:
+                m_archive.Null();
+                break;
             case ValueKind::Boolean:
                 m_archive.Bool(value.to<bool>());
                 break;

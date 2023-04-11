@@ -36,7 +36,7 @@ cmake_policy(SET CMP0042 NEW) # MACOSX_RPATH
 
 set(VERSION_MAJOR 3)
 set(VERSION_MINOR 2)
-set(VERSION_PATCH 15)
+set(VERSION_PATCH 16)
 set(VERSION_NOTE "") # e.g. "-alpha", "-beta".
 
 set(PONDER_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -61,7 +61,6 @@ include(${PONDER_SOURCE_DIR}/cmake/PackageFilename.cmake)
 set(SRC_HEADERS
     include/ponder/args.hpp
     include/ponder/arraymapper.hpp
-    include/ponder/variantmapper.hpp
     include/ponder/arrayproperty.hpp
     include/ponder/class.hpp
     include/ponder/class.inl
@@ -86,6 +85,7 @@ set(SRC_HEADERS
     include/ponder/errors.hpp
     include/ponder/function.hpp
     include/ponder/observer.hpp
+    include/ponder/optionalmapper.hpp
     include/ponder/pondertype.hpp
     include/ponder/property.hpp
     include/ponder/simpleproperty.hpp
@@ -98,6 +98,7 @@ set(SRC_HEADERS
     include/ponder/value.inl
     include/ponder/valuemapper.hpp
     include/ponder/valuevisitor.hpp
+    include/ponder/variantmapper.hpp
     include/ponder/version.hpp
     # detail
     include/ponder/detail/arraypropertyimpl.hpp

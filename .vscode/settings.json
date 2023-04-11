@@ -62,7 +62,17 @@
 		"xstddef": "cpp",
 		"xstring": "cpp",
 		"xtree": "cpp",
-		"xutility": "cpp"
+		"xutility": "cpp",
+		"deque": "cpp",
+		"stack": "cpp",
+		"*.rh": "cpp",
+		"charconv": "cpp",
+		"chrono": "cpp",
+		"format": "cpp",
+		"future": "cpp",
+		"mutex": "cpp",
+		"random": "cpp",
+		"ranges": "cpp"
 	},
 	"cmake.configureOnOpen": true
 }

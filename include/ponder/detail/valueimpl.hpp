@@ -13,10 +13,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ** copies of the Software, and to permit persons to whom the Software is
 ** furnished to do so, subject to the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included in
 ** all copies or substantial portions of the Software.
-** 
+**
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,7 +36,7 @@
 
 namespace ponder {
 namespace detail {
-    
+
 /**
  * \brief Value visitor which converts the stored value to a type T
  */
@@ -44,7 +44,7 @@ template <typename T>
 struct ConvertVisitor
 {
     using result_type = T;
-    
+
     template <typename U>
     T operator()(const U& value) const
     {
@@ -70,12 +70,39 @@ struct ConvertVisitor
 };
 
 /**
+ * \brief Value visitor which verifies if the stored value can convert to a type T
+ */
+template <typename T>
+struct CanConvertVisitor
+{
+    using result_type = bool;
+
+    template <typename U>
+    bool operator()(const U& value) const
+    {
+        // Dispatch to the proper ValueConverter
+        return ponder_ext::ValueMapper<T>::can_from(value);
+    }
+
+    // Optimization when source type is the same as requested type
+    bool operator()(const T& value) const
+    {
+        return true;
+    }
+
+    bool operator()(NoType) const
+    {
+        return false;
+    }
+};
+
+/**
  * \brief Binary value visitor which compares two values using operator <
  */
 struct LessThanVisitor
 {
     using result_type = bool;
-    
+
     template <typename T, typename U>
     bool operator()(const T&, const U&) const
     {

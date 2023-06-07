@@ -142,20 +142,28 @@ struct ValueMapper
 
     static T from(bool)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Boolean,    ponder::mapType<T>()));}
+    static bool can_from(bool) {return false;}
     static T from(long)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Integer,    ponder::mapType<T>()));}
+    static bool can_from(long) {return false;}
     static T from(long long)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::LongInteger,ponder::mapType<T>()));}
+    static bool can_from(long long) {return false;}
     static T from(double)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Real,       ponder::mapType<T>()));}
+    static bool can_from(double) {return false;}
     static T from(const ponder::String&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::String,     ponder::mapType<T>()));}
+    static bool can_from(const ponder::String&) {return false;}
     static T from(const ponder::EnumObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Enum,       ponder::mapType<T>()));}
+    static bool can_from(const ponder::EnumObject&) {return false;}
     static T from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference,  ponder::mapType<T>()));}
+    static bool can_from(const ponder::detail::ValueRef&) {return false;}
     static T from(const ponder::UserObject& source)
         {return source.get<T>();}
+    static bool can_from(const ponder::UserObject& source) try {source.get<T>(); return true;} catch (...) {return false;}
 };
 
 /**
@@ -181,21 +189,29 @@ struct ValueMapper<T*, std::enable_if_t<!ponder::detail::hasStaticTypeDecl<T>()>
     static ponder::detail::ValueRef to(T* source) {return ponder::detail::ValueRef::make(source);}
 
     static T* from(const ponder::detail::ValueRef& source) {return source.getRef<T>();}
+    static bool can_from(const ponder::detail::ValueRef&) {return true;}
 
     static T from(bool)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Boolean,    ponder::mapType<T>()));}
+    static bool can_from(bool) {return false;}
     static T from(long)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Integer,    ponder::mapType<T>()));}
+    static bool can_from(long) {return false;}
     static T from(long long)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::LongInteger,ponder::mapType<T>()));}
+    static bool can_from(long long) {return false;}
     static T from(double)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Real,       ponder::mapType<T>()));}
+    static bool can_from(double) {return false;}
     static T from(const ponder::String&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::String,     ponder::mapType<T>()));}
+    static bool can_from(const ponder::String&) {return false;}
     static T from(const ponder::EnumObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Enum,       ponder::mapType<T>()));}
+    static bool can_from(const ponder::EnumObject&) {return false;}
     static T from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User,       ponder::mapType<T>()));}
+    static bool can_from(const ponder::UserObject&) {return false;}
 };
 
 ///**
@@ -236,13 +252,21 @@ struct ValueMapper<bool>
     static bool to(bool source) {return source;}
 
     static bool from(bool source)                  {return source;}
+    static bool can_from(bool)                     {return true;}
     static bool from(long source)                  {return source != 0;}
+    static bool can_from(long)                     {return true;}
     static bool from(long long source)             {return source != 0;}
+    static bool can_from(long long)                {return true;}
     static bool from(double source)                {return source != 0.;}
+    static bool can_from(double)                   {return true;}
     static bool from(const ponder::String& source) {return ponder::detail::convert<bool>(source);}
+    static bool can_from(const ponder::String& source) {bool dummy; return ponder::detail::conv(source, dummy);}
     static bool from(const ponder::EnumObject& source) {return source.value() != 0;}
+    static bool can_from(const ponder::EnumObject&)    {return true;}
     static bool from(const ponder::UserObject& source) {return source.pointer() != nullptr;}
+    static bool can_from(const ponder::UserObject&)    {return true;}
     static bool from(const ponder::detail::ValueRef& source) {return source.getRef<bool>();}
+    static bool can_from(const ponder::detail::ValueRef&)    {return true;}
 };
 
 /**
@@ -259,14 +283,22 @@ struct ValueMapper<T,
     static long to(T source) {return static_cast<long>(source);}
 
     static T from(bool source)                    {return static_cast<T>(source);}
+    static bool can_from(bool)                    {return true;}
     static T from(long source)                    {return static_cast<T>(source);}
+    static bool can_from(long)                    {return true;}
     static T from(long long source)               {return static_cast<T>(source);}
+    static bool can_from(long long)               {return true;}
     static T from(double source)                  {return static_cast<T>(source);}
+    static bool can_from(double)                  {return true;}
     static T from(const ponder::String& source)   {return ponder::detail::convert<T>(source);}
+    static bool can_from(const ponder::String& source)   {long dummy; return ponder::detail::conv(source, dummy);}
     static T from(const ponder::EnumObject& source) {return static_cast<T>(source.value());}
+    static bool can_from(const ponder::EnumObject&) {return true;}
     static T from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User, ponder::ValueKind::Integer));}
+    static bool can_from(const ponder::UserObject&)    {return false;}
     static T from(const ponder::detail::ValueRef& source) {return *source.getRef<T>();}
+    static bool can_from(const ponder::detail::ValueRef&) {return true;}
 };
 
 /**
@@ -279,14 +311,22 @@ struct ValueMapper<long long>
     static long long to(long long source) {return source;}
 
     static long long from(bool source)                    {return static_cast<long long>(source);}
+    static bool can_from(bool)                            {return true;}
     static long long from(long source)                    {return static_cast<long long>(source);}
+    static bool can_from(long)                            {return true;}
     static long long from(long long source)               {return static_cast<long long>(source);}
+    static bool can_from(long long)                       {return true;}
     static long long from(double source)                  {return static_cast<long long>(source);}
+    static bool can_from(double)                          {return true;}
     static long long from(const ponder::String& source)   {return ponder::detail::convert<long long>(source);}
+    static bool can_from(const ponder::String& source)    {long long dummy; return ponder::detail::conv(source, dummy);}
     static long long from(const ponder::EnumObject& source) {return static_cast<long long>(source.value());}
+    static bool can_from(const ponder::EnumObject&)         {return true;}
     static long long from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User, ponder::ValueKind::LongInteger));}
+    static bool can_from(const ponder::UserObject&)    {return false;}
     static long long from(const ponder::detail::ValueRef& source) {return *source.getRef<long long>();}
+    static bool can_from(const ponder::detail::ValueRef&)         {return true;}
 };
 
 template <>
@@ -296,14 +336,22 @@ struct ValueMapper<unsigned long long>
     static long long to(unsigned long long source) {return source;}
 
     static unsigned long long from(bool source)                    {return static_cast<unsigned long long>(source);}
+    static bool can_from(bool)                                     {return true;}
     static unsigned long long from(long source)                    {return static_cast<unsigned long long>(source);}
+    static bool can_from(long)                                     {return true;}
     static unsigned long long from(long long source)               {return static_cast<unsigned long long>(source);}
+    static bool can_from(long long)                                {return true;}
     static unsigned long long from(double source)                  {return static_cast<unsigned long long>(source);}
+    static bool can_from(double)                                   {return true;}
     static unsigned long long from(const ponder::String& source)   {return ponder::detail::convert<unsigned long long>(source);}
+    static bool can_from(const ponder::String& source)             {unsigned long long dummy; return ponder::detail::conv(source, dummy);}
     static unsigned long long from(const ponder::EnumObject& source) {return static_cast<unsigned long long>(source.value());}
+    static bool can_from(const ponder::EnumObject&)                  {return true;}
     static unsigned long long from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User, ponder::ValueKind::LongInteger));}
+    static bool can_from(const ponder::UserObject&)    {return false;}
     static unsigned long long from(const ponder::detail::ValueRef& source) {return *source.getRef<unsigned long long>();}
+    static bool can_from(const ponder::detail::ValueRef&)                  {return true;}
 };
 
 /*
@@ -320,14 +368,22 @@ struct ValueMapper<T,
     static double to(T source) {return static_cast<double>(source);}
 
     static T from(bool source)                    {return static_cast<T>(source);}
+    static bool can_from(bool)                    {return true;}
     static T from(long source)                    {return static_cast<T>(source);}
+    static bool can_from(long)                    {return true;}
     static T from(long long source)               {return static_cast<T>(source);}
+    static bool can_from(long long)               {return true;}
     static T from(double source)                  {return static_cast<T>(source);}
+    static bool can_from(double)                  {return true;}
     static T from(const ponder::String& source)   {return ponder::detail::convert<T>(source);}
+    static bool can_from(const ponder::String& source)   {T dummy; return ponder::detail::conv(source, dummy);}
     static T from(const ponder::EnumObject& source) {return static_cast<T>(source.value());}
+    static bool can_from(const ponder::EnumObject&) {return true;}
     static T from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User, ponder::ValueKind::Real));}
+    static bool can_from(const ponder::UserObject&)    {return false;}
     static T from(const ponder::detail::ValueRef& source) {return *source.getRef<T>();}
+    static bool can_from(const ponder::detail::ValueRef&) {return true;}
 };
 
 /**
@@ -341,20 +397,28 @@ struct ValueMapper<ponder::String>
 
     static ponder::String from(bool source)
         {return ponder::detail::convert<ponder::String>(source);}
+    static bool can_from(bool)                     {return true;}
     static ponder::String from(long source)
         {return ponder::detail::convert<ponder::String>(source);}
+    static bool can_from(long)                     {return true;}
     static ponder::String from(long long source)
         {return ponder::detail::convert<ponder::String>(source);}
+    static bool can_from(long long)                {return true;}
     static ponder::String from(double source)
         {return ponder::detail::convert<ponder::String>(source);}
+    static bool can_from(double)                   {return true;}
     static ponder::String from(const ponder::String& source)
         {return source;}
+    static bool can_from(const ponder::String&)    {return true;}
     static ponder::String from(const ponder::EnumObject& source)
         {return source.name();}
+    static bool can_from(const ponder::EnumObject&)    {return true;}
     static ponder::String from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User, ponder::ValueKind::String));}
+    static bool can_from(const ponder::UserObject&)    {return false;}
     static ponder::String from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference, ponder::ValueKind::String));}
+    static bool can_from(const ponder::detail::ValueRef&)    {return false;}
 };
 
 // TODO - Add ponder::is_string() ?
@@ -371,6 +435,9 @@ struct ValueMapper<ponder::string_view>
     template <typename T>
     static ponder::string_view from(const T& source)
         {return ValueMapper<ponder::String>::from(source);}
+    template <typename T>
+    static bool can_from(const T& source)
+        {return ValueMapper<ponder::String>::can_from(source);}
 };
 
 /**
@@ -388,7 +455,15 @@ struct ValueMapper<const char*>
     {
         // If you get this error, it means you're trying to cast
         // a ponder::Value to a const char*, which is not allowed
-        return T::CONVERSION_TO_CONST_CHAR_PTR_IS_NOT_ALLOWED();
+        static_assert(T::CONVERSION_TO_CONST_CHAR_PTR_IS_NOT_ALLOWED(), "Conversion to cont char* is not allowed");
+    }
+
+    template <typename T>
+    static bool can_from(const T&)
+    {
+        // If you get this error, it means you're trying to cast
+        // a ponder::Value to a const char*, which is not allowed
+        static_assert(T::CONVERSION_TO_CONST_CHAR_PTR_IS_NOT_ALLOWED(), "Conversion to cont char* is not allowed");
     }
 };
 
@@ -436,15 +511,22 @@ struct ValueMapper<T, std::enable_if_t<std::is_enum_v<T>>>
     static ponder::EnumObject to(T source) {return ponder::EnumObject(source);}
 
     static T from(bool source)      {return static_cast<T>(static_cast<long>(source));}
+    static bool can_from(bool)      {return true;}
     static T from(long source)      {return static_cast<T>(source);}
+    static bool can_from(long)      {return true;}
     static T from(long long source) {return static_cast<T>(source);}
+    static bool can_from(long long) {return true;}
     static T from(double source)    {return static_cast<T>(static_cast<long>(source));}
+    static bool can_from(double)    {return true;}
     static T from(const ponder::EnumObject& source)
         {return static_cast<T>(source.value());}
+    static bool can_from(const ponder::EnumObject&)    {return true;}
     static T from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::User, ponder::ValueKind::Enum));}
+    static bool can_from(const ponder::UserObject&)    {return false;}
     static T from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference, ponder::ValueKind::Enum));}
+    static bool can_from(const ponder::detail::ValueRef&)    {return false;}
 
     // The string -> enum conversion involves a little more work:
     // we try two different conversions (as a name and as a value)
@@ -465,6 +547,21 @@ struct ValueMapper<T, std::enable_if_t<std::is_enum_v<T>>>
         // Not a valid enum name or number: throw an error
         PONDER_ERROR(ponder::BadType(ponder::ValueKind::String, ponder::ValueKind::Enum));
     }
+    static bool can_from(const ponder::String& source)
+    {
+        const ponder::Enum* metaenum = ponder::enumByTypeSafe<T>();
+
+        if (metaenum && metaenum->hasName(source))
+            return true;
+
+        long value;
+        if (!ponder::detail::conv(source, value))
+            return false;
+        if (!metaenum || metaenum->hasValue(value))
+            return true;
+
+        return false;
+    }
 };
 
 /**
@@ -476,21 +573,29 @@ struct ValueMapper<ponder::EnumObject>
     static constexpr ponder::ValueKind kind = ponder::ValueKind::Enum;
     static const ponder::EnumObject& to(const ponder::EnumObject& source) {return source;}
     static const ponder::EnumObject& from(const ponder::EnumObject& source) {return source;}
+    static bool can_from(const ponder::EnumObject&)    {return true;}
 
     static ponder::EnumObject from(bool)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Boolean,    ponder::ValueKind::Enum));}
+    static bool can_from(bool)                     {return false;}
     static ponder::EnumObject from(long)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Integer,    ponder::ValueKind::Enum));}
+    static bool can_from(long)                     {return false;}
     static ponder::EnumObject from(long long)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::LongInteger,ponder::ValueKind::Enum));}
+    static bool can_from(long long)                {return false;}
     static ponder::EnumObject from(double)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Real,       ponder::ValueKind::Enum));}
+    static bool can_from(double)                   {return false;}
     static ponder::EnumObject from(const ponder::String&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::String,     ponder::ValueKind::Enum));}
+    static bool can_from(const ponder::String&)    {return false;}
     static ponder::EnumObject from(const ponder::UserObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Enum,       ponder::ValueKind::Enum));}
+    static bool can_from(const ponder::UserObject&)    {return false;}
     static ponder::EnumObject from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference,  ponder::ValueKind::Enum));}
+    static bool can_from(const ponder::detail::ValueRef&)    {return false;}
 };
 
 /**
@@ -513,21 +618,29 @@ struct ValueMapper<ponder::UserObject>
     static constexpr ponder::ValueKind kind = ponder::ValueKind::User;
     static const ponder::UserObject& to(const ponder::UserObject& source) {return source;}
     static const ponder::UserObject& from(const ponder::UserObject& source) {return source;}
+    static bool can_from(const ponder::UserObject&)    {return true;}
 
     static ponder::UserObject from(bool)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Boolean,    ponder::ValueKind::User));}
+    static bool can_from(bool)                     {return false;}
     static ponder::UserObject from(long)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Integer,    ponder::ValueKind::User));}
+    static bool can_from(long)                     {return false;}
     static ponder::UserObject from(long long)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::LongInteger,ponder::ValueKind::User));}
+    static bool can_from(long long)                {return false;}
     static ponder::UserObject from(double)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Real,       ponder::ValueKind::User));}
+    static bool can_from(double)                   {return false;}
     static ponder::UserObject from(const ponder::String&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::String,     ponder::ValueKind::User));}
+    static bool can_from(const ponder::String&)    {return false;}
     static ponder::UserObject from(const ponder::EnumObject&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Enum,       ponder::ValueKind::User));}
+    static bool can_from(const ponder::EnumObject&)    {return false;}
     static ponder::UserObject from(const ponder::detail::ValueRef&)
         {PONDER_ERROR(ponder::BadType(ponder::ValueKind::Reference,  ponder::ValueKind::User));}
+    static bool can_from(const ponder::detail::ValueRef&)    {return false;}
 };
 
 /**

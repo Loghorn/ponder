@@ -159,7 +159,7 @@ public:
      * \return True if conversion is possible, false otherwise
      */
     template <typename T>
-    [[nodiscard]] bool isCompatible() const;
+    [[nodiscard]] bool isCompatible() const noexcept;
 
     /**
      * \brief Visit the value with a unary visitor

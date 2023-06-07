@@ -54,6 +54,7 @@ template <typename T, typename E = void>
 struct ValueTo
 {
     static T convert(const Value& value) {return value.visit(ConvertVisitor<T>());}
+    static bool can_convert(const Value& value) {return value.visit(CanConvertVisitor<T>());}
 };
 
 // Don't need to convert, we're returning a Value
@@ -62,6 +63,7 @@ struct ValueTo<Value>
 {
     static Value convert(const Value& value) {return value;}
     static Value convert(Value&& value) {return std::move(value);}
+    static bool can_convert(const Value&) {return true;}
 };
 
 // Convert Values to pointers for basic types
@@ -72,6 +74,7 @@ struct ValueTo<T*, std::enable_if_t<!hasStaticTypeDecl<T>()>>
     {
         return value.to<ValueRef>().getRef<T>();
     }
+    static bool can_convert(const Value&) {return true;}
 };
 
 // Convert Values to references for basic types
@@ -133,12 +136,11 @@ const T& Value::cref() const
 }
 
 template <typename T>
-bool Value::isCompatible() const
+bool Value::isCompatible() const noexcept
 {
     try
     {
-        to<T>();
-        return true;
+        return detail::ValueTo<T>::can_convert(*this);
     }
     catch (std::exception&)
     {
